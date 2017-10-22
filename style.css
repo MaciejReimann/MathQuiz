@@ -1,0 +1,63 @@
+/*@import url('http://necolas.github.io/normalize.css/3.0.2/normalize.css');*/
+
+/**************  FLEX  **************/
+
+body {
+    display: flex; 
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100vh;
+    text-align: center;
+    font-family: 'Source Code Pro', monospace;
+    font-weight: 400;    
+    margin: 0;
+    }
+
+#main-container {
+    display: flex; 
+    flex-direction: column;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    text-align: center;
+/*    flex-shrink: 2;*/
+}
+/*------------------------------------------*/
+
+
+/**************  Header  **************/
+header {
+    text-align: center; 
+    border: dashed 1px black;    
+}
+/**************  Footer  **************/
+footer {
+    border: dashed 1px black;
+    height: 5vh;
+}
+footer p {
+    margin: 0;
+    padding: 5px;
+}
+
+/**************  CONTENT  **************/
+
+#equation-input {
+  font-size: 40px;
+}
+
+.equation-spans {
+  font-size: 40px;
+}
+
+.numeric-keys, .special-keys {
+  margin: 3px;
+  padding: 10px 22px;
+  font-size: 40px;
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+  
+}
+
+#OK {
+  padding: 10px 4px;
+}
+
