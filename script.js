@@ -1,28 +1,56 @@
 
-
-
-const basic = {
-  createArray: function(n) {
+const naturalNumbers = {
+  getRandomOfRange: function(min,max) { 
+    return Math.floor(Math.random() * (max + 1 - min) ) + min 
+  },
+  getAll: function() {
     const array = [];
-    for (let i = 0; i < n ; i++) { array[i] = i };
+    for (let i = 1; i < 10 ; i++) { array[i-1] = i };
     return array;
   },
-  create2DArray: function(n, m) {
-    const array = [];
-    for (let i = 0; i < m ; i++) { array[i] = this.createArray(n) };
+  shuffle: function(array) {   
+   for (var i = array.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
     return array;
   },
-  createEl: function(tag, className, textContent) {
-    const newElement = document.createElement(tag);
-    newElement.className = className;
-    newElement.textContent = textContent;
-    return newElement;
+  getAllShuffled: function() {
+    return this.shuffle( this.getAll() )
   },
+  allPaired: function() {
+    const arrayOfPairs = []; 
+    const arrayOfEquations = [];
+    for (let i = 1; i < 10; i++ ) {       
+      for (let j = 1; j < 10; j++ ) {
+          let pair = [];
+          pair.push(i)
+          pair.push(j)
+          arrayOfPairs.push(pair)
+        }
+      }
+    for (key in arrayOfPairs) {
+      let obj = {};
+      obj.valueX = arrayOfPairs[key][0]
+      obj.valueY = arrayOfPairs[key][1]
+      obj.valueZ =  obj.valueX * obj.valueY
+      arrayOfEquations.push( obj );
+    }
+    return arrayOfEquations;
+  },
+  allPairsShuffled: function() {
+    return this.shuffle( this.allPaired() );
+  },
+ 
+};
+//   
 
-  printId: function(x,y) {
-    return x+"n"+y;
-  }
-}
+//   printId: function(x,y) {
+//     return x+"n"+y;
+//   }
+// }
 
 // const messages = {
 //   fillAsFast: "Fill the whole table as fast as you can!",
@@ -38,75 +66,71 @@ const basic = {
 //   graph: document.querySelector('#graph'), 
 // }; 
 
+
 const model = {
   init: function() {},
-  userData: {},
   
-  table: function() {
-    for (let i = 1; i < 11 ; i++) {
-      for (let j = 1; j < 11 ; j++) {
-        model.tablePiece(i,j)
-      }
-    }
-  },
-  tablePiece: function(x,y) {
-    return {
-      valueX: x,
-      valueY: y,
-      valueZ: x*y,
-      howManyTimesAnsweredCorrect: 0,
-      howManyTimesSelected: 0,
-      increaseCounter: function(counter) {
-        
-        this.howManyTimesSelected = this.howManyTimesSelected + 1;
-        return howManyTimesSelected
-      } ()
-    }
-  },
-  randomEquation: function() {
-    const getRandomNumber = function() { return Math.floor(Math.random() * 10) } 
-
-  },
-  arrayOfUniqueEquations: function(n) {
-    const getRandomNumber = function() { return Math.floor(Math.random() * 10) } 
-    const array = []
-     for (let i = 1; i < n+1 ; i++) {
-        let randomX = getRandomNumber();
-        let randomY = getRandomNumber()
-
-        array.push( model.tablePiece(randomX, randomY) )
-      };
-      return array;
+  allEquations: {
+    inOrder: {
+      all: naturalNumbers.allPaired(),
+      getNElement: function(n) { return this.all[n] },
+    },
+    shuffled: {
+      all: naturalNumbers.allPairsShuffled(),
+      getNElement: function(n) { 
+        this.currentElement = this.all[n];
+        return this.all[n] },
+      currentElement: [],
+      getNextElement: function() {
+        let n = this.all.indexOf(this.currentElement);
+        this.currentElement = this.all[n + 1]
+        return this.all[n + 1]
+      },
+    },
   },
 
+userData: {},
 }
-
-
-
-
-
 
 const controller = {
   init: function() {
     view.init();
   },
+  number: function() {
+    if (model.allEquations.shuffled.currentElement.valueX === undefined ) {
+      model.allEquations.shuffled.currentElement = model.allEquations.shuffled.getNElement(0);
+    };
+    return {
+      x: model.allEquations.shuffled.currentElement.valueX,
+      y: model.allEquations.shuffled.currentElement.valueY,
+      z: model.allEquations.shuffled.currentElement.valueZ,
+    };
+  },
 
-  writeEquation: function() {
+  createEl: function(tag, className, textContent) {
+    const newElement = document.createElement(tag);
+    newElement.className = className;
+    newElement.textContent = textContent;
+    return newElement;
+  },
+
+  createEquation: function() {
+
     const equationArray = [
-    basic.createEl ("div", "equationElements", 0 ),
-    basic.createEl ("div", "equationElements", "x"),
-    basic.createEl ("div", "equationElements", 0 ),
-    basic.createEl ("div", "equationElements", "=" ),
-    basic.createEl ("input", "equationElements"),
+    this.createEl ("div", "equationElements", this.number().x ),
+    this.createEl ("div", "equationElements", "x"),
+    this.createEl ("div", "equationElements", this.number().y ),
+    this.createEl ("div", "equationElements", "=" ),
+    this.createEl ("input", "input"),
     ]
     return {
       leftHand: function(n) {
          if (n === "blankFirst") {
-            equationArray[0] = basic.createEl ("input", "equationElements");
+            equationArray[0] = this.createEl ("input", "equationElements");
           };
           if (n === "blankSecond") {
-            equationArray[2] = basic.createEl ("input", "equationElements");
-            equationArray[4] = basic.createEl ("div", "equationElements", "z");
+            equationArray[2] = this.createEl ("input", "equationElements");
+            equationArray[4] = this.createEl ("div", "equationElements", "z");
           };
          return equationArray;;
       },
@@ -115,10 +139,23 @@ const controller = {
       },
     }
   },
-  appendEach: function(parentEl, el) {
+  displayEquationIn: function(parentEl, el) {
     for (key in el) { parentEl.appendChild(el[key]) }
   },
+  checkAnswer: function() {
+    return {
+      forZ: function(n) {
+        if (n===controller.number().z) {
+          console.log('ok')
+        };
+      };
+    };
 
+  },
+  scenarios: {
+
+  },
+  
  
 
 }
@@ -132,14 +169,24 @@ const controller = {
 const view = {
   main: document.querySelector('.main'),
   equationParagraph: document.querySelector('.equationParagraph'),
+  input: document.getElementsByTagName('INPUT'),
 
   init: function () {
+    
     this.render();
+    this.events()
   },
   render: function() {
-    controller.appendEach(view.equationParagraph, controller.writeEquation().leftHand("blankSecond") )
+    controller.displayEquationIn(view.equationParagraph, controller.createEquation().leftHand() )
   },
-
+  events: function() {
+    view.equationParagraph.addEventListener("keypress", function(e) {
+      let key = e.keyCode;
+      if (key === 13) {
+        console.log(view.input[0].value)
+      };
+    });
+  },
 }
 
 controller.init();
