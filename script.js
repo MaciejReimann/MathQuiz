@@ -96,15 +96,28 @@ const controller = {
   init: function() {
     view.init();
   },
-  number: function() {
+  number: function(n) {
     if (model.allEquations.shuffled.currentElement.valueX === undefined ) {
       model.allEquations.shuffled.currentElement = model.allEquations.shuffled.getNElement(0);
     };
+   
+    this.x = model.allEquations.shuffled.currentElement.valueX;
+    this.y = model.allEquations.shuffled.currentElement.valueY;
+    this.z = model.allEquations.shuffled.currentElement.valueZ;
     return {
-      x: model.allEquations.shuffled.currentElement.valueX,
-      y: model.allEquations.shuffled.currentElement.valueY,
-      z: model.allEquations.shuffled.currentElement.valueZ,
-    };
+      x: this.x,
+      y: this.y,
+      z: this.z,
+      n: n,
+      checkAnswer: function(inputNumber) {
+        const lkj = this.n.replace(/['"]+/g, '');
+        const correctAnswer = lkj
+        // if (inputNumber === correctAnswer ) { 
+          console.log(this.n.replace(/['"]+/g, '')) 
+        // };
+        // function(k) { const n = k.replace(/['"]+/g, ''); return n },
+      },
+     };
   },
 
   createEl: function(tag, className, textContent) {
@@ -115,7 +128,10 @@ const controller = {
   },
 
   createEquation: function() {
-
+    // const inputIsExpectedFor = this.number();
+    const createEl = this.createEl;
+    let number = this.number;
+    let blankNumber = 0;
     const equationArray = [
     this.createEl ("div", "equationElements", this.number().x ),
     this.createEl ("div", "equationElements", "x"),
@@ -126,12 +142,15 @@ const controller = {
     return {
       leftHand: function(n) {
          if (n === "blankFirst") {
-            equationArray[0] = this.createEl ("input", "equationElements");
+            equationArray[0] = createEl ("input", "equationElements");
+            number("this.x").checkAnswer(number().x)
+            // console.log ( inputIsExpectedFor( )
           };
           if (n === "blankSecond") {
             equationArray[2] = this.createEl ("input", "equationElements");
             equationArray[4] = this.createEl ("div", "equationElements", "z");
-          };
+          } else 
+          controller.number( controller.number().z )
          return equationArray;;
       },
       righHand: function(n) {
@@ -148,7 +167,7 @@ const controller = {
         if (n===controller.number().z) {
           console.log('ok')
         };
-      };
+      },
     };
 
   },
@@ -177,13 +196,13 @@ const view = {
     this.events()
   },
   render: function() {
-    controller.displayEquationIn(view.equationParagraph, controller.createEquation().leftHand() )
+    controller.displayEquationIn(view.equationParagraph, controller.createEquation().leftHand("blankFirst") )
   },
   events: function() {
     view.equationParagraph.addEventListener("keypress", function(e) {
       let key = e.keyCode;
       if (key === 13) {
-        console.log(view.input[0].value)
+        console.log ( controller.number().checkAnswer() )
       };
     });
   },
