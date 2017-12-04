@@ -96,11 +96,13 @@ const controller = {
   init: function() {
     view.init();
   },
-  number: function(n) {
+  inputIsExpected: {
+    for: false,
+  },
+  number: function() {
     if (model.allEquations.shuffled.currentElement.valueX === undefined ) {
       model.allEquations.shuffled.currentElement = model.allEquations.shuffled.getNElement(0);
     };
-   
     this.x = model.allEquations.shuffled.currentElement.valueX;
     this.y = model.allEquations.shuffled.currentElement.valueY;
     this.z = model.allEquations.shuffled.currentElement.valueZ;
@@ -108,17 +110,19 @@ const controller = {
       x: this.x,
       y: this.y,
       z: this.z,
-      n: n,
-      checkAnswer: function(inputNumber) {
-        const lkj = this.n.replace(/['"]+/g, '');
-        const correctAnswer = lkj
-        // if (inputNumber === correctAnswer ) { 
-          console.log(this.n.replace(/['"]+/g, '')) 
-        // };
-        // function(k) { const n = k.replace(/['"]+/g, ''); return n },
+      checkAnswer: function(inputValue) {
+        const answer = parseInt(inputValue)
+        const correctAnswer = this[controller.inputIsExpected.for];
+        if (answer === correctAnswer) {
+           console.log( "ok" ) 
+         }
+           else console.log( "not ok" )
+         
+
       },
      };
   },
+  
 
   createEl: function(tag, className, textContent) {
     const newElement = document.createElement(tag);
@@ -128,7 +132,7 @@ const controller = {
   },
 
   createEquation: function() {
-    // const inputIsExpectedFor = this.number();
+    const inputIsExpected = this.inputIsExpected;
     const createEl = this.createEl;
     let number = this.number;
     let blankNumber = 0;
@@ -143,8 +147,9 @@ const controller = {
       leftHand: function(n) {
          if (n === "blankFirst") {
             equationArray[0] = createEl ("input", "equationElements");
-            number("this.x").checkAnswer(number().x)
-            // console.log ( inputIsExpectedFor( )
+            equationArray[4] = createEl ("div", "equationElements", number().z );
+            inputIsExpected.for = "x";
+            // controller.number().checkAnswer(number().x)
           };
           if (n === "blankSecond") {
             equationArray[2] = this.createEl ("input", "equationElements");
@@ -202,7 +207,9 @@ const view = {
     view.equationParagraph.addEventListener("keypress", function(e) {
       let key = e.keyCode;
       if (key === 13) {
-        console.log ( controller.number().checkAnswer() )
+        console.log("pressed")
+        console.log(view.input[0].value)
+        controller.number().checkAnswer(view.input[0].value)
       };
     });
   },
