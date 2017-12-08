@@ -88,9 +88,17 @@ const model = {
       },
     },
   },
+  userData: {
+    currentSession: {
+      correctAnswers: [],
+      incorrectAnswers: [],
+      score: function() {
+        return this.correctAnswers.length * 2;
+      }
+    },
+  },
 
-userData: {},
-}
+};
 
 const controller = {
   init: function() {
@@ -115,11 +123,11 @@ const controller = {
         const answer = parseInt(inputValue);
         const correctAnswer = this[controller.correctAnswer.is];
         if (answer === correctAnswer) {
-           console.log( "ok" ) 
-         }
-           else console.log( "not ok" )
-         
-
+          model.userData.currentSession.correctAnswers.push(this);
+          console.log(model.userData.currentSession.score()) 
+        } else 
+          model.userData.currentSession.incorrectAnswers.push(this);
+          console.log( model.userData.currentSession.incorrectAnswers );
       },
 
       
