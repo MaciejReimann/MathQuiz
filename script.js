@@ -190,7 +190,13 @@ const controller = {
     }
   },
   displayEquationIn: function(parentEl, el) {
-    for (let i = 0; i < el.length; i ++) { parentEl.appendChild(el[i]) }
+    const equationParagraph = this.createEl("DIV", "equationParagraph");
+    view.equations.push(equationParagraph);
+
+    for (let i = 0; i < el.length; i ++) { 
+      parentEl.appendChild(equationParagraph);
+      equationParagraph.appendChild(el[i])
+    };
   },
 
   scenarios: {
@@ -205,24 +211,27 @@ const controller = {
 }
 
 const view = {
+
   main: document.querySelector('.main'),
-  equationParagraph: document.querySelector('.equationParagraph'),
+  equations: [],
+  // equationParagraph: document.getElementsByClassName('.equationParagraph'),
   input: document.getElementsByTagName('INPUT'),
 // equationParagraph: controller.createEl("DIV", "equationParagraph" )
 
   init: function () {
     
     this.render();
-    this.events()
+   
   },
   counter: function() {return controller.number().counter },
 
   render: function() {
-    controller.displayEquationIn( view.equationParagraph, controller.createEquation().leftHand().blankThird() );
+    controller.displayEquationIn( view.main, controller.createEquation().leftHand().blankThird() );
+    this.events()
     view.input[view.counter()].focus();
   },
   events: function() {
-    view.equationParagraph.addEventListener("keypress", function(e) {
+      view.equations[view.counter()].addEventListener("keypress", function(e) {
       let key = e.keyCode;
       if (key === 13) {
         // console.log("pressed")
