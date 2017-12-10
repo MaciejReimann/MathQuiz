@@ -225,10 +225,39 @@ const view = {
   },
   counter: function() {return controller.number().counter },
 
+  maxLinesOnPage: 7,
+  equationsOnPage: function(n) { 
+    return {
+      max: n,
+      currently: view.main.children.length,
+    };
+  },
+  page: function() {
+    const allElements = view.main.children;
+    return {
+      clear: function() {
+        if (view.main.children) {
+          for (let i = allElements.length-1; i >= 0; i--) {
+            view.main.removeChild( allElements[i] )
+          }
+        
+        };
+      },
+
+    };
+  },
+
   render: function() {
-    controller.displayEquationIn( view.main, controller.createEquation().leftHand().blankThird() );
-    this.events()
-    view.input[view.counter()].focus();
+    if (view.equationsOnPage(7).currently < view.equationsOnPage(7).max) {
+      
+      controller.displayEquationIn(view.main, controller.createEquation().leftHand().blankThird() );
+      this.events();
+      view.input[view.counter()].focus();
+    } else if (view.equationsOnPage(7).currently = view.equationsOnPage(7).max) {
+      console.log("not ok")
+      this.page().clear();
+    };
+    
   },
   events: function() {
       view.equations[view.counter()].addEventListener("keypress", function(e) {
