@@ -92,7 +92,7 @@ const model = {
     currentSession: {
       correctAnswers: [],
       incorrectAnswers: [],
-      score: function() {
+      getScore: function() {
         return this.correctAnswers.length * 2;
       }
     },
@@ -104,6 +104,10 @@ const controller = {
   init: function() {
     model.init();
     view.init();
+  },
+  getScore: function() {return model.userData.currentSession.getScore() },
+  setScore: function() {
+
   },
   
   number: function() {
@@ -124,10 +128,10 @@ const controller = {
         const correctAnswer = this[controller.correctAnswer.is];
         if (answer === correctAnswer) {
           model.userData.currentSession.correctAnswers.push(this);
-          console.log(model.userData.currentSession.score()) 
+          
         } else 
           model.userData.currentSession.incorrectAnswers.push(this);
-          console.log( model.userData.currentSession.incorrectAnswers );
+          
       },
 
       
@@ -213,6 +217,21 @@ const controller = {
 const view = {
 
   main: document.querySelector('.main'),
+
+  score: {
+    el: document.querySelector('.score'),
+    render: function() {
+      let score = controller.getScore()
+      this.clear();
+      this.el.appendChild( controller.createEl("DIV", "scoreDiv", score) )
+    },
+    clear: function() {
+      if (this.el.children.length > 0) {
+        this.el.removeChild( this.el.firstElementChild );
+      }
+    },    
+  },
+
   equations: [],
   // equationParagraph: document.getElementsByClassName('.equationParagraph'),
   input: document.getElementsByTagName('INPUT'),
@@ -221,6 +240,7 @@ const view = {
   init: function () {
     
     this.render();
+    this.score.render();
    
   },
   counter: function() {return controller.number().counter },
@@ -268,6 +288,8 @@ const view = {
         controller.number().checkAnswer(view.input[view.counter()].value)       
         model.allEquations.shuffled.getNextElement()
         view.render()
+        view.score.render();
+
       };
     });
   },
