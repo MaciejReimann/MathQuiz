@@ -128,19 +128,14 @@ const controller = {
         const correctAnswer = this[controller.correctAnswer.is];
         if (answer === correctAnswer) {
           model.userData.currentSession.correctAnswers.push(this);
-          
         } else 
           model.userData.currentSession.incorrectAnswers.push(this);
-          
       },
-
       
      };
   },
-  
-  
 
-  createEquation: function() {
+  equationType: function() {
     const inputIsExpected = this.inputIsExpected;
     const createEl = this.createEl;
     let number = this.number;
@@ -193,16 +188,7 @@ const controller = {
       },
     }
   },
-  displayEquationIn: function(parentEl, el) {
-    const equationParagraph = this.createEl("DIV", "equationParagraph");
-    view.equations.push(equationParagraph);
-
-    for (let i = 0; i < el.length; i ++) { 
-      parentEl.appendChild(equationParagraph);
-      equationParagraph.appendChild(el[i])
-    };
-  },
-
+  
   scenarios: {
 
   },
@@ -215,85 +201,87 @@ const controller = {
 }
 
 const view = {
+  init: function () {    
+    this.equations.render();
+    this.score.render();   
+  },
 
   main: document.querySelector('.main'),
+  
 
   score: {
-    el: document.querySelector('.score'),
+    scoreParent: document.querySelector('.score'),
     render: function() {
       let score = controller.getScore()
       this.clear();
-      this.el.appendChild( controller.createEl("DIV", "scoreDiv", score) )
+      this.scoreParent.appendChild( controller.createEl("DIV", "scoreDiv", score) )
     },
     clear: function() {
-      if (this.el.children.length > 0) {
-        this.el.removeChild( this.el.firstElementChild );
-      }
+      if (this.scoreParent.children.length > 0) {
+        this.scoreParent.removeChild( this.scoreParent.firstElementChild );
+      };
     },    
   },
 
-  equations: [],
-  // equationParagraph: document.getElementsByClassName('.equationParagraph'),
-  input: document.getElementsByTagName('INPUT'),
-// equationParagraph: controller.createEl("DIV", "equationParagraph" )
-
-  init: function () {
-    
-    this.render();
-    this.score.render();
-   
-  },
-  counter: function() {return controller.number().counter },
-
-  maxLinesOnPage: 7,
-  equationsOnPage: function(n) { 
-    return {
-      max: n,
-      currently: view.main.children.length,
-    };
-  },
-  page: function() {
-    const allElements = view.main.children;
-    return {
-      clear: function() {
-        if (view.main.children) {
-          for (let i = allElements.length-1; i >= 0; i--) {
-            view.main.removeChild( allElements[i] )
-          }
-        
-        };
-      },
-
-    };
-  },
-
-  render: function() {
-    if (view.equationsOnPage(7).currently < view.equationsOnPage(7).max) {
-      
-      controller.displayEquationIn(view.main, controller.createEquation().leftHand().blankThird() );
-      this.events();
-      view.input[view.counter()].focus();
-    } else if (view.equationsOnPage(7).currently = view.equationsOnPage(7).max) {
-      console.log("not ok")
-      this.page().clear();
-    };
-    
-  },
-  events: function() {
-      view.equations[view.counter()].addEventListener("keypress", function(e) {
-      let key = e.keyCode;
-      if (key === 13) {
-        // console.log("pressed")
-        // console.log(view.input[0].value)
-        controller.number().checkAnswer(view.input[view.counter()].value)       
-        model.allEquations.shuffled.getNextElement()
-        view.render()
-        view.score.render();
-
+  equations: {
+    inputFields: document.getElementsByTagName('INPUT'),
+    array: [],
+    onPage: function() { 
+      return {
+        maxAllowed: 7,
+        currentlyDisplayed: view.main.children.length,
       };
-    });
+    },
+    counter: function() {return controller.number().counter },
+    displayOne: function(equationType) {
+      const equationParagraph = controller.createEl("DIV", "equationParagraph");
+      this.array.push(equationParagraph);
+      for (let i = 0; i < equationType.length; i ++) {
+        view.main.appendChild(equationParagraph);
+        equationParagraph.appendChild(equationType[i])
+      };
+    },
+    render: function() {
+      const currentlyDisplayed = this.onPage().currentlyDisplayed;
+      const maxAllowed= this.onPage().maxAllowed;
+      if (currentlyDisplayed < maxAllowed) {      
+        this.displayOne( controller.equationType().leftHand().blankThird() );
+        this.events();
+        this.inputFields[this.counter()].focus();
+      } else if (currentlyDisplayed === maxAllowed) {
+        console.log("CLEARED!")
+        this.clearAll();
+      };  
+    },
+    clearAll: function() {
+      const allElements = this.array;
+      const main = view.main;
+      if (view.main.children) {
+        for (let i = allElements.length-1; i >= 0; i--) {
+          main.removeChild( allElements[i] )
+        };        
+      };
+    },
+    update: function() {
+      model.allEquations.shuffled.getNextElement();
+      this.render();
+      view.score.render();
+    },
+    events: function() {
+      let n = this.counter();
+      const inputFields = this.inputFields;
+      this.array[ n ].addEventListener("keypress", function(e) {
+        let key = e.keyCode;
+        if (key === 13) {
+          controller.number().checkAnswer(inputFields[ n ].value);
+          view.equations.update();
+        };
+      });
+   },
+
   },
-}
+
+};
 
 controller.init();
 
