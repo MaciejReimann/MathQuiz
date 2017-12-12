@@ -136,10 +136,9 @@ const controller = {
   },
 
   equationType: function() {
-    const inputIsExpected = this.inputIsExpected;
     const createEl = this.createEl;
     let number = this.number;
-    let blankNumber = 0;
+    const inputField = this.createEl("input", "equationElements");
     const equationArray = [
     this.createEl ("div", "equationElements", this.number().x ),
     this.createEl ("div", "equationElements", "x"),
@@ -152,13 +151,13 @@ const controller = {
       leftHand: function() {
         return {
           blankFirst: function() {
-            equationArray[0] = createEl ("input", "equationElements");
+            equationArray[0] = inputField;
             equationArray[4] = createEl ("div", "equationElements", number().z );
             controller.correctAnswer = Object.create( { is : "x" } );
             return equationArray;
           },
           blankSecond: function() {
-            equationArray[2] = createEl ("input", "equationElements");
+            equationArray[2] = inputField;
             equationArray[4] = createEl ("div", "equationElements", number().z );
             controller.correctAnswer = Object.create( { is : "y" });
             return equationArray;
@@ -175,14 +174,14 @@ const controller = {
         equationArray[3] = createEl("div", "equationElements", "x" );
         equationArray[4] = createEl ("div", "equationElements", number().x );
         if (n === "blankFirst") {
-            equationArray[0] = createEl ("input", "equationElements");
+            equationArray[0] = inputField;
             (function() { controller.correctAnswer = Object.create( { is : "z" } )   })()
         };
         if (n === "blankSecond") { 
-            equationArray[2] = createEl ("input", "equationElements" );            
+            equationArray[2] = inputField;            
             (function() { controller.correctAnswer = Object.create( { is : "y" } )   })()
         } else
-            equationArray[4] = createEl ("input", "equationElements" );
+            equationArray[4] = inputField;
             (function() { controller.correctAnswer = Object.create( { is : "x" } )   })()
         return equationArray;
       },
@@ -206,8 +205,7 @@ const view = {
     this.score.render();   
   },
 
-  main: document.querySelector('.main'),
-  
+  main: document.querySelector('.main'),  
 
   score: {
     scoreParent: document.querySelector('.score'),
