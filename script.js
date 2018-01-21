@@ -33,9 +33,9 @@ const naturalNumbers = {
       }
     for (key in arrayOfPairs) {
       let obj = {};
-      obj.valueX = arrayOfPairs[key][0];
-      obj.valueY = arrayOfPairs[key][1];
-      obj.valueZ =  obj.valueX * obj.valueY;
+      obj.x = arrayOfPairs[key][0];
+      obj.y = arrayOfPairs[key][1];
+      obj.z =  obj.x * obj.y;
       obj.inputPosition = "";
       arrayOfEquations.push( obj );
     }
@@ -51,14 +51,14 @@ const naturalNumbers = {
  
 };
 
-const ShuffledEquations = function() {
-  const allShuffled = naturalNumbers.allPairsShuffled();
+const ShuffledEquations = function(array) {
+  const allShuffled = array; 
   let globalIndex = 0; 
   let tempIndex = 0;
 
   this.getAll = function() {return allShuffled };
   this.getOne = function(n) {return allShuffled [n] };
-  this.generateNew = function() {return naturalNumbers.allPairsShuffled()}
+  // this.generateNew = function() {return naturalNumbers.allPairsShuffled()}
 
   this.setGlobalCurrent = function(n) { globalIndex = n }
   this.setNextAsGlobalCurrent = function() { globalIndex ++; }
@@ -91,10 +91,28 @@ const Score = function(initialValue) {
   // this.getBaseFrom = function(n) { localBase = n }; // How to define parameteras an anonymous function?""
 };
 
-const StoredNumber = function() {
+const StoredValue = function() {
   let number = 0;
-  this.set = function(n) { number = n };
+  this.set = function(n) { 
+    number = n;
+    return number
+  };
   this.get = function() { return number};
+};
+
+const Array2D = function() {
+  let topLevelArrays = new Array;
+  topLevelArrays.push(new Array)
+  // this.addTopLevelArray = function() {
+       
+  // };
+  this.addItem = function(n, item) {
+    topLevelArrays[n].push(item);
+  };
+  this.getArray = function() {
+    // this.topLevelArrays[n] = new Array;
+    return topLevelArrays;
+  };
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -102,15 +120,17 @@ const StoredNumber = function() {
 ////////////////////////////////////////////////////////////////////////////////////////
 
 const model = {
-  init: function() {},
-  equations: new ShuffledEquations(),
-
+  init: function() {
+   
+  },
   userData: {
+      currentArray: new StoredValue(),
       answers: {
         correct: [],
-        incorrect: []
+        incorrect: new Array2D(),
+        batch: 0,
       },
-      score: new StoredNumber(),
+      score: new StoredValue(),
     },
 
 
@@ -123,166 +143,169 @@ const controller = {
   init: function() {
       model.init();
       view.init();
-
   },
   score: new Score(),
   scoreSave: function() {
     let currentScore = this.score.getGlobal();
     model.userData.score.set( currentScore );
   },
-
   counter: new Counter( model.userData.score.get()  ), 
+  
 
   equations: {
-    distributeEvenly: function(array) {
+    // shuffledArray: function(n) { return new ShuffledEquations() } (naturalNumbers.allPairsShuffled() ) ,
+    shuffledArray:  function() {return new ShuffledEquations ( naturalNumbers.allPairsShuffled() ) } ,
+    batch: 0,
+    number: function() {
+      const batch = this.batch;
+      return {
+        x: controller.equations.shuffledArray().getGlobalCurrent().x,
+        y: controller.equations.shuffledArray().getGlobalCurrent().y,
+        z: controller.equations.shuffledArray().getGlobalCurrent().z,
+        inputPosition: controller.equations.shuffledArray().getGlobalCurrent().inputPosition,
+        checkAnswer: function(inputValue) {
+          const answer = parseInt(inputValue);
+          const correctAnswer = this[this.inputPosition];
+          if (answer === correctAnswer) {
+            model.userData.answers.correct.push(this);
+            controller.score.strikeIncrement()
+            controller.score.globalIncrement()
+          } else {
+            model.userData.answers.incorrect.addItem( batch, this) ;
+            controller.score.strikeReset()
+          };
+          controller.scoreSave();
+        },    
+      };
+    },
+    type: function() {
+      let number = this.number;
+      const createEl = controller.createEl;
+      const inputField = createEl("input", "equationElements");
+      const equationArray = [
+        createEl ("div", "equationElements", this.number().x ),
+        createEl ("div", "equationElements", "x"),
+        createEl ("div", "equationElements", this.number().y ),
+        createEl ("div", "equationElements", "=" ),
+        createEl ("input", "input"),
+      ];    
+      return {
+        leftHand: function() { // x * y = z
+          return {
+            blankFirst: function() {
+              equationArray[0] = inputField;
+              equationArray[4] = createEl ("div", "equationElements",  number().z );
+              controller.equations.shuffledArray().getAll()[ controller.counter.getLocal() ].inputPosition = "x";
+              controller.counter.incrementLocal();
+              return equationArray;
+            },
+            blankSecond: function() {
+              equationArray[2] = inputField;
+              equationArray[4] = createEl ("div", "equationElements",  number().z );
+              controller.equations.shuffledArray().getAll()[controller.counter.getLocal()].inputPosition = "y";
+              controller.counter.incrementLocal();
+              return equationArray;
+            },
+            blankThird: function() {
+              controller.equations.shuffledArray().getAll()[controller.counter.getLocal()].inputPosition = "z";
+              controller.counter.incrementLocal();
+              return equationArray;
+            },
+          };
+        },
+        rightHand: function(n) { // z = y * x
+          equationArray[0] = createEl("div", "equationElements",  number().z );
+          equationArray[1] = createEl("div", "equationElements", "=" );
+          equationArray[2] = createEl("div", "equationElements", number().y );
+          equationArray[3] = createEl("div", "equationElements", "x" );
+          equationArray[4] = inputField;
+          return {
+            blankFirst: function() {
+              equationArray[0] = inputField;
+              equationArray[4] = createEl ("div", "equationElements",  number().x );
+              controller.equations.shuffledArray().getAll()[ controller.counter.getLocal() ].inputPosition = "z";    
+              controller.counter.incrementLocal();
+              return equationArray;
+            },
+            blankSecond: function() {
+              equationArray[2] = inputField;
+              equationArray[4] = createEl ("div", "equationElements",  number().x );
+              controller.equations.shuffledArray().getAll()[ controller.counter.getLocal() ].inputPosition = "y";
+              controller.counter.incrementLocal();
+              return equationArray;
+            },
+            blankThird: function() {
+              controller.equations.shuffledArray().getAll()[ controller.counter.getLocal() ].inputPosition = "x";
+              controller.counter.incrementLocal();
+              return equationArray;
+            },
+          };
+        },
+      };    
+    },
+    wrapInParagraph: function(equationType) {
+      const equationParagraph = controller.createEl("DIV", "equationParagraph");
+      for (let i = 0; i < equationType.length; i ++) {           
+        equationParagraph.appendChild( equationType[i] );
+      };
+      return equationParagraph;
+    },
+    display: function(listOfSixParameters) {
+      const listOfEquations = []
+      const a = listOfSixParameters[0];
+      const b = listOfSixParameters[1];
+      const c = listOfSixParameters[2];
+      const d = listOfSixParameters[3];
+      const e = listOfSixParameters[4];
+      const f = listOfSixParameters[5];
+      for (let i = 0; i < a; i ++) {
+        listOfEquations[i] = this.wrapInParagraph( this.type().leftHand().blankThird() );
+        this.shuffledArray().setNextAsGlobalCurrent();
+      };
+      for (let i = a; i < a + b; i ++) {
+        listOfEquations[i] = this.wrapInParagraph( this.type().leftHand().blankFirst() );
+        this.shuffledArray().setNextAsGlobalCurrent();
+      };
+      for (let i = b + a; i < a + b + c; i ++) {
+        listOfEquations[i] = this.wrapInParagraph( this.type().leftHand().blankSecond() );
+        this.shuffledArray().setNextAsGlobalCurrent();
+      };
+      for (let i = c + b + a; i < a + b + c + d; i ++) {
+        listOfEquations[i] = this.wrapInParagraph( this.type().rightHand().blankThird() );
+        this.shuffledArray().setNextAsGlobalCurrent();
+      };
+      for (let i = d + c + b + a; i < a + b + c + d + e; i ++) {
+        listOfEquations[i] = this.wrapInParagraph( this.type().rightHand().blankSecond() );
+        this.shuffledArray().setNextAsGlobalCurrent();
+      };
+      for (let i = e + d + c + b + a; i < a + b + c + d + e + f; i ++) {
+        listOfEquations[i] = this.wrapInParagraph( this.type().rightHand().blankFirst() );
+        this.shuffledArray().setNextAsGlobalCurrent();
+      };
+      this.shuffledArray().setGlobalCurrent(0);
+      controller.counter.setLocal(0);
+      return listOfEquations;
+    },
+    distributeEvenly: function(number) {
       let list = new Array;
-      let quotient = Math.floor(array.length / 5);
-      let remainder = array.length % 5;
+      let quotient = Math.floor( number / 5 );
+      let remainder = number % 5;
       for (let i = 0; i < 5; i ++ ) {
         list [ i ] = quotient;
       }
-      list[5] = remainder;     
-      // list = [2,2,2,2,2,2]
-      return list;
+        list[5] = remainder;     
+        // distrubuteEvenly (number v array.length ) returns list = [16, 16, 16, 16, 16, 1];
+        return list;
     },
-    number: function() {
-    return {
-      x: model.equations.getGlobalCurrent().valueX,
-      y: model.equations.getGlobalCurrent().valueY,
-      z: model.equations.getGlobalCurrent().valueZ,
-      inputPosition: model.equations.getGlobalCurrent().inputPosition,
-      checkAnswer: function(inputValue) {
-        const answer = parseInt(inputValue);
-        const correctAnswer = this[this.inputPosition];
-        if (answer === correctAnswer) {
-          model.userData.answers.correct.push(this);
-          controller.score.strikeIncrement()
-          controller.score.globalIncrement()
-        } else {
-          model.userData.answers.incorrect.push(this);
-          controller.score.strikeReset()
-        };
-        controller.scoreSave();
-      },    
-     };
-  },
-  type: function() {
-    let number = this.number;
-    const createEl = controller.createEl;
-    const inputField = createEl("input", "equationElements");
-    const equationArray = [
-      createEl ("div", "equationElements", this.number().x ),
-      createEl ("div", "equationElements", "x"),
-      createEl ("div", "equationElements", this.number().y ),
-      createEl ("div", "equationElements", "=" ),
-      createEl ("input", "input"),
-    ];    
-    return {
-      leftHand: function() { // x * y = z
-        return {
-          blankFirst: function() {
-            equationArray[0] = inputField;
-            equationArray[4] = createEl ("div", "equationElements",  number().z );
-            model.equations.getAll()[ controller.counter.getLocal() ].inputPosition = "x";
-            controller.counter.incrementLocal();
-            return equationArray;
-          },
-          blankSecond: function() {
-            equationArray[2] = inputField;
-            equationArray[4] = createEl ("div", "equationElements",  number().z );
-            model.equations.getAll()[controller.counter.getLocal()].inputPosition = "y";
-            controller.counter.incrementLocal();
-            return equationArray;
-          },
-          blankThird: function() {
-            model.equations.getAll()[controller.counter.getLocal()].inputPosition = "z";
-            controller.counter.incrementLocal();
-            return equationArray;
-          },
-        };
-      },
-      rightHand: function(n) { // z = y * x
-        equationArray[0] = createEl("div", "equationElements",  number().z );
-        equationArray[1] = createEl("div", "equationElements", "=" );
-        equationArray[2] = createEl("div", "equationElements", number().y );
-        equationArray[3] = createEl("div", "equationElements", "x" );
-        equationArray[4] = inputField;
-        return {
-          blankFirst: function() {
-            equationArray[0] = inputField;
-            equationArray[4] = createEl ("div", "equationElements",  number().x );
-            model.equations.getAll()[ controller.counter.getLocal() ].inputPosition = "z";    
-            controller.counter.incrementLocal();
-            return equationArray;
-          },
-          blankSecond: function() {
-            equationArray[2] = inputField;
-            equationArray[4] = createEl ("div", "equationElements",  number().x );
-            model.equations.getAll()[ controller.counter.getLocal() ].inputPosition = "y";
-            controller.counter.incrementLocal();
-            return equationArray;
-          },
-          blankThird: function() {
-            model.equations.getAll()[ controller.counter.getLocal() ].inputPosition = "x";
-            controller.counter.incrementLocal();
-            return equationArray;
-          },
-        };
-      },
-    };    
-  },
-  wrapInParagraph: function(equationType) {
-    const equationParagraph = controller.createEl("DIV", "equationParagraph");
-    for (let i = 0; i < equationType.length; i ++) {           
-      equationParagraph.appendChild( equationType[i] );
-    };
-    return equationParagraph;
-  },
-  display: function(listOfSixParameters) {
-    const listOfEquations = []
-    const a = listOfSixParameters[0];
-    const b = listOfSixParameters[1];
-    const c = listOfSixParameters[2];
-    const d = listOfSixParameters[3];
-    const e = listOfSixParameters[4];
-    const f = listOfSixParameters[5];
-    for (let i = 0; i < a; i ++) {
-      listOfEquations[i] = this.wrapInParagraph( this.type().leftHand().blankThird() );
-      model.equations.setNextAsGlobalCurrent();
-    };
-    for (let i = a; i < a + b; i ++) {
-      listOfEquations[i] = this.wrapInParagraph( this.type().leftHand().blankFirst() );
-      model.equations.setNextAsGlobalCurrent();
-    };
-    for (let i = b + a; i < a + b + c; i ++) {
-      listOfEquations[i] = this.wrapInParagraph( this.type().leftHand().blankSecond() );
-      model.equations.setNextAsGlobalCurrent();
-    };
-    for (let i = c + b + a; i < a + b + c + d; i ++) {
-      listOfEquations[i] = this.wrapInParagraph( this.type().rightHand().blankThird() );
-      model.equations.setNextAsGlobalCurrent();
-    };
-    for (let i = d + c + b + a; i < a + b + c + d + e; i ++) {
-      listOfEquations[i] = this.wrapInParagraph( this.type().rightHand().blankSecond() );
-      model.equations.setNextAsGlobalCurrent();
-    };
-    for (let i = e + d + c + b + a; i < a + b + c + d + e + f; i ++) {
-      listOfEquations[i] = this.wrapInParagraph( this.type().rightHand().blankFirst() );
-      model.equations.setNextAsGlobalCurrent();
-    };
-    model.equations.setGlobalCurrent(0);
-    controller.counter.setLocal(0);
-    return listOfEquations;
+
   },
 
- },
-  
-  createEl: function(tag, className, textContent) {
-    const newElement = document.createElement(tag);
-    newElement.className = className;
-    newElement.textContent = textContent;
-    return newElement;
-  },
+    createEl: function(tag, className, textContent) {
+      const newElement = document.createElement(tag);
+      newElement.className = className;
+      newElement.textContent = textContent;
+      return newElement;
+    },
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -314,15 +337,17 @@ const view =  {
 
   equations: {
     inputFields: document.getElementsByTagName('INPUT'),
-    list: controller.equations.display(controller.equations.distributeEvenly( model.equations.getAll() ) ),
+    list: controller.equations.display ( controller.equations.distributeEvenly( controller.equations.shuffledArray().getAll().length ) ),
     counter: controller.counter,
+    toDisplay: 7,
+    // controller.equations.shuffledArray().getAll().length,
     maxAllowed: 7,
+    pageCount: 0,
     render: function() {
-      // console.log( controller.correctAnswer.is );
-      console.log( this.counter.getLocal() )
-      let batch = view.equations.counter.getGlobal() * this.maxAllowed;
+      const list = this.list
+      let batch = this.pageCount * this.maxAllowed;
       if (this.counter.getLocal() === this.maxAllowed - 1) {
-        this.counter.incrementGlobal();
+        this.pageCount ++ ;
       };
       if (this.counter.getLocal() === this.maxAllowed) {
         this.clearAll();
@@ -331,8 +356,9 @@ const view =  {
       if (this.counter.getLocal() >= 0 && this.counter.getLocal() < this.maxAllowed ) {
         this.clearAll();
         this.counter.incrementLocal();
+        this.counter.incrementGlobal();
         for (let i = batch ; i < this.counter.getLocal() + batch ; i ++ ) {
-            view.main.appendChild( this.list[ i ] );          
+            view.main.appendChild( list[ i ] );          
         };
       };
       this.inputFieldEvents( this.counter.getLocal() );      
@@ -346,8 +372,29 @@ const view =  {
       };
     },
     update: function() {
-      model.equations.setNextAsGlobalCurrent()
-      view.render();
+      if (this.counter.getGlobal() === 75 ) { console.log ("75!!!!!!!!!!!!!!11") }
+      if ( this.counter.getGlobal() < this.toDisplay ) {
+        controller.equations.shuffledArray().setNextAsGlobalCurrent();
+        view.render();
+      } else {
+        console.log ("finished!!!!!!!!!!!!!!!")
+        controller.equations.shuffledArray = function() { return new ShuffledEquations( model.userData.answers.incorrect ) } ;
+        controller.counter.setGlobal(0)
+        controller.counter.setLocal(0)
+        view.equations.list = controller.equations.display ( controller.equations.distributeEvenly( controller.equations.shuffledArray().getAll().length ) );
+
+         // controller.counter.setGlobal(0)
+         // controller.counter.setLocal(0)
+         // 
+         // view.equations.list = controller.equations.display ( controller.equations.distributeEvenly( controller.equations.shuffledArray.getAll().length ) );
+         // view.equations.inputFields = document.getElementsByTagName('INPUT');
+         // counter = controller.counter;
+         // toDisplay = controller.equations.shuffledArray.getAll().length;
+
+         
+         view.render();
+      }; 
+      
     },
     
     inputFieldEvents: function(i) {
