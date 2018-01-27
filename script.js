@@ -1,59 +1,34 @@
 
+const Equation = function(i, j) {
+  this.x = i;
+  this.y = j;
+  this.z = i * j;
+  this.inputPosition = "";
+};
 
-const naturalNumbers = {
-  getRandomOfRange: function(min,max) { 
-    return Math.floor(Math.random() * (max + 1 - min) ) + min 
-  },
-  getAll: function() {
-    const array = [];
-    for (let i = 1; i < 10 ; i++) { array[i-1] = i };
-    return array;
-  },
-  shuffle: function(array) {   
-   for (var i = array.length - 1; i > 0; i--) {
-        var j = Math.floor(Math.random() * (i + 1));
-        var temp = array[i];
+const shuffle = function(array) {   
+   for (let i = array.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        let temp = array[i];
         array[i] = array[j];
         array[j] = temp;
     }
-    return array;
-  },
-  getAllShuffled: function() {
-    return this.shuffle( this.getAll() )
-  },
-  allPaired: function() {
-    const arrayOfPairs = []; 
-    const arrayOfEquations = [];
-    for (let i = 1; i < 10; i++ ) {       
-      for (let j = 1; j < 10; j++ ) {
-          let pair = [];
-          pair.push(i)
-          pair.push(j)
-          arrayOfPairs.push(pair)
-        }
-      }
-    for (key in arrayOfPairs) {
-      let obj = {};
-      obj.x = arrayOfPairs[key][0];
-      obj.y = arrayOfPairs[key][1];
-      obj.z =  obj.x * obj.y;
-      obj.inputPosition = "";
-      arrayOfEquations.push( obj );
-    }
-    return arrayOfEquations;
-  },
-  allPairsShuffled: function() {
-    const newArray = this.shuffle( this.allPaired() )
-    for (let i = 0; i < newArray.length; i++) {
-      newArray[i].index = i;
-    };
-    return newArray;
-  },
- 
+  return array;
 };
 
-const ShuffledEquations = function(array) {
-  const allShuffled = array;
+const ArrayOfEquations = function() {
+  const array = new Array();
+  for (let i = 1; i < 10; i++ ) {       
+    for (let j = 1; j < 10; j++ ) {
+      let equation = new Equation(i, j);
+      array.push(equation);
+    };
+  };
+  this.get = function() { return array };
+};
+
+const ShuffledArrayOfEquations = function(array) {
+  const allShuffled = shuffle(array);
   let globalIndex = 0; 
   let tempIndex = 0;
 
@@ -100,7 +75,6 @@ const StoredNumber = function() {
 
 const Array2D = function() {
   let topLevelArrays = new Array;
-  // topLevelArrays.push(new Array)
   this.addTopLevelArray = function() {
     topLevelArrays.push(new Array)
   };
@@ -118,7 +92,7 @@ const Array2D = function() {
 
 const model = {
   init: function() {},
-  equations: new ShuffledEquations( naturalNumbers.allPairsShuffled() ),
+  equations: new ShuffledArrayOfEquations( new ArrayOfEquations().get() ),
 
   userData: {
       answers: {
@@ -388,7 +362,7 @@ const view =  {
       controller.counter.setGlobal(0);
       controller.counter.setLocal(0);
       view.equations.pageCounter.setLocal(0);
-      model.equations = new ShuffledEquations( model.userData.answers.incorrect.getArray( batchCounter ) );
+      model.equations = new ShuffledArrayOfEquations( model.userData.answers.incorrect.getArray( batchCounter ) );
       this.list = controller.generateList();
       model.equations.setGlobalCurrent(-1);
       console.log(  model.userData.answers.incorrect.getArray( batchCounter ) )
