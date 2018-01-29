@@ -317,7 +317,8 @@ const view =  {
     // this.equations.render();
     this.score.render();   
     // this.table.showAllFilled()
-    this.table.drawFilled();
+    // this.table.drawFilled();
+    this.table.withInputFields();
   },
   score: {
     scoreParent: document.querySelector('.score'),
@@ -410,6 +411,8 @@ const view =  {
     },
   },
   table: {
+    inputFields: function() {return document.getElementsByTagName('INPUT')} ,
+    // document.getElementsByTagName('INPUT'),
     parentEl: createEl("div", "table"),
     array: function() {
       const arrayOfEquations = new ArrayOfEquations();
@@ -438,27 +441,20 @@ const view =  {
         };        
       });
     },
-    showEmpty: function() {
-      
-    },
-
-      showAllEmpty: function() {
-       for (let i = 0; i < 10 ; i++) {
-        for (let j = 0; j < 10 ; j++) {
-          table[i][j] = function () {
-            const square = basic.createAndAppendEl(mainElements.table, "div");
-            square.id = i + 'n' + j;
-              if (i=== 0 || j === 0) {        
-              square.textContent = (i+1) * (j+1);
-              square.className = "first-rows";
-            } else { 
-              square.className = "the-rest";
-              const inputfields = basic.createAndAppendEl(square, "input");
-//              inputfields.className = "input-fields";
-            };
-          }();
+    withInputFields: function() {
+      const parentEl = view.main.appendChild(this.parentEl);
+      const incorrectAnswers = model.userData.answers.incorrect.getArray(0)
+      this.array().map(function(value) {
+        if (value.x === 1 || value.y === 1 ) { 
+            const square = createEl("div", "first-rows", value.z );
+            parentEl.appendChild(square);
+        } else {
+          const square = createEl("div", "first-rows");
+          parentEl.appendChild(square);
+          const inputfields = createEl("input", "input-fields" );
+          square.appendChild(inputfields);
         };
-      };
+      });
     },
 
   },
