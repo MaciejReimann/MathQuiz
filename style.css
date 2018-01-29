@@ -1,163 +1,156 @@
 
-body {
+  body {
+      text-align: center;
+      font-family: 'Source Code Pro', monospace;
+      font-weight: 400;    
+      margin: 0;
+      }
+
+  /**************  GRID  **************/ 
+  .header { grid-area: header; }
+  .score { grid-area: score; }
+  .main { grid-area: main; }
+  .sidebar { grid-area: sidebar; }
+  .footer { grid-area: footer; }
+
+  .page {
+    display: grid; 
+    grid-template-columns: 250px 1fr 100px;
+    grid-template-rows: 100px 1fr 50px;
+    grid-template-areas: "header header score"
+                         "sidebar main main"
+                         "footer footer footer";
+   
+    height: 100vh;
+    max-width: 100vw;
+  }
+
+  .main {
+    justify-self: center;
+     align-self: center;
+  }
+
+  .score {
+     justify-self: center;
+     align-self: center;
+  }
+
+  .table {
+    display: grid;
+    grid-template-columns: 40px 40px 40px 40px 40px 40px 40px 40px 40px;
+    grid-template-rows: 40px 40px 40px 40px 40px 40px 40px 40px 40px;
+    grid-gap: 10px;
+   justify-content: center;
+  }
+
+  /**************  FLEX  **************/
+
+  .equationParagraph {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .score {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  /**************  CONTENT  **************/
+
+  header {
+      text-align: center; 
+      border: dashed 1px black;    
+  }
+
+  footer {
+      border: dashed 1px black;
+  }
+  footer p {
+      margin: 0;
+      padding: 5px;
+  }
+
+  .score {
+    height: 80px;
+    width: 80px;
+    border: solid 2px black;
+    font-size: 40px;
+  }
+
+  .sidebar {
+    border: dashed 1px black;
+  }
+
+/*         EQUATIONS              
+*/
+  .equationParagraph {
+    margin-top: 10px;
+    font-size: 40px;
+  }
+
+  .equationElements {
+    margin: 10px;
+  }
+
+   .equationParagraph input {
+    margin: 10px;
+    width: 40px;
+    height: 40px;
+    border: solid 1px black;
     text-align: center;
     font-family: 'Source Code Pro', monospace;
-    font-weight: 400;    
-    margin: 0;
-    }
+  }
 
-/**************  GRID  **************/ 
-.header { grid-area: header; }
-.score { grid-area: score; }
-.main { grid-area: main; }
-.sidebar { grid-area: sidebar; }
-.footer { grid-area: footer; }
-
-.page {
-  display: grid; 
-  grid-template-columns: 250px 1fr 100px;
-  grid-template-rows: 100px 1fr 50px;
-  grid-template-areas: "header header score"
-                       "sidebar main main"
-                       "footer footer footer";
- 
-  height: 100vh;
-  max-width: 100vw;
-}
-
-.main {
-  /*display: grid;
-  grid-template-rows: 1fr;
-  grid-template-columns: 1fr;
-  max-width: 300px*/
-  justify-self: center;
-}
-
-.score {
-   justify-self: center;
-   align-self: center;
-}
-
-
-/*#main=container {
-  display: grid;
-    grid-template-columns: 100px 1fr 100px;
-}
-
-#table {
-  display: grid;
-  grid-template-columns: 40px 40px 40px 40px 40px 40px 40px 40px 40px 40px;
-/*  grid-template-rows: 50px;
-/*  grid-gap: 4px;
-}*/
-
-/**************  FLEX  **************/
-
-.equationParagraph {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.score {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.sidebar {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-/**************  CONTENT  **************/
-
-header {
-    text-align: center; 
-    border: dashed 1px black;    
-}
-
-footer {
-    border: dashed 1px black;
-}
-footer p {
-    margin: 0;
-    padding: 5px;
-}
-
-.score {
-  height: 80px;
-  width: 80px;
-  border: solid 2px black;
-  font-size: 40px;
-}
-
-.sidebar {
-  border: dashed 1px black;
-}
-
-.equationParagraph {
-  margin-top: 10px;
-  font-size: 40px;
-}
-
-.equationElements {
-  margin: 10px;
-}
-
- .equationParagraph input {
-  margin: 10px;
-  width: 40px;
-  height: 40px;
-  border: solid 1px black;
-  text-align: center;
-  font-family: 'Source Code Pro', monospace;
-}
-
-
-
-/*#table {  
-  border: dashed 2px black;
-  padding: 30px;
-  
-  width: 500px; 
-  height: 500px; 
-  
-  font-weight: 300;  
-  font-size: 26px;
-  
-}
-
-.highlighted {
-  border: solid 2px black;
-}
-
-.the-rest {
-  text-align: center;
-  border: solid 1px black;
-  width: 40px; 
-  height: 40px; 
-  padding: 3px;
-}
-
-
-.first-rows {  
-  font-weight: 600;
-  border: solid 1px black;
-  width: 40px; 
-  height: 40px; 
-  padding: 3px;
-}*/
-
-
-
-
-/*input {
-  width: 30px;
-  border: solid 1px black;
-  text-align: center;
-  font-family: 'Source Code Pro', monospace;
-}
+/*            TABLE              
 */
+  .table {
+    border: dashed 2px black;
+    padding: 50px;
+    font-weight: 300;  
+    font-size: 26px;
+  }
+
+  .highlighted {
+    border: solid 2px black;
+  }
+
+  .the-rest {
+   /* padding: 4px 4px 4px 0px;*/
+    padding-top: 4px;
+    text-align: center;
+    border: solid 1px black;
+    width: 44px; 
+    height: 40px; 
+   /* padding: 3px;*/
+  }
+
+
+  .first-rows { 
+    padding-top: 4px;
+    /*padding: 4px 4px 4px 0px;*/
+    font-weight: 600;
+    border: solid 1px black;
+    width: 44px; 
+    height: 40px; 
+    /*padding: 3px;*/
+  }
+
+
+
+
+  /*input {
+    width: 30px;
+    border: solid 1px black;
+    text-align: center;
+    font-family: 'Source Code Pro', monospace;
+  }
+  */
