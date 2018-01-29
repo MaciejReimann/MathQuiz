@@ -1,4 +1,14 @@
 
+/*   
+1. Add validation: event fires only when a number b/w 1-81 is put;
+2. Add desactivatePreviousInputField: only the last one needs to be active;
+3. Add a message/instruction field;
+4. Add a side navigation bar;
+*/
+
+
+// recursion - the function that calls itself until it doesnt
+
 const Equation = function(i, j) {
   this.x = i;
   this.y = j;
@@ -84,7 +94,23 @@ const Array2D = function() {
   this.getArray = function(n) {
     return topLevelArrays[n];
   };
+  this.create = function(n, m) {
+    const array = new Array(n);
+    for (let i = 0; i < n ; i++) {
+        array[i] = new Array(m);
+    }
+    return array;
+  };
 };
+
+
+
+const createEl = function(tag, className, textContent) {
+    const newElement = document.createElement(tag);
+    newElement.className = className;
+    newElement.textContent = textContent;
+    return newElement;
+  };
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// *** M O D E L *** ///////////////////////////////////
@@ -115,10 +141,8 @@ const controller = {
   },
   score: new Score(),
   counter: new Counter(),
-  batchCounter: new Counter(),
-
   equations: {
-    
+    batchCounter: new Counter(),
     number: function() {
     return {
       x: model.equations.getGlobalCurrent().x,
@@ -133,7 +157,7 @@ const controller = {
           controller.score.strikeIncrement()
           controller.score.globalIncrement()
         } else {
-          model.userData.answers.incorrect.addItem(controller.batchCounter.getLocal(), this);
+          model.userData.answers.incorrect.addItem(controller.equations.batchCounter.getLocal(), this);
           controller.score.strikeReset()
         };
       },    
@@ -141,7 +165,7 @@ const controller = {
   },
   type: function() {
     let number = this.number;
-    const createEl = controller.createEl;
+    // const createEl = controller.createEl;
     const inputField = createEl("input", "equationElements");
     const equationArray = [
       createEl ("div", "equationElements", this.number().x ),
@@ -205,7 +229,7 @@ const controller = {
     };    
   },
   wrapInParagraph: function(equationType) {
-    const equationParagraph = controller.createEl("DIV", "equationParagraph");
+    const equationParagraph = createEl("DIV", "equationParagraph");
     for (let i = 0; i < equationType.length; i ++) {           
       equationParagraph.appendChild( equationType[i] );
     };
@@ -277,12 +301,7 @@ const controller = {
   const list = controller.equations.display( distributionPattern );
   return list;
  },
-  createEl: function(tag, className, textContent) {
-    const newElement = document.createElement(tag);
-    newElement.className = className;
-    newElement.textContent = textContent;
-    return newElement;
-  },
+  
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -295,15 +314,17 @@ const view =  {
     this.render()
   },
   render: function() {
-    this.equations.render();
+    // this.equations.render();
     this.score.render();   
+    // this.table.showAllFilled()
+    this.table.drawFilled();
   },
   score: {
     scoreParent: document.querySelector('.score'),
     render: function() {
       let score = controller.score.getGlobal()
       this.clear();
-      this.scoreParent.appendChild( controller.createEl("DIV", "scoreDiv", score) )
+      this.scoreParent.appendChild( createEl("DIV", "scoreDiv", score) )
     },
     clear: function() {
       if (this.scoreParent.children.length > 0) {
@@ -353,21 +374,22 @@ const view =  {
       if (this.counter.getGlobal() === this.batchLength() ) {
         this.startNewBatch() 
       };
-      model.equations.setNextAsGlobalCurrent();
+      if (this.batchLength === 0) {alert("proceed")} // TO NEXT PAGE
+      model.equations.setNextAsGlobalCurrent(); // MODEL
       console.log(  view.equations.pageCounter.getLocal() );
       view.render();       
     },
     startNewBatch: function() {
-      let batchCounter = controller.batchCounter.getLocal();      
+      let batchCounter = controller.equations.batchCounter.getLocal();      
       controller.counter.setGlobal(0);
       controller.counter.setLocal(0);
       view.equations.pageCounter.setLocal(0);
-      model.equations = new ShuffledArrayOfEquations( model.userData.answers.incorrect.getArray( batchCounter ) );
+      model.equations = new ShuffledArrayOfEquations( model.userData.answers.incorrect.getArray( batchCounter ) );  // MODEL
       this.list = controller.generateList();
-      model.equations.setGlobalCurrent(-1);
+      model.equations.setGlobalCurrent(-1);   // MODEL
       console.log(  model.userData.answers.incorrect.getArray( batchCounter ) )
       console.log(  model.equations.getAll() )
-      controller.batchCounter.incrementLocal();
+      controller.equations.batchCounter.incrementLocal();
     }, 
     
     inputFieldEvents: function(i) {
@@ -387,6 +409,60 @@ const view =  {
       });
     },
   },
+  table: {
+    parentEl: createEl("div", "table"),
+    array: function() {
+      const arrayOfEquations = new ArrayOfEquations();
+      return arrayOfEquations.get();
+    },   
+    test: function() {
+      const myArray = model.equations.getAll();
+      model.userData.answers.incorrect.addTopLevelArray(0)
+      model.userData.answers.incorrect.addItem(0, myArray[0])
+      model.userData.answers.incorrect.addItem(0, myArray[1])
+      model.userData.answers.incorrect.addItem(0, myArray[2])
+      return myArray
+    }(),
+
+    drawFilled: function() {
+      const parentEl = view.main.appendChild(this.parentEl);
+      const incorrectAnswers = model.userData.answers.incorrect.getArray(0)
+      this.array().map(function(value) {
+        const square = createEl("div", "equationElements", value.z );
+        parentEl.appendChild(square);
+        square.className = "the-rest";
+        for (let i = 0; i < incorrectAnswers.length; i ++ ) {
+          if (value.x ===  incorrectAnswers[i].x && value.y === incorrectAnswers[i].y ) { 
+            square.className = "first-rows" 
+          };
+        };        
+      });
+    },
+    showEmpty: function() {
+      
+    },
+
+      showAllEmpty: function() {
+       for (let i = 0; i < 10 ; i++) {
+        for (let j = 0; j < 10 ; j++) {
+          table[i][j] = function () {
+            const square = basic.createAndAppendEl(mainElements.table, "div");
+            square.id = i + 'n' + j;
+              if (i=== 0 || j === 0) {        
+              square.textContent = (i+1) * (j+1);
+              square.className = "first-rows";
+            } else { 
+              square.className = "the-rest";
+              const inputfields = basic.createAndAppendEl(square, "input");
+//              inputfields.className = "input-fields";
+            };
+          }();
+        };
+      };
+    },
+
+  },
+
 };
 
 controller.init()
