@@ -43,8 +43,10 @@ const ShuffledArrayOfEquations = function(array) {
   let tempIndex = 0;
 
   this.getAll = function() {return allShuffled };
-  this.getOne = function(n) {return allShuffled [n] };
-  this.generateNew = function() {return naturalNumbers.allPairsShuffled()}
+  // this.getOrdered = function() {return array  };
+
+  // this.getOne = function(n) {return allShuffled [n] };
+  // this.generateNew = function() {return naturalNumbers.allPairsShuffled()}
 
   this.setGlobalCurrent = function(n) { globalIndex = n }
   this.setNextAsGlobalCurrent = function() { globalIndex ++; }
@@ -455,9 +457,51 @@ const view =  {
           square.appendChild(inputfields);
         };
       });
+      this.events();
     },
-
+    events: function() {
+      let inputFields = this.inputFields();
+      inputFields[ 0 ].focus();
+      // if (i <= inputFields.length ) { 
+      //   inputFields [ this.counter.getLocal() - 1 ].focus();
+      // };
+      for (let i = 0; i < inputFields.length; i++) {
+        inputFields[ i ].addEventListener("keydown", function onEnter (e) {
+          let key = e.keyCode; // DEPRECATED !!!
+          if (key === 13) {
+          // controller.equations.number().checkAnswer(inputFields[ i-1 ].value);
+              console.log("ok")
+              inputFields[ i + 1 ].focus();
+          } else if (key === 39) {
+          // controller.equations.number().checkAnswer(inputFields[ i-1 ].value);
+              console.log("right")
+              inputFields[ i + 1 ].focus();
+          } else if (key === 37) {
+          // controller.equations.number().checkAnswer(inputFields[ i-1 ].value);
+              console.log("left")
+              inputFields[ i - 1 ].focus();
+          } else if (key === 38) {
+          // controller.equations.number().checkAnswer(inputFields[ i-1 ].value);
+              console.log("top")
+              inputFields[ i - 8 ].focus();
+          } else if (key === 40) {
+          // controller.equations.number().checkAnswer(inputFields[ i-1 ].value);
+              console.log("top")
+              inputFields[ i + 8 ].focus();
+          }
+        });
+      };
+    },
   },
+      
+          // if ( inputFields.length > 1) {
+          //   inputFields[ i-1 ].removeEventListener("keypress", onEnter);
+          // };
+
+      
+
+  
+
 
 };
 
