@@ -14,6 +14,7 @@ const Equation = function(i, j) {
   this.y = j;
   this.z = i * j;
   this.inputPosition = "";
+  this.index = (i-1).toString() + (j-1).toString();
 };
 
 const shuffle = function(array) {   
@@ -34,27 +35,32 @@ const ArrayOfEquations = function() {
       array.push(equation);
     };
   };
-  this.get = function() { return array };
+  return array;
 };
 
 const ShuffledArrayOfEquations = function(array) {
-  const allShuffled = shuffle(array);
+  if (array) {
+    this.array = array}
+  if (!array) {
+    this.array = new ArrayOfEquations;
+  };
+  
   let globalIndex = 0; 
   let tempIndex = 0;
 
-  this.getAll = function() {return allShuffled };
-  // this.getOrdered = function() {return array  };
+  this.getAll = function() {return shuffle(this.array) };
+  this.getOrdered = function() {return this.array  };
 
   // this.getOne = function(n) {return allShuffled [n] };
   // this.generateNew = function() {return naturalNumbers.allPairsShuffled()}
 
   this.setGlobalCurrent = function(n) { globalIndex = n }
   this.setNextAsGlobalCurrent = function() { globalIndex ++; }
-  this.getGlobalCurrent = function() {return allShuffled [ globalIndex ] };
+  this.getGlobalCurrent = function() {return shuffle(array) [ globalIndex ] };
 
   this.setTempCurrent = function(n) { tempIndex = n }
   this.setNextAsTempCurrent = function() { tempIndex ++ }
-  this.getTempCurrent = function() {return allShuffled [ tempIndex ] };
+  this.getTempCurrent = function() {return shuffle(array) [ tempIndex ] };
 };
 
 const Counter = function() {
@@ -120,7 +126,7 @@ const createEl = function(tag, className, textContent) {
 
 const model = {
   init: function() {},
-  equations: new ShuffledArrayOfEquations( new ArrayOfEquations().get() ),
+  equations: new ShuffledArrayOfEquations( new ArrayOfEquations() ),
 
   userData: {
       answers: {
@@ -417,8 +423,7 @@ const view =  {
     // document.getElementsByTagName('INPUT'),
     parentEl: createEl("div", "table"),
     array: function() {
-      const arrayOfEquations = new ArrayOfEquations();
-      return arrayOfEquations.get();
+      return new ArrayOfEquations();
     },   
     test: function() {
       const myArray = model.equations.getAll();
@@ -461,7 +466,10 @@ const view =  {
     },
     events: function() {
       let inputFields = this.inputFields();
+      let array = this.array;
       inputFields[ 0 ].focus();
+      // model.equations.setGlobalCurrent(11);
+
       // if (i <= inputFields.length ) { 
       //   inputFields [ this.counter.getLocal() - 1 ].focus();
       // };
@@ -469,9 +477,11 @@ const view =  {
         inputFields[ i ].addEventListener("keydown", function onEnter (e) {
           let key = e.keyCode; // DEPRECATED !!!
           if (key === 13) {
+
           // controller.equations.number().checkAnswer(inputFields[ i-1 ].value);
               console.log("ok")
-              inputFields[ i + 1 ].focus();
+              // inputFields[ i + 1 ].focus();
+              // model.equations.setGlobalCurrent( model.equations.getGlobalCurrent() + 1 );
           } else if (key === 39) {
           // controller.equations.number().checkAnswer(inputFields[ i-1 ].value);
               console.log("right")
