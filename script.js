@@ -1,14 +1,3 @@
-
-/*   
-1. Add validation: event fires only when a number b/w 1-81 is put;
-2. Add desactivatePreviousInputField: only the last one needs to be active;
-3. Add a message/instruction field;
-4. Add a side navigation bar;
-*/
-
-
-// recursion - the function that calls itself until it doesnt
-
 const Equation = function(i, j) {
   this.x = i;
   this.y = j;
@@ -17,7 +6,7 @@ const Equation = function(i, j) {
   this.index = (i-1).toString() + (j-1).toString();
 };
 
-const shuffle = function(array) {   
+const shuffle = function(array) {
    for (let i = array.length - 1; i > 0; i--) {
         let j = Math.floor(Math.random() * (i + 1));
         let temp = array[i];
@@ -27,40 +16,34 @@ const shuffle = function(array) {
   return array;
 };
 
-const ArrayOfEquations = function() {
-  const array = new Array();
-  for (let i = 1; i < 10; i++ ) {       
-    for (let j = 1; j < 10; j++ ) {
-      let equation = new Equation(i, j);
-      array.push(equation);
-    };
-  };
-  return array;
-};
-
-const ShuffledArrayOfEquations = function(array) {
-  if (array) {
-    this.array = array}
-  if (!array) {
-    this.array = new ArrayOfEquations;
-  };
-  
+const ArrayOfEquations = function(givenArray) {
   let globalIndex = 0; 
   let tempIndex = 0;
-
-  this.getAll = function() {return shuffle(this.array) };
-  this.getOrdered = function() {return this.array  };
+  let array;
+  if (givenArray) {
+   array = givenArray
+  } else {
+    array = new Array;
+    for (let i = 1; i < 10; i++ ) {       
+      for (let j = 1; j < 10; j++ ) {
+        let equation = new Equation(i, j);
+        array.push(equation);
+      };
+    };
+  };
+  const temp = array.slice();
+  const shuffledArray = shuffle(temp);
+  this.getShuffled = function() {return shuffledArray }; 
+  this.getOrdered = function() {return array  };
 
   // this.getOne = function(n) {return allShuffled [n] };
-  // this.generateNew = function() {return naturalNumbers.allPairsShuffled()}
-
   this.setGlobalCurrent = function(n) { globalIndex = n }
   this.setNextAsGlobalCurrent = function() { globalIndex ++; }
-  this.getGlobalCurrent = function() {return shuffle(array) [ globalIndex ] };
+  this.getGlobalCurrent = function() {return shuffledArray [ globalIndex ] };
 
   this.setTempCurrent = function(n) { tempIndex = n }
   this.setNextAsTempCurrent = function() { tempIndex ++ }
-  this.getTempCurrent = function() {return shuffle(array) [ tempIndex ] };
+  this.getTempCurrent = function() {return shuffledArray [ tempIndex ] };
 };
 
 const Counter = function() {
@@ -126,7 +109,7 @@ const createEl = function(tag, className, textContent) {
 
 const model = {
   init: function() {},
-  equations: new ShuffledArrayOfEquations( new ArrayOfEquations() ),
+  equations: new ArrayOfEquations(),
 
   userData: {
       answers: {
@@ -188,19 +171,19 @@ const controller = {
           blankFirst: function() {
             equationArray[0] = inputField;
             equationArray[4] = createEl ("div", "equationElements",  number().z );
-            model.equations.getAll()[ controller.counter.getLocal() ].inputPosition = "x";
+            model.equations.getShuffled()[ controller.counter.getLocal() ].inputPosition = "x";
             controller.counter.incrementLocal();
             return equationArray;
           },
           blankSecond: function() {
             equationArray[2] = inputField;
             equationArray[4] = createEl ("div", "equationElements",  number().z );
-            model.equations.getAll()[controller.counter.getLocal()].inputPosition = "y";
+            model.equations.getShuffled()[controller.counter.getLocal()].inputPosition = "y";
             controller.counter.incrementLocal();
             return equationArray;
           },
           blankThird: function() {
-            model.equations.getAll()[controller.counter.getLocal()].inputPosition = "z";
+            model.equations.getShuffled()[controller.counter.getLocal()].inputPosition = "z";
             controller.counter.incrementLocal();
             return equationArray;
           },
@@ -216,19 +199,19 @@ const controller = {
           blankFirst: function() {
             equationArray[0] = inputField;
             equationArray[4] = createEl ("div", "equationElements",  number().x );
-            model.equations.getAll()[ controller.counter.getLocal() ].inputPosition = "z";    
+            model.equations.getShuffled()[ controller.counter.getLocal() ].inputPosition = "z";    
             controller.counter.incrementLocal();
             return equationArray;
           },
           blankSecond: function() {
             equationArray[2] = inputField;
             equationArray[4] = createEl ("div", "equationElements",  number().x );
-            model.equations.getAll()[ controller.counter.getLocal() ].inputPosition = "y";
+            model.equations.getShuffled()[ controller.counter.getLocal() ].inputPosition = "y";
             controller.counter.incrementLocal();
             return equationArray;
           },
           blankThird: function() {
-            model.equations.getAll()[ controller.counter.getLocal() ].inputPosition = "x";
+            model.equations.getShuffled()[ controller.counter.getLocal() ].inputPosition = "x";
             controller.counter.incrementLocal();
             return equationArray;
           },
@@ -304,7 +287,7 @@ const controller = {
   },
  },
  generateList: function() {
-  let arrayLength =  model.equations.getAll().length;
+  let arrayLength =  model.equations.getShuffled().length;
   const distributionPattern = controller.equations.distributeEvenly( arrayLength );
   const list = controller.equations.display( distributionPattern );
   return list;
@@ -350,7 +333,7 @@ const view =  {
     maxAllowedOnPage: 7,
     counter: controller.counter,
     render: function() {
-      console.log(  model.equations.getAll() )
+      console.log(  model.equations.getShuffled() )
       this.counter.incrementGlobal();
       let currentBatch = this.pageCounter.getLocal() * this.maxAllowedOnPage;
       if (this.counter.getLocal() === this.maxAllowedOnPage - 1) {
@@ -393,11 +376,11 @@ const view =  {
       controller.counter.setGlobal(0);
       controller.counter.setLocal(0);
       view.equations.pageCounter.setLocal(0);
-      model.equations = new ShuffledArrayOfEquations( model.userData.answers.incorrect.getArray( batchCounter ) );  // MODEL
+      model.equations = new ArrayOfEquations( model.userData.answers.incorrect.getArray( batchCounter ) );  // MODEL
       this.list = controller.generateList();
       model.equations.setGlobalCurrent(-1);   // MODEL
       console.log(  model.userData.answers.incorrect.getArray( batchCounter ) )
-      console.log(  model.equations.getAll() )
+      console.log(  model.equations.getShuffled() )
       controller.equations.batchCounter.incrementLocal();
     }, 
     
@@ -422,11 +405,9 @@ const view =  {
     inputFields: function() {return document.getElementsByTagName('INPUT')} ,
     // document.getElementsByTagName('INPUT'),
     parentEl: createEl("div", "table"),
-    array: function() {
-      return new ArrayOfEquations();
-    },   
+    array: new ArrayOfEquations(),
     test: function() {
-      const myArray = model.equations.getAll();
+      const myArray = model.equations.getShuffled();
       model.userData.answers.incorrect.addTopLevelArray(0)
       model.userData.answers.incorrect.addItem(0, myArray[0])
       model.userData.answers.incorrect.addItem(0, myArray[1])
@@ -451,7 +432,7 @@ const view =  {
     withInputFields: function() {
       const parentEl = view.main.appendChild(this.parentEl);
       const incorrectAnswers = model.userData.answers.incorrect.getArray(0)
-      this.array().map(function(value) {
+      this.array.getOrdered().map(function(value) {
         if (value.x === 1 || value.y === 1 ) { 
             const square = createEl("div", "first-rows", value.z );
             parentEl.appendChild(square);
