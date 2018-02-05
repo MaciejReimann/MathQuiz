@@ -1,11 +1,10 @@
-const Equation = function(i, j) {
-  this.x = i;
-  this.y = j;
-  this.z = i * j;
-  this.inputPosition = "";
-  this.index = (i-1).toString() + (j-1).toString();
-};
 
+/*   
+1. Add validation: event fires only when a number b/w 1-81 is put;
+2. Add desactivatePreviousInputField: only the last one needs to be active;
+3. Add a message/instruction field;
+4. Add a side navigation bar;
+*/
 const shuffle = function(array) {
    for (let i = array.length - 1; i > 0; i--) {
         let j = Math.floor(Math.random() * (i + 1));
@@ -15,11 +14,18 @@ const shuffle = function(array) {
     }
   return array;
 };
-
+const Equation = function(i, j) {
+  this.x = i;
+  this.y = j;
+  this.z = i * j;
+  this.inputPosition = "z";
+  this.index = (i-1).toString() + (j-1).toString();
+};
 const ArrayOfEquations = function(givenArray) {
   let globalIndex = 0; 
   let tempIndex = 0;
   let array;
+  let currentArray;
   if (givenArray) {
    array = givenArray
   } else {
@@ -33,13 +39,13 @@ const ArrayOfEquations = function(givenArray) {
   };
   const temp = array.slice();
   const shuffledArray = shuffle(temp);
-  this.getShuffled = function() {return shuffledArray }; 
-  this.getOrdered = function() {return array  };
+  this.getShuffled = function() {currentArray = shuffledArray; return currentArray }; 
+  this.getInOrder = function() {currentArray = array; return currentArray };
 
   // this.getOne = function(n) {return allShuffled [n] };
   this.setGlobalCurrent = function(n) { globalIndex = n }
   this.setNextAsGlobalCurrent = function() { globalIndex ++; }
-  this.getGlobalCurrent = function() {return shuffledArray [ globalIndex ] };
+  this.getGlobalCurrent = function() {return currentArray [ globalIndex ] };
 
   this.setTempCurrent = function(n) { tempIndex = n }
   this.setNextAsTempCurrent = function() { tempIndex ++ }
@@ -147,9 +153,11 @@ const controller = {
           model.userData.answers.correct.push(this);
           controller.score.strikeIncrement()
           controller.score.globalIncrement()
+          console.log("correct")
         } else {
           model.userData.answers.incorrect.addItem(controller.equations.batchCounter.getLocal(), this);
           controller.score.strikeReset()
+          console.log("incorrect")
         };
       },    
      };
@@ -402,10 +410,12 @@ const view =  {
     },
   },
   table: {
-    inputFields: function() {return document.getElementsByTagName('INPUT')} ,
+    inputFields: function() {return document.getElementsByTagName('INPUT')},
+    table: function() {return document.getElementsByClassName('table')},
+    tableSquares: function() {return this.table()[0].children },
     // document.getElementsByTagName('INPUT'),
     parentEl: createEl("div", "table"),
-    array: new ArrayOfEquations(),
+    array: function() { model.equations = new ArrayOfEquations(); return model.equations.getInOrder() } ,
     test: function() {
       const myArray = model.equations.getShuffled();
       model.userData.answers.incorrect.addTopLevelArray(0)
@@ -418,7 +428,7 @@ const view =  {
     drawFilled: function() {
       const parentEl = view.main.appendChild(this.parentEl);
       const incorrectAnswers = model.userData.answers.incorrect.getArray(0)
-      this.array().map(function(value) {
+      this.array.map(function(value) {
         const square = createEl("div", "equationElements", value.z );
         parentEl.appendChild(square);
         square.className = "the-rest";
@@ -430,14 +440,15 @@ const view =  {
       });
     },
     withInputFields: function() {
+      let square;
       const parentEl = view.main.appendChild(this.parentEl);
       const incorrectAnswers = model.userData.answers.incorrect.getArray(0)
-      this.array.getOrdered().map(function(value) {
+      this.array().map(function(value) {
         if (value.x === 1 || value.y === 1 ) { 
-            const square = createEl("div", "first-rows", value.z );
-            parentEl.appendChild(square);
+          square = createEl("div", "first-rows", value.z );
+          parentEl.appendChild(square);
         } else {
-          const square = createEl("div", "first-rows");
+          square = createEl("div", "the-rest");
           parentEl.appendChild(square);
           const inputfields = createEl("input", "input-fields" );
           square.appendChild(inputfields);
@@ -447,42 +458,92 @@ const view =  {
     },
     events: function() {
       let inputFields = this.inputFields();
+      let tableSquares = this.tableSquares();
       let array = this.array;
       inputFields[ 0 ].focus();
-      // model.equations.setGlobalCurrent(11);
-
-      // if (i <= inputFields.length ) { 
-      //   inputFields [ this.counter.getLocal() - 1 ].focus();
-      // };
-      for (let i = 0; i < inputFields.length; i++) {
-        inputFields[ i ].addEventListener("keydown", function onEnter (e) {
-          let key = e.keyCode; // DEPRECATED !!!
-          if (key === 13) {
-
-          // controller.equations.number().checkAnswer(inputFields[ i-1 ].value);
-              console.log("ok")
-              // inputFields[ i + 1 ].focus();
-              // model.equations.setGlobalCurrent( model.equations.getGlobalCurrent() + 1 );
-          } else if (key === 39) {
-          // controller.equations.number().checkAnswer(inputFields[ i-1 ].value);
-              console.log("right")
-              inputFields[ i + 1 ].focus();
-          } else if (key === 37) {
-          // controller.equations.number().checkAnswer(inputFields[ i-1 ].value);
-              console.log("left")
-              inputFields[ i - 1 ].focus();
-          } else if (key === 38) {
-          // controller.equations.number().checkAnswer(inputFields[ i-1 ].value);
-              console.log("top")
-              inputFields[ i - 8 ].focus();
-          } else if (key === 40) {
-          // controller.equations.number().checkAnswer(inputFields[ i-1 ].value);
-              console.log("top")
-              inputFields[ i + 8 ].focus();
-          }
-        });
+      console.log(model.equations.getGlobalCurrent());
+      for (let i = 0; i < tableSquares.length; i++) {   
+        
+          tableSquares[ i ].addEventListener("keydown", function onEnter (e) {
+            
+            let key = e.keyCode; // DEPRECATED !!!
+            if (key === 13) {
+                if ( !tableSquares[ i + 1 ].firstElementChild ) { i ++ };
+                model.equations.setGlobalCurrent(i);
+                tableSquares[ i+1 ].firstElementChild.focus();               
+                controller.equations.number().checkAnswer( tableSquares[ i ].firstElementChild.value );
+                console.log ( tableSquares[ i ].firstElementChild.value )
+    
+              view.score.render()
+            
+                // model.equations.setGlobalCurrent( model.equations.getGlobalCurrent() + 1 );
+            } else if (key === 39) {
+                 if ( !tableSquares[ i + 1 ].firstElementChild ) {
+                  tableSquares[ i + 2 ].firstElementChild.focus(); 
+                };
+                console.log("right")
+                tableSquares[ i + 1 ].firstElementChild.focus();
+            } else if (key === 37) {
+                if ( !tableSquares[ i - 1 ].firstElementChild ) { 
+                  tableSquares[ i - 2 ].firstElementChild.focus(); 
+                };
+                console.log("left")
+                tableSquares[ i - 1 ].firstElementChild.focus();
+            } else if (key === 38) {
+            
+                console.log("top")
+                tableSquares[ i - 9 ].firstElementChild.focus();
+            } else if (key === 40) {
+            // controller.equations.number().checkAnswer(inputFields[ i-1 ].value);
+                console.log("down")
+                tableSquares[ i + 9 ].firstElementChild.focus();
+            }
+          
+          });
+        
       };
     },
+
+    // events: function() {
+    //   let inputFields = this.inputFields();
+    //   let array = this.array;
+    //   inputFields[ 0 ].focus();
+    //   // model.equations.setGlobalCurrent(11);
+
+    //   // if (i <= inputFields.length ) { 
+    //   //   inputFields [ this.counter.getLocal() - 1 ].focus();
+    //   // };
+    //   for (let i = 0; i < inputFields.length; i++) {
+    //     inputFields[ i ].addEventListener("keydown", function onEnter (e) {
+    //       let key = e.keyCode; // DEPRECATED !!!
+    //       if (key === 13) {
+
+    //       // controller.equations.number().checkAnswer(inputFields[ i-1 ].value);
+    //           console.log("ok")
+    //           // inputFields[ i + 1 ].focus();
+    //           // model.equations.setGlobalCurrent( model.equations.getGlobalCurrent() + 1 );
+    //       } else if (key === 39) {
+    //       // controller.equations.number().checkAnswer(inputFields[ i-1 ].value);
+    //           console.log("right")
+    //           inputFields[ i + 1 ].focus();
+    //       } else if (key === 37) {
+    //       // controller.equations.number().checkAnswer(inputFields[ i-1 ].value);
+    //           console.log("left")
+    //           inputFields[ i - 1 ].focus();
+    //       } else if (key === 38) {
+    //       // controller.equations.number().checkAnswer(inputFields[ i-1 ].value);
+    //           console.log("top")
+    //           inputFields[ i - 8 ].focus();
+    //       } else if (key === 40) {
+    //       // controller.equations.number().checkAnswer(inputFields[ i-1 ].value);
+    //           console.log("top")
+    //           inputFields[ i + 8 ].focus();
+    //       }
+    //     });
+    //   };
+    // },
+
+
   },
       
           // if ( inputFields.length > 1) {
