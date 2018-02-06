@@ -18,7 +18,7 @@ const Equation = function(i, j) {
   this.x = i;
   this.y = j;
   this.z = i * j;
-  this.inputPosition = "z";
+  this.inputPosition = "";
   this.index = (i-1).toString() + (j-1).toString();
 };
 const ArrayOfEquations = function(givenArray) {
@@ -41,11 +41,16 @@ const ArrayOfEquations = function(givenArray) {
   const shuffledArray = shuffle(temp);
   this.getShuffled = function() {currentArray = shuffledArray; return currentArray }; 
   this.getInOrder = function() {currentArray = array; return currentArray };
+  this.setInputPositionForAll = function(n) {
+    currentArray.map(function(value) {
+      value.inputPosition = n;
+    });
+  };
 
   // this.getOne = function(n) {return allShuffled [n] };
   this.setGlobalCurrent = function(n) { globalIndex = n }
   this.setNextAsGlobalCurrent = function() { globalIndex ++; }
-  this.getGlobalCurrent = function() {return shuffledArray [ globalIndex ] };
+  this.getGlobalCurrent = function() {return currentArray [ globalIndex ] };
 
   this.setTempCurrent = function(n) { tempIndex = n }
   this.setNextAsTempCurrent = function() { tempIndex ++ }
@@ -113,7 +118,7 @@ const createEl = function(tag, className, textContent) {
 
 const model = {
   init: function() {},
-  equations: new ArrayOfEquations(),
+  // equations: new ArrayOfEquations(),
 
   userData: {
       answers: {
@@ -135,6 +140,7 @@ const controller = {
       view.init();
   },
   array: new ArrayOfEquations(),
+  // setArrayInOrder: function() { return controller.array.getInOrder() }(),
   score: new Score(),
   counter: new Counter(),
   equations: {
@@ -297,7 +303,7 @@ const controller = {
   },
  },
  generateList: function() {
-  let arrayLength =  model.equations.getShuffled().length;
+  let arrayLength =  controller.array.getShuffled().length;
   const distributionPattern = controller.equations.distributeEvenly( arrayLength );
   const list = controller.equations.display( distributionPattern );
   return list;
@@ -315,10 +321,10 @@ const view =  {
     this.render()
   },
   render: function() {
-    this.equations.render();
+    // this.equations.render();
     this.score.render();   
 
-    // this.table.render().empty();
+    this.table.render().empty();
   },
   score: {
     scoreParent: document.querySelector('.score'),
@@ -342,7 +348,7 @@ const view =  {
     maxAllowedOnPage: 7,
     counter: controller.counter,
     render: function() {
-      console.log(  model.equations.getShuffled() )
+      console.log(  controller.array.getShuffled() )
       this.counter.incrementGlobal();
       let currentBatch = this.pageCounter.getLocal() * this.maxAllowedOnPage;
       if (this.counter.getLocal() === this.maxAllowedOnPage - 1) {
@@ -376,7 +382,7 @@ const view =  {
         this.startNewBatch() 
       };
       if (this.batchLength === 0) {alert("proceed")} // TO NEXT PAGE
-      model.equations.setNextAsGlobalCurrent(); // MODEL
+      controller.array.setNextAsGlobalCurrent(); // MODEL
       console.log(  view.equations.pageCounter.getLocal() );
       view.render();       
     },
@@ -414,9 +420,9 @@ const view =  {
   table: {
     tableSquares: function() {return document.getElementsByClassName('table')[0].children },
     parentEl: createEl("div", "table"),
-    array: function() { model.equations = new ArrayOfEquations(); return model.equations.getInOrder() } ,
+    // array: function(n) {return n }( controller.array.getInOrder() ),
     test: function() {
-      const myArray = model.equations.getShuffled();
+      const myArray = controller.array.getShuffled();
       model.userData.answers.incorrect.addTopLevelArray(0)
       model.userData.answers.incorrect.addItem(0, myArray[0])
       model.userData.answers.incorrect.addItem(0, myArray[1])
@@ -428,7 +434,7 @@ const view =  {
         return {
           filled: function() {
             const incorrectAnswers = model.userData.answers.incorrect.getArray(0)
-            view.table.array().map(function(value) {
+            controller.array.getInOrder().map(function(value) {
               const square = createEl("div", "equationElements", value.z );
               parentEl.appendChild(square);
               square.className = "the-rest";
@@ -440,7 +446,8 @@ const view =  {
             });
           },
           empty: function() {
-            view.table.array().map(function(value) {
+            controller.array.setInputPositionForAll("z");
+            controller.array.getInOrder().map(function(value) {
               if (value.x === 1 || value.y === 1 ) { 
                 let square = createEl("div", "first-rows", value.z );
                 parentEl.appendChild(square);
@@ -459,20 +466,29 @@ const view =  {
     events: function() {
       let tableSquares = this.tableSquares();
       tableSquares[ 10 ].firstElementChild.focus();
-      for (let i = 0; i < tableSquares.length; i++) {   
+      controller.array.setGlobalCurrent(10);
+      for (let i = 0; i < tableSquares.length; i++) {
         tableSquares[ i ].addEventListener("keydown", function onEnter (e) {
           let key = e.keyCode; // DEPRECATED !!!
           if (key === 13) {
-            model.equations.setGlobalCurrent(i);                               
+            controller.array.setGlobalCurrent( i );
             controller.equations.number().checkAnswer( tableSquares[ i ].firstElementChild.value );
-            view.score.render()
-            if ( !tableSquares[ i + 1 ].firstElementChild ) { 
+            if ( !tableSquares[ i + 1 ] ) {
+              for (let j = 0; j < tableSquares.length; j ++) {
+                if (tableSquares[ j ].firstElementChild !== null && tableSquares[ j ].firstElementChild.value === "") {
+                  tableSquares[ j ].firstElementChild.focus();
+                };
+              };              
+            } else if ( !tableSquares[ i + 1 ].firstElementChild ) { 
               tableSquares[ i + 2 ].firstElementChild.focus();
-            };
+            } else {
               tableSquares[ i + 1 ].firstElementChild.focus();
+            }
+            
+            view.score.render();
           } else if (key === 39) {
             if ( !tableSquares[ i + 1 ].firstElementChild ) {
-              tableSquares[ i + 2 ].firstElementChild.focus(); 
+              tableSquares[ i + 2 ].firstElementChild.focus();
             };
             console.log("right")
             tableSquares[ i + 1 ].firstElementChild.focus();
