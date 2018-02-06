@@ -156,17 +156,24 @@ const controller = {
         checkAnswer: function(inputValue) {
           const answer = parseInt(inputValue);
           const correctAnswer = this[this.inputPosition];
-          if (answer === correctAnswer) {
+          if (answer === correctAnswer) { // return true; fire proceedIfCorrect( answer ) function
             model.userData.answers.correct.push(this);
             controller.score.strikeIncrement()
             controller.score.globalIncrement()
             console.log("correct")
-          } else {
+          } else { // return true; fire proceedIfIncorrect(answer) function
             model.userData.answers.incorrect.addItem(controller.equations.batchCounter.getLocal(), this);
             controller.score.strikeReset()
             console.log("incorrect")
           };
-        },    
+        }, 
+        validateAnswer: function(inputValue) {          
+          if (isNaN( inputValue )) {
+            console.log("not a number")
+            return false // return false; fire proceedIfInvalid() function
+          } else { return true } // return true; fire proceedIfValid() function
+        },
+
        };
   },
   type: function() {
@@ -400,13 +407,14 @@ const view =  {
     }, 
     
     inputFieldEvents: function(i) {
+      // const answerIsCorrect = controller.equations.number().checkAnswer()
       let inputFields = this.inputFields;
       if (i <= inputFields.length ) { 
         inputFields [ this.counter.getLocal() - 1 ].focus();
       };
       inputFields[ i-1 ].addEventListener("keypress", function onEnter (e) {
         let key = e.keyCode;
-        if (key === 13) {
+        if (key === 13) { // if (answerIsCorrect) { proceed().whenCorrect() } else { proceed().whenIncorrect() }
           controller.equations.number().checkAnswer(inputFields[ i-1 ].value);
           view.equations.update();
           if ( inputFields.length > 1) {
@@ -505,6 +513,9 @@ const view =  {
             console.log("down")
             tableSquares[ i + 9 ].firstElementChild.focus();
           };
+        });
+        tableSquares[ i ].addEventListener("change", function onChange (e) {
+          controller.equations.number().validateAnswer( tableSquares[ i ].firstElementChild.value );
         });
       };
     },
