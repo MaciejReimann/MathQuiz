@@ -156,15 +156,12 @@ const controller = {
         checkAnswer: function(inputValue) {
           const answer = parseInt(inputValue);
           const correctAnswer = this[this.inputPosition];
-          if (answer === correctAnswer) { // return true; fire proceedIfCorrect( answer ) function
-            model.userData.answers.correct.push(this);
-            controller.score.strikeIncrement()
-            controller.score.globalIncrement()
-            console.log("correct")
-          } else { // return true; fire proceedIfIncorrect(answer) function
-            model.userData.answers.incorrect.addItem(controller.equations.batchCounter.getLocal(), this);
-            controller.score.strikeReset()
-            console.log("incorrect")
+          if (answer === correctAnswer) {
+            controller.equations.proceed().ifCorrect( this );
+            return true;
+          } else {
+            controller.equations.proceed().ifIncorrect( controller.equations.batchCounter.getLocal(), this );
+            return false;
           };
         }, 
         validateAnswer: function(inputValue) {          
@@ -175,6 +172,21 @@ const controller = {
         },
 
        };
+  },
+  proceed: function() {
+    return {
+      ifCorrect: function(answer) {
+        model.userData.answers.correct.push(answer);
+        controller.score.strikeIncrement()
+        controller.score.globalIncrement()
+        console.log("correct")
+      },
+      ifIncorrect: function(currentBatch, answer) {
+        model.userData.answers.incorrect.addItem(currentBatch, answer);
+        controller.score.strikeReset()
+        console.log("incorrect")
+      },
+    };
   },
   type: function() {
     let number = this.number;
@@ -407,15 +419,22 @@ const view =  {
     }, 
     
     inputFieldEvents: function(i) {
-      // const answerIsCorrect = controller.equations.number().checkAnswer()
-      let inputFields = this.inputFields;
+      const inputFields = this.inputFields;
+      const answer = inputFields[ i-1 ].value;
+      const answerIsCorrect = controller.equations.number().checkAnswer( answer );      
       if (i <= inputFields.length ) { 
         inputFields [ this.counter.getLocal() - 1 ].focus();
       };
       inputFields[ i-1 ].addEventListener("keypress", function onEnter (e) {
         let key = e.keyCode;
-        if (key === 13) { // if (answerIsCorrect) { proceed().whenCorrect() } else { proceed().whenIncorrect() }
-          controller.equations.number().checkAnswer(inputFields[ i-1 ].value);
+        if (key === 13) { 
+          if (answerIsCorrect) {
+            controller.equations.proceedIfCorrect( answer )
+            // proceed().whenCorrect() 
+          } else { 
+            controller.equations.proceedIfInCorrect( answer )
+            // proceed().whenIncorrect() 
+          };
           view.equations.update();
           if ( inputFields.length > 1) {
             inputFields[ i-1 ].removeEventListener("keypress", onEnter);
