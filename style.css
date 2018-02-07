@@ -144,13 +144,28 @@
     /*padding: 3px;*/
   }
 
-
-
-
-  /*input {
+  .input-fields {
+    font-size: 26px;
     width: 30px;
-    border: solid 1px black;
+    border: none;
     text-align: center;
     font-family: 'Source Code Pro', monospace;
   }
-  */
+
+  .invalid {
+    background-color: pink;
+    font-size: 26px;
+    width: 30px;
+    border: none;
+    text-align: center;
+    font-family: 'Source Code Pro', monospace;
+  }
+
+  .done {
+    /*background-color: grey;*/
+    font-size: 26px;
+    width: 30px;
+    border: none;
+    text-align: center;
+    font-family: 'Source Code Pro', monospace;
+  }
