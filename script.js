@@ -147,6 +147,7 @@ const controller = {
     batchCounter: new Counter(),
     number: function() {
       const currentItem = controller.array.getGlobalCurrent();
+      const currentBatch = controller.equations.batchCounter.getLocal();
       return {
         x: currentItem.x,
         y: currentItem.y,
@@ -160,17 +161,10 @@ const controller = {
             controller.equations.proceed().ifCorrect( this );
             return true;
           } else {
-            controller.equations.proceed().ifIncorrect( controller.equations.batchCounter.getLocal(), this );
+            controller.equations.proceed().ifIncorrect( currentBatch, this );
             return false;
           };
         }, 
-        validateAnswer: function(inputValue) {          
-          if (isNaN( inputValue )) {
-            console.log("not a number")
-            return false // return false; fire proceedIfInvalid() function
-          } else { return true } // return true; fire proceedIfValid() function
-        },
-
        };
   },
   proceed: function() {
@@ -185,6 +179,15 @@ const controller = {
         model.userData.answers.incorrect.addItem(currentBatch, answer);
         controller.score.strikeReset()
         console.log("incorrect")
+      },
+      ifInvalid: function(inputField) {
+        inputField.className = "invalid";
+        console.log("not a number")
+      },
+      ifDone: function(inputField) {
+        inputField.className = "done";
+        inputField.disabled = true;
+        console.log("not a number")
       },
     };
   },
@@ -491,51 +494,63 @@ const view =  {
       }
     },
     events: function() {
-      let tableSquares = this.tableSquares();
+      const tableSquares = this.tableSquares();
       tableSquares[ 10 ].firstElementChild.focus();
       controller.array.setGlobalCurrent(10);
       for (let i = 0; i < tableSquares.length; i++) {
         tableSquares[ i ].addEventListener("keydown", function onEnter (e) {
+          const lastElement = tableSquares[ i ].firstElementChild;
+          const lastAnswer = lastElement.value;
+          const needToSkipOne = !tableSquares[ i + 1 ].firstElementChild;
           let key = e.keyCode; // DEPRECATED !!!
           if (key === 13) {
             controller.array.setGlobalCurrent( i );
-            controller.equations.number().checkAnswer( tableSquares[ i ].firstElementChild.value );
-            if ( !tableSquares[ i + 1 ] ) {
+            if (lastAnswer !== "") { // empty field
+              controller.equations.number().checkAnswer( lastAnswer );
+              controller.equations.proceed().ifDone( lastElement );
+            };
+            if ( !tableSquares[ i + 1 ] ) { // last field
               for (let j = 0; j < tableSquares.length; j ++) {
                 if (tableSquares[ j ].firstElementChild !== null && tableSquares[ j ].firstElementChild.value === "") {
                   tableSquares[ j ].firstElementChild.focus();
                 };
               };              
-            } else if ( !tableSquares[ i + 1 ].firstElementChild ) { 
-              tableSquares[ i + 2 ].firstElementChild.focus();
+            } else if ( needToSkipOne ) { 
+              tableSquares[ i + 2 ].firstElementChild.focus(); // skip one forward
             } else {
               tableSquares[ i + 1 ].firstElementChild.focus();
-            }
+            };
             
             view.score.render();
-          } else if (key === 39) {
-            if ( !tableSquares[ i + 1 ].firstElementChild ) {
-              tableSquares[ i + 2 ].firstElementChild.focus();
-            };
-            console.log("right")
-            tableSquares[ i + 1 ].firstElementChild.focus();
-          } else if (key === 37) {
+          } else if (key === 39) { // arrow right
+            if ( needToSkipOne ) {
+              tableSquares[ i + 2 ].firstElementChild.focus(); // skip one forward
+            } else {
+              console.log("right")
+              tableSquares[ i + 1 ].firstElementChild.focus();
+            };       
+          } else if (key === 37) { // arrow left
             if ( !tableSquares[ i - 1 ].firstElementChild ) { 
-              tableSquares[ i - 2 ].firstElementChild.focus(); 
-            };
-            console.log("left")
-            tableSquares[ i - 1 ].firstElementChild.focus();
-          } else if (key === 38) {
+              tableSquares[ i - 2 ].firstElementChild.focus(); // skip one back
+            } else {
+              console.log("left")
+              tableSquares[ i - 1 ].firstElementChild.focus();
+            };            
+          } else if (key === 38) { // arrow top
             console.log("top")
             tableSquares[ i - 9 ].firstElementChild.focus();
-          } else if (key === 40) {
+          } else if (key === 40) { // arrow down
             console.log("down")
             tableSquares[ i + 9 ].firstElementChild.focus();
+          } else if ( key >= 65 && key <= 90 || key >= 186 && key <= 226 ) { // non numeric
+             console.log("wrong key");
+             controller.equations.proceed().ifInvalid( lastElement );
           };
+          
         });
-        tableSquares[ i ].addEventListener("change", function onChange (e) {
-          controller.equations.number().validateAnswer( tableSquares[ i ].firstElementChild.value );
-        });
+        // tableSquares[ i ].addEventListener("change", function onChange (e) {
+        //   controller.equations.number().validateAnswer( lastAnswer );
+        // });
       };
     },
 
