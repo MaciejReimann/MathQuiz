@@ -1,7 +1,5 @@
 
 /*   
-1. Add validation: event fires only when a number b/w 1-81 is put;
-2. Add desactivatePreviousInputField: only the last one needs to be active;
 3. Add a message/instruction field;
 4. Add a side navigation bar;
 */
@@ -342,9 +340,73 @@ const view =  {
   init: function () {
     this.render()
   },
+  sidebar: {
+    functionsAttached: [
+      {
+        name: "Fill the gap",
+        fire: function() {
+          console.log(this.name + " fired")
+        }
+      },
+      {
+        name: "Complete the table",
+        fire: function() {
+          console.log(this.name + " fired")
+
+        }
+      },
+      {
+        name: "Practice again",
+        fire: function() {
+                    console.log(this.name + " fired")
+
+        }
+      },
+      {
+        name: "Count fast",
+        fire: function() {
+                    console.log(this.name + " fired")
+
+        }
+      },
+      {
+        name: "Bonus!",
+        fire: function() {}
+      },
+    ],
+    render: function() {
+      this.functionsAttached.map(function(el) {
+        const list = createEl("p", "inactive", el.name);
+        document.querySelector('.sidebar').appendChild(list);
+      });
+      this.events();
+    },    
+    elements: document.querySelector('.sidebar').children,
+    displayAs: function() {
+      const elements = this.elements();
+      return {
+        active: function(element) {
+          elements.map(function(el) { el.className = "inactive" });
+          element.className = "active";
+        },
+        completed: function() {},
+      }
+    },
+    events: function() {
+      const elements = this.elements;
+      for (let i = 0; i < elements.length; i++) {
+        elements[ i ].addEventListener("click", function (event) {
+          console.log("You clicked: " + elements[ i ].textContent )
+          view.sidebar.functionsAttached[i].fire();
+        })
+      }       
+    },
+    
+  },
   render: function() {
     // this.equations.render();
-    this.score.render();   
+    this.score.render();
+    this.sidebar.render();   
 
     this.table.render().empty();
   },
