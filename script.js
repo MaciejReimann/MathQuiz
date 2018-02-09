@@ -336,7 +336,7 @@ const view =  {
   },
   currentMainContent: new StoredValue (),  
   render: function() {
-  
+
     let index = this.currentMainContent.get()
     this.clear();
     this.sidebar.functionsAttached [ index ] .fire(); // decide on variable name (index / currentMainContent)
@@ -373,6 +373,7 @@ const view =  {
         fire: function() {
           console.log(this.name + " fired");
           view.currentMainContent.set( 0 );
+          view.clear();
           view.equations.render();
         }
       },
@@ -381,6 +382,7 @@ const view =  {
         fire: function() {
           console.log(this.name + " fired");
           view.currentMainContent.set( 1 );
+          view.clear();
           view.table.render().empty();
         }
       },
@@ -541,6 +543,7 @@ const view =  {
     //   return myArray
     // }(),
     render: function() {  
+      this.clear();
       const parentEl = view.main.appendChild(this.parentEl);
         return {
           filled: function() {
@@ -578,7 +581,7 @@ const view =  {
       const allElements = this.parentEl.children; 
       if (allElements.length > 0) {
         for (let i = allElements.length-1; i >= 0; i--) {
-          view.main.removeChild( allElements[i] )
+          this.parentEl.removeChild( allElements[i] )
         };        
       };
     },
