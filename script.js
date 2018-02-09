@@ -77,10 +77,15 @@ const Score = function(initialValue) {
   // this.getBaseFrom = function(n) { localBase = n }; // How to define parameteras an anonymous function?""
 };
 
-const StoredNumber = function() {
-  let number = 0;
-  this.set = function(n) { number = n };
-  this.get = function() { return number};
+const StoredValue = function(n) {
+  let value;
+  // if (n) {
+  //   value = n;
+  // } else { 
+  //   value = "no value"; 
+  // };
+  this.set = function(k) { value = k };
+  this.get = function() { return value};
 };
 
 const Array2D = function() {
@@ -123,7 +128,7 @@ const model = {
         correct: [],
         incorrect: new Array2D,
       },
-      score: new StoredNumber(),
+      score: new StoredValue(),
     },
 
 
@@ -151,7 +156,6 @@ const controller = {
         y: currentItem.y,
         z: currentItem.z,
         inputPosition: currentItem.inputPosition,
-
         checkAnswer: function(inputValue) {
           const answer = parseInt(inputValue);
           const correctAnswer = this[this.inputPosition];
@@ -163,148 +167,150 @@ const controller = {
             return false;
           };
         }, 
-       };
-  },
-  proceed: function() {
-    return {
-      ifCorrect: function(answer) {
-        model.userData.answers.correct.push(answer);
-        controller.score.strikeIncrement()
-        controller.score.globalIncrement()
-        console.log("correct")
-      },
-      ifIncorrect: function(currentBatch, answer) {
-        model.userData.answers.incorrect.addItem(currentBatch, answer);
-        controller.score.strikeReset()
-        console.log("incorrect")
-      },
-      ifInvalid: function(inputField) {
-        inputField.className = "invalid";
-        console.log("not a number")
-      },
-      ifDone: function(inputField) {
-        inputField.className = "done";
-        inputField.disabled = true;
-        console.log("not a number")
-      },
-    };
-  },
-  type: function() {
-    let number = this.number;
-    const array = controller.array;
-    const counter = controller.counter;
-    const inputField = createEl("input", "equationElements");
-    const equationArray = [
-      createEl ("div", "equationElements", this.number().x ),
-      createEl ("div", "equationElements", "x"),
-      createEl ("div", "equationElements", this.number().y ),
-      createEl ("div", "equationElements", "=" ),
-      createEl ("input", "input"),
-    ];    
-    return {
-      leftHand: function() { // x * y = z
-        return {
-          blankFirst: function() {
-            equationArray[0] = inputField;
-            equationArray[4] = createEl ("div", "equationElements",  number().z );
-            array.getShuffled()[ controller.counter.getLocal() ].inputPosition = "x";
-            counter.incrementLocal();
-            return equationArray;
-          },
-          blankSecond: function() {
-            equationArray[2] = inputField;
-            equationArray[4] = createEl ("div", "equationElements",  number().z );
-            array.getShuffled()[controller.counter.getLocal()].inputPosition = "y";
-            counter.incrementLocal();
-            return equationArray;
-          },
-          blankThird: function() {
-            array.getShuffled()[controller.counter.getLocal()].inputPosition = "z";
-            counter.incrementLocal();
-            return equationArray;
-          },
+      };
+    },
+    proceed: function() {
+      const currentBatch = controller.equations.batchCounter.getLocal();
+      return {
+        ifCorrect: function(item) {
+          model.userData.answers.correct.push(item);
+          controller.score.strikeIncrement()
+          controller.score.globalIncrement()
+          console.log("correct")
+        },
+        ifIncorrect: function(currentBatch, item) {
+          // model.userData.answers.incorrect.addTopLevelArray()
+          model.userData.answers.incorrect.addItem(currentBatch, item);
+          controller.score.strikeReset()
+          console.log("incorrect")
+        },
+        ifInvalid: function(inputField) {
+          inputField.className = "invalid";
+          console.log("not a number")
+        },
+        ifDone: function(inputField) {
+          inputField.className = "done";
+          inputField.disabled = true;
+          console.log("not a number")
+        },
+      };
+    },
+    type: function() {
+      let number = this.number;
+      const array = controller.array;
+      const counter = controller.counter;
+      const inputField = createEl("input", "equationElements");
+      const equationArray = [
+        createEl ("div", "equationElements", this.number().x ),
+        createEl ("div", "equationElements", "x"),
+        createEl ("div", "equationElements", this.number().y ),
+        createEl ("div", "equationElements", "=" ),
+        createEl ("input", "input"),
+      ];    
+      return {
+        leftHand: function() { // x * y = z
+          return {
+            blankFirst: function() {
+              equationArray[0] = inputField;
+              equationArray[4] = createEl ("div", "equationElements",  number().z );
+              array.getShuffled()[ controller.counter.getLocal() ].inputPosition = "x";
+              counter.incrementLocal();
+              return equationArray;
+            },
+            blankSecond: function() {
+              equationArray[2] = inputField;
+              equationArray[4] = createEl ("div", "equationElements",  number().z );
+              array.getShuffled()[controller.counter.getLocal()].inputPosition = "y";
+              counter.incrementLocal();
+              return equationArray;
+            },
+            blankThird: function() {
+              array.getShuffled()[controller.counter.getLocal()].inputPosition = "z";
+              counter.incrementLocal();
+              return equationArray;
+            },
+          };
+        },
+        rightHand: function(n) { // z = y * x
+          equationArray[0] = createEl("div", "equationElements",  number().z );
+          equationArray[1] = createEl("div", "equationElements", "=" );
+          equationArray[2] = createEl("div", "equationElements", number().y );
+          equationArray[3] = createEl("div", "equationElements", "x" );
+          equationArray[4] = inputField;
+          return {
+            blankFirst: function() {
+              equationArray[0] = inputField;
+              equationArray[4] = createEl ("div", "equationElements",  number().x );
+              array.getShuffled()[ controller.counter.getLocal() ].inputPosition = "z";    
+              counter.incrementLocal();
+              return equationArray;
+            },
+            blankSecond: function() {
+              equationArray[2] = inputField;
+              equationArray[4] = createEl ("div", "equationElements",  number().x );
+              array.getShuffled()[ controller.counter.getLocal() ].inputPosition = "y";
+              counter.incrementLocal();
+              return equationArray;
+            },
+            blankThird: function() {
+              array.getShuffled()[ controller.counter.getLocal() ].inputPosition = "x";
+              counter.incrementLocal();
+              return equationArray;
+            },
+          };
+        },
+      };    
+    },
+    wrapInParagraph: function(equationType) {
+      const equationParagraph = createEl("DIV", "equationParagraph");
+      for (let i = 0; i < equationType.length; i ++) {           
+        equationParagraph.appendChild( equationType[i] );
+      };
+      return equationParagraph;
+    },
+    display: function([a, b, c, d, e, f]) {
+      const listOfEquations = []
+       if (a !== undefined ) { 
+        for (let i = 0; i < a; i ++) {
+          listOfEquations[i] = this.wrapInParagraph( this.type().leftHand().blankThird() );
+          controller.array.setNextAsGlobalCurrent();
         };
-      },
-      rightHand: function(n) { // z = y * x
-        equationArray[0] = createEl("div", "equationElements",  number().z );
-        equationArray[1] = createEl("div", "equationElements", "=" );
-        equationArray[2] = createEl("div", "equationElements", number().y );
-        equationArray[3] = createEl("div", "equationElements", "x" );
-        equationArray[4] = inputField;
-        return {
-          blankFirst: function() {
-            equationArray[0] = inputField;
-            equationArray[4] = createEl ("div", "equationElements",  number().x );
-            array.getShuffled()[ controller.counter.getLocal() ].inputPosition = "z";    
-            counter.incrementLocal();
-            return equationArray;
-          },
-          blankSecond: function() {
-            equationArray[2] = inputField;
-            equationArray[4] = createEl ("div", "equationElements",  number().x );
-            array.getShuffled()[ controller.counter.getLocal() ].inputPosition = "y";
-            counter.incrementLocal();
-            return equationArray;
-          },
-          blankThird: function() {
-            array.getShuffled()[ controller.counter.getLocal() ].inputPosition = "x";
-            counter.incrementLocal();
-            return equationArray;
-          },
+      };
+      if (b !== undefined ) { 
+        for (let i = a; i < a + b; i ++) {
+          listOfEquations[i] = this.wrapInParagraph( this.type().leftHand().blankFirst() );
+          controller.array.setNextAsGlobalCurrent();
         };
-      },
-    };    
-  },
-  wrapInParagraph: function(equationType) {
-    const equationParagraph = createEl("DIV", "equationParagraph");
-    for (let i = 0; i < equationType.length; i ++) {           
-      equationParagraph.appendChild( equationType[i] );
-    };
-    return equationParagraph;
-  },
-  display: function([a, b, c, d, e, f]) {
-    const listOfEquations = []
-     if (a !== undefined ) { 
-      for (let i = 0; i < a; i ++) {
-        listOfEquations[i] = this.wrapInParagraph( this.type().leftHand().blankThird() );
-        controller.array.setNextAsGlobalCurrent();
       };
-    };
-    if (b !== undefined ) { 
-      for (let i = a; i < a + b; i ++) {
-        listOfEquations[i] = this.wrapInParagraph( this.type().leftHand().blankFirst() );
-        controller.array.setNextAsGlobalCurrent();
+      if (c !== undefined ) { 
+        for (let i = b + a; i < a + b + c; i ++) {
+          listOfEquations[i] = this.wrapInParagraph( this.type().leftHand().blankSecond() );
+          controller.array.setNextAsGlobalCurrent();
+        };
       };
-    };
-    if (c !== undefined ) { 
-      for (let i = b + a; i < a + b + c; i ++) {
-        listOfEquations[i] = this.wrapInParagraph( this.type().leftHand().blankSecond() );
-        controller.array.setNextAsGlobalCurrent();
+      if (d !== undefined ) {
+        for (let i = c + b + a; i < a + b + c + d; i ++) {
+          listOfEquations[i] = this.wrapInParagraph( this.type().rightHand().blankThird() );
+          controller.array.setNextAsGlobalCurrent();
+        };
       };
-    };
-    if (d !== undefined ) {
-      for (let i = c + b + a; i < a + b + c + d; i ++) {
-        listOfEquations[i] = this.wrapInParagraph( this.type().rightHand().blankThird() );
-        controller.array.setNextAsGlobalCurrent();
+      if (e !== undefined ) {
+        for (let i = d + c + b + a; i < a + b + c + d + e; i ++) {
+          listOfEquations[i] = this.wrapInParagraph( this.type().rightHand().blankSecond() );
+          controller.array.setNextAsGlobalCurrent();
+        };
       };
-    };
-    if (e !== undefined ) {
-      for (let i = d + c + b + a; i < a + b + c + d + e; i ++) {
-        listOfEquations[i] = this.wrapInParagraph( this.type().rightHand().blankSecond() );
-        controller.array.setNextAsGlobalCurrent();
+      if (f !== undefined ) {
+        for (let i = e + d + c + b + a; i < a + b + c + d + e + f; i ++) {
+          listOfEquations[i] = this.wrapInParagraph( this.type().rightHand().blankFirst() );
+          controller.array.setNextAsGlobalCurrent();
+        };
       };
-    };
-    if (f !== undefined ) {
-      for (let i = e + d + c + b + a; i < a + b + c + d + e + f; i ++) {
-        listOfEquations[i] = this.wrapInParagraph( this.type().rightHand().blankFirst() );
-        controller.array.setNextAsGlobalCurrent();
-      };
-    };
-    controller.array.setGlobalCurrent(0);
-    controller.counter.setLocal(0);
-    model.userData.answers.incorrect.addTopLevelArray();
-    return listOfEquations;
-  },
+      controller.array.setGlobalCurrent(0);
+      controller.counter.setLocal(0);
+      model.userData.answers.incorrect.addTopLevelArray();
+      return listOfEquations;
+    },
   distributeEvenly: function(number) {    
     let list = new Array;
     let quotient = Math.floor(number / 5);
@@ -317,18 +323,18 @@ const controller = {
       for (let i = 0; i < 5; i ++ ) {
         list [ i ] = quotient;
       };
-    list[5] = remainder;
+      list[5] = remainder;
     };    
-  return list;
-  },
+    return list;
+    },
+  generateList: function() {
+    let arrayLength =  controller.array.getShuffled().length;
+    const distributionPattern = controller.equations.distributeEvenly( arrayLength );
+    const list = controller.equations.display( distributionPattern );
+    return list;
+   },
+
  },
- generateList: function() {
-  let arrayLength =  controller.array.getShuffled().length;
-  const distributionPattern = controller.equations.distributeEvenly( arrayLength );
-  const list = controller.equations.display( distributionPattern );
-  return list;
- },
-  
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -338,20 +344,54 @@ const controller = {
 const view =  {
   main: document.querySelector('.main'),
   init: function () {
+    this.currentMainContent.set( 0 )
     this.render()
   },
+  currentMainContent: new StoredValue (),  
+  render: function() {
+    let index = this.currentMainContent.get()
+    this.clear();
+    this.sidebar.functionsAttached [ index ] .fire(); // decide on variable name (index / currentMainContent)
+    this.score.render();
+    this.sidebar.render();
+  },
+  clear: function() { // make a new ClearParent() constructor for all clear() functions and pass DOM elements as parameters
+    if (this.main.children) {
+      const allElements = this.main.children; 
+      for (let i = allElements.length-1; i >= 0; i--) {
+        view.main.removeChild( allElements[i] )
+      };        
+    };     
+  },
+  score: {
+    scoreParent: document.querySelector('.score'),
+    render: function() {
+      let score = controller.score.getGlobal()
+      this.clear();
+      this.scoreParent.appendChild( createEl("DIV", "scoreDiv", score) )
+    },
+    clear: function() {
+      if (this.scoreParent.children.length > 0) {
+        this.scoreParent.removeChild( this.scoreParent.firstElementChild );
+      };
+    },    
+  },
   sidebar: {
+    parent: document.querySelector('.sidebar'),
+    children: document.querySelector('.sidebar').children,
     functionsAttached: [
       {
         name: "Fill the gap",
         fire: function() {
-          console.log(this.name + " fired")
+          console.log(this.name + " fired");
+          view.equations.render();
         }
       },
       {
         name: "Complete the table",
         fire: function() {
           console.log(this.name + " fired")
+          view.table.render().empty()
 
         }
       },
@@ -375,60 +415,46 @@ const view =  {
       },
     ],
     render: function() {
+      this.clear();
       this.functionsAttached.map(function(el) {
         const list = createEl("p", "inactive", el.name);
-        document.querySelector('.sidebar').appendChild(list);
+        view.sidebar.parent.appendChild(list);
       });
       this.events();
+    },
+    clear: function() {
+      if (this.children) {
+        const allElements = this.children; 
+        for (let i = allElements.length-1; i >= 0; i--) {
+          this.parent.removeChild( allElements[i] )
+        };        
+      };  
     },    
-    elements: document.querySelector('.sidebar').children,
     displayAs: function() {
-      const elements = this.elements();
       return {
         active: function(element) {
-          elements.map(function(el) { el.className = "inactive" });
+          this.children.map(function(el) { el.className = "inactive" });
           element.className = "active";
         },
         completed: function() {},
       }
     },
     events: function() {
-      const elements = this.elements;
-      for (let i = 0; i < elements.length; i++) {
-        elements[ i ].addEventListener("click", function (event) {
-          console.log("You clicked: " + elements[ i ].textContent )
+      for (let i = 0; i < this.children.length; i++) {
+        this.children[ i ].addEventListener("click", function (event) {
+          console.log("You clicked: " + this.children [ i ].textContent )
           view.sidebar.functionsAttached[i].fire();
         })
       }       
     },
-    
-  },
-  render: function() {
-    // this.equations.render();
-    this.score.render();
-    this.sidebar.render();   
 
-    this.table.render().empty();
-  },
-  score: {
-    scoreParent: document.querySelector('.score'),
-    render: function() {
-      let score = controller.score.getGlobal()
-      this.clear();
-      this.scoreParent.appendChild( createEl("DIV", "scoreDiv", score) )
-    },
-    clear: function() {
-      if (this.scoreParent.children.length > 0) {
-        this.scoreParent.removeChild( this.scoreParent.firstElementChild );
-      };
-    },    
-  },
-
-  equations: {
+  }, 
+  equations: { // TIDY UP IN HERE!!!
     inputFields: document.getElementsByTagName('INPUT'),
-    list: controller.generateList(),
-    pageCounter: new Counter(),
+    list: controller.equations.generateList(),
+    pageCounter: new Counter(), 
     batchLength: function() {return this.list.length },
+    batchCounter:   controller.equations.batchCounter.getLocal(),
     maxAllowedOnPage: 7,
     counter: controller.counter,
     render: function() {
@@ -454,7 +480,7 @@ const view =  {
       };      
     },
     clearAll: function() {
-      const allElements = view.main.children;     
+      const allElements = view.main.children; 
       if (allElements.length > 0) {
         for (let i = allElements.length-1; i >= 0; i--) {
           view.main.removeChild( allElements[i] )
@@ -484,8 +510,10 @@ const view =  {
     }, 
     
     inputFieldEvents: function(i) {
+       let currentBatch = view.equations.batchCounter
       const inputFields = this.inputFields;
       const answer = inputFields[ i-1 ].value;
+      let currentItem = controller.array.getGlobalCurrent();
       const answerIsCorrect = controller.equations.number().checkAnswer( answer );      
       if (i <= inputFields.length ) { 
         inputFields [ this.counter.getLocal() - 1 ].focus();
@@ -494,10 +522,10 @@ const view =  {
         let key = e.keyCode;
         if (key === 13) { 
           if (answerIsCorrect) {
-            controller.equations.proceedIfCorrect( answer )
+            controller.equations.proceed().ifCorrect( answer )
             // proceed().whenCorrect() 
           } else { 
-            controller.equations.proceedIfInCorrect( answer )
+            controller.equations.proceed().ifIncorrect( currentBatch, currentItem )
             // proceed().whenIncorrect() 
           };
           view.equations.update();
@@ -513,14 +541,14 @@ const view =  {
     tableSquares: function() {return document.getElementsByClassName('table')[0].children },
     parentEl: createEl("div", "table"),
     // array: function(n) {return n }( controller.array.getInOrder() ),
-    test: function() {
-      const myArray = controller.array.getShuffled();
-      model.userData.answers.incorrect.addTopLevelArray(0)
-      model.userData.answers.incorrect.addItem(0, myArray[0])
-      model.userData.answers.incorrect.addItem(0, myArray[1])
-      model.userData.answers.incorrect.addItem(0, myArray[2])
-      return myArray
-    }(),
+    // test: function() {
+    //   const myArray = controller.array.getShuffled();
+    //   model.userData.answers.incorrect.addTopLevelArray()
+    //   model.userData.answers.incorrect.addItem(0, myArray[0])
+    //   model.userData.answers.incorrect.addItem(0, myArray[1])
+    //   model.userData.answers.incorrect.addItem(0, myArray[2])
+    //   return myArray
+    // }(),
     render: function() {
       const parentEl = view.main.appendChild(this.parentEl);
         return {
@@ -554,6 +582,9 @@ const view =  {
         },
 
       }
+    },
+    clear: function() {
+
     },
     events: function() {
       const tableSquares = this.tableSquares();
