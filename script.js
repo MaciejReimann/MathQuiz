@@ -44,7 +44,6 @@ const ArrayOfEquations = function(givenArray) {
       value.inputPosition = n;
     });
   };
-
   // this.getOne = function(n) {return allShuffled [n] };
   this.setGlobalCurrent = function(n) { globalIndex = n }
   this.setNextAsGlobalCurrent = function() { globalIndex ++; }
@@ -54,7 +53,6 @@ const ArrayOfEquations = function(givenArray) {
   this.setNextAsTempCurrent = function() { tempIndex ++ }
   this.getTempCurrent = function() {return shuffledArray [ tempIndex ] };
 };
-
 const Counter = function() {
   let globalCounter = 0;
   let localCounter = 0;
@@ -66,7 +64,6 @@ const Counter = function() {
   this.getLocal = function(n) { return localCounter };
   this.incrementLocal = function(n) { localCounter ++ ; return localCounter };
 };
-
 const Score = function(initialValue) {
   let globalScore = 0;
   let strike = 0;
@@ -76,7 +73,6 @@ const Score = function(initialValue) {
   this.getGlobal = function() { return globalScore };
   // this.getBaseFrom = function(n) { localBase = n }; // How to define parameteras an anonymous function?""
 };
-
 const StoredValue = function(n) {
   let value;
   // if (n) {
@@ -87,7 +83,6 @@ const StoredValue = function(n) {
   this.set = function(k) { value = k };
   this.get = function() { return value};
 };
-
 const Array2D = function() {
   let topLevelArrays = new Array;
   this.addTopLevelArray = function() {
@@ -107,7 +102,6 @@ const Array2D = function() {
     return array;
   };
 };
-
 const createEl = function(tag, className, textContent) {
     const newElement = document.createElement(tag);
     newElement.className = className;
@@ -121,8 +115,6 @@ const createEl = function(tag, className, textContent) {
 
 const model = {
   init: function() {},
-  // equations: new ArrayOfEquations(),
-
   userData: {
       answers: {
         correct: [],
@@ -130,8 +122,6 @@ const model = {
       },
       score: new StoredValue(),
     },
-
-
 };
 ////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// *** C O N T R O L L E R *** ////////////////////////////////
@@ -143,7 +133,6 @@ const controller = {
       view.init();
   },
   array: new ArrayOfEquations(),
-  // setArrayInOrder: function() { return controller.array.getInOrder() }(),
   score: new Score(),
   counter: new Counter(),
   equations: {
@@ -179,10 +168,8 @@ const controller = {
           console.log("correct")
         },
         ifIncorrect: function(currentBatch, item) {
-          // model.userData.answers.incorrect.addTopLevelArray()
           model.userData.answers.incorrect.addItem(currentBatch, item);
           controller.score.strikeReset()
-          console.log("incorrect")
         },
         ifInvalid: function(inputField) {
           inputField.className = "invalid";
@@ -191,7 +178,7 @@ const controller = {
         ifDone: function(inputField) {
           inputField.className = "done";
           inputField.disabled = true;
-          console.log("not a number")
+          console.log("done")
         },
       };
     },
@@ -349,6 +336,7 @@ const view =  {
   },
   currentMainContent: new StoredValue (),  
   render: function() {
+  
     let index = this.currentMainContent.get()
     this.clear();
     this.sidebar.functionsAttached [ index ] .fire(); // decide on variable name (index / currentMainContent)
@@ -384,29 +372,29 @@ const view =  {
         name: "Fill the gap",
         fire: function() {
           console.log(this.name + " fired");
+          view.currentMainContent.set( 0 );
           view.equations.render();
         }
       },
       {
         name: "Complete the table",
         fire: function() {
-          console.log(this.name + " fired")
-          view.table.render().empty()
-
+          console.log(this.name + " fired");
+          view.currentMainContent.set( 1 );
+          view.table.render().empty();
         }
       },
       {
         name: "Practice again",
         fire: function() {
-                    console.log(this.name + " fired")
+          console.log(this.name + " fired");
 
         }
       },
       {
         name: "Count fast",
         fire: function() {
-                    console.log(this.name + " fired")
-
+          console.log(this.name + " fired");
         }
       },
       {
@@ -440,9 +428,10 @@ const view =  {
       }
     },
     events: function() {
-      for (let i = 0; i < this.children.length; i++) {
-        this.children[ i ].addEventListener("click", function (event) {
-          console.log("You clicked: " + this.children [ i ].textContent )
+      let children = this.children;
+      for (let i = 0; i < children.length; i++) {
+        children[ i ].addEventListener("click", function (event) {
+          console.log("You clicked: " + children [ i ].textContent )
           view.sidebar.functionsAttached[i].fire();
         })
       }       
@@ -457,6 +446,10 @@ const view =  {
     batchCounter:   controller.equations.batchCounter.getLocal(),
     maxAllowedOnPage: 7,
     counter: controller.counter,
+
+    //add start from square ONE !!!! zero all counters and generate new array
+
+
     render: function() {
       console.log(  controller.array.getShuffled() )
       this.counter.incrementGlobal();
@@ -479,7 +472,7 @@ const view =  {
         this.inputFieldEvents( this.counter.getLocal() );
       };      
     },
-    clearAll: function() {
+    clearAll: function() { // clear
       const allElements = view.main.children; 
       if (allElements.length > 0) {
         for (let i = allElements.length-1; i >= 0; i--) {
@@ -522,11 +515,9 @@ const view =  {
         let key = e.keyCode;
         if (key === 13) { 
           if (answerIsCorrect) {
-            controller.equations.proceed().ifCorrect( answer )
-            // proceed().whenCorrect() 
+            controller.equations.proceed().ifCorrect( answer ); 
           } else { 
-            controller.equations.proceed().ifIncorrect( currentBatch, currentItem )
-            // proceed().whenIncorrect() 
+            controller.equations.proceed().ifIncorrect( currentBatch, currentItem );
           };
           view.equations.update();
           if ( inputFields.length > 1) {
@@ -549,7 +540,7 @@ const view =  {
     //   model.userData.answers.incorrect.addItem(0, myArray[2])
     //   return myArray
     // }(),
-    render: function() {
+    render: function() {  
       const parentEl = view.main.appendChild(this.parentEl);
         return {
           filled: function() {
@@ -584,7 +575,12 @@ const view =  {
       }
     },
     clear: function() {
-
+      const allElements = this.parentEl.children; 
+      if (allElements.length > 0) {
+        for (let i = allElements.length-1; i >= 0; i--) {
+          view.main.removeChild( allElements[i] )
+        };        
+      };
     },
     events: function() {
       const tableSquares = this.tableSquares();
