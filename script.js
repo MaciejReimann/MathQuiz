@@ -163,8 +163,8 @@ const controller = {
       return {
         ifCorrect: function(item) {
           model.userData.answers.correct.push(item);
-          controller.score.strikeIncrement()
-          controller.score.globalIncrement()
+          controller.score.strikeIncrement();
+          controller.score.globalIncrement();
           console.log("correct")
         },
         ifIncorrect: function(currentBatch, item) {
@@ -474,7 +474,7 @@ const view =  {
       };
       this.counter.incrementLocal();
       if ( this.counter.getLocal() <= this.list.length ) {
-        this.inputFieldEvents( this.counter.getLocal() );
+        this.events ( this.counter.getLocal() );
       };      
     },
     clearAll: function() { // clear
@@ -507,26 +507,23 @@ const view =  {
       controller.equations.batchCounter.incrementLocal();
     }, 
     
-    inputFieldEvents: function(i) {
-       let currentBatch = view.equations.batchCounter
-      const inputFields = this.inputFields;
-      const answer = inputFields[ i-1 ].value;
+    events: function(i) {
+      let currentBatch = view.equations.batchCounter;
+      const inputFields = this.inputFields;      
       let currentItem = controller.array.getGlobalCurrent();
-      const answerIsCorrect = controller.equations.number().checkAnswer( answer );      
+      let lastElement = inputFields[ i-1 ];      
       if (i <= inputFields.length ) { 
         inputFields [ this.counter.getLocal() - 1 ].focus();
       };
-      inputFields[ i-1 ].addEventListener("keypress", function onEnter (e) {
+      lastElement.addEventListener("keypress", function onEnter (e) {
         let key = e.keyCode;
+        let answer = lastElement.value;
         if (key === 13) { 
-          if (answerIsCorrect) {
-            controller.equations.proceed().ifCorrect( answer ); 
-          } else { 
-            controller.equations.proceed().ifIncorrect( currentBatch, currentItem );
-          };
+          controller.equations.number().checkAnswer( answer );
+          controller.equations.proceed().ifDone( lastElement );
           view.equations.update();
           if ( inputFields.length > 1) {
-            inputFields[ i-1 ].removeEventListener("keypress", onEnter);
+            lastElement.removeEventListener("keypress", onEnter);
           };
         };       
       });
