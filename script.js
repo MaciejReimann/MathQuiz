@@ -1,7 +1,10 @@
 
-/*   
+/*   TO DO LIST:
+0. Attach a Bonus! module; 
+1. Add saveCurrentState() to model.table.currentState
+2. Add saveCurrentState() to model.equations.currentState
 3. Add a message/instruction field;
-4. Add a side navigation bar;
+4. Add model.save().toLocalStorage
 */
 const shuffle = function(array) {
    for (let i = array.length - 1; i > 0; i--) {
@@ -468,7 +471,7 @@ const view =  {
     pageCounter: new Counter(), 
     maxAllowedOnPage: 7,
     batchLength: function() {return this.list.length },
-    batchCounter:   controller.equations.batchCounter.get(),    
+    batchCounter: controller.equations.batchCounter.get(),    
     displayedOnPage: controller.equations.displayedOnPage,
     displayedUntilNow: new Counter(),
 
@@ -493,7 +496,7 @@ const view =  {
         };          
       };
       this.displayedOnPage.increment();
-      if ( this.displayedOnPage.get() <= this.list.length ) {
+      if ( this.displayedOnPage.get() <= this.batchLength() ) {
         this.events ( this.displayedOnPage.get() );
       };      
     },
@@ -503,8 +506,7 @@ const view =  {
         this.startNewBatch() 
       };
       if (this.batchLength === 0) {alert("proceed")} // TO NEXT PAGE
-      controller.array.setNextAsGlobalCurrent(); // MODEL
-      console.log(  view.equations.pageCounter.get() );
+          controller.array.setNextAsGlobalCurrent(); // MODEL
       view.render();       
     },
     // startNewBatch: function() {
@@ -524,15 +526,24 @@ const view =  {
       let currentBatch = view.equations.batchCounter;
       const inputFields = this.inputFields;      
       let currentItem = controller.array.getGlobalCurrent();
-      let lastElement = inputFields[ i-1 ];      
+      let lastElement = inputFields[ i-1 ];
+      let lastAnswer = lastElement.value;   
       if (i <= inputFields.length ) { 
         inputFields [ this.displayedOnPage.get() - 1 ].focus();
       };
-      lastElement.addEventListener("keypress", function onEnter (e) {
+      lastElement.addEventListener("input", function () {
+        const lastAnswer = lastElement.value;
+        const inputIsValid = controller.equations.inputIsValid( lastAnswer, lastElement );
+        if ( inputIsValid ) {
+          lastElement.focus();
+        };
+      });
+      lastElement.addEventListener("keypress", function onEnter (e) {        
+        let lastAnswer = lastElement.value;
+        const inputIsValid = controller.equations.inputIsValid( lastAnswer, lastElement );
         let key = e.keyCode;
-        let answer = lastElement.value;
-        if (key === 13) { 
-          controller.equations.number().checkAnswer( answer );
+        if ( key === 13 && inputIsValid ) { 
+          controller.equations.number().checkAnswer( lastAnswer );
           controller.equations.proceed().ifDone( lastElement );
           view.equations.update();
           if ( inputFields.length > 1) {
@@ -608,7 +619,7 @@ const view =  {
           const lastElement = tableSquares[ i ].firstElementChild;
           const lastAnswer = lastElement.value;
           const inputIsValid = controller.equations.inputIsValid( lastAnswer, lastElement );
-          if ( ! inputIsValid ) { 
+          if ( ! inputIsValid ) {
             tableSquares[ i ].firstElementChild.focus() 
           };
         });
