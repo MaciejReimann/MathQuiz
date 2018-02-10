@@ -421,9 +421,10 @@ const view =  {
       };  
     },    
     displayAs: function() {
+      let children = Array.from(view.sidebar.children);
       return {
         active: function(element) {
-          this.children.map(function(el) { el.className = "inactive" });
+          children.map(function(el) { el.className = "inactive" });
           element.className = "active";
         },
         completed: function() {},
@@ -434,6 +435,7 @@ const view =  {
       for (let i = 0; i < children.length; i++) {
         children[ i ].addEventListener("click", function (event) {
           console.log("You clicked: " + children [ i ].textContent )
+          view.sidebar.displayAs().active( children[ i ] );
           view.sidebar.functionsAttached[i].fire();
         })
       }       
@@ -448,6 +450,7 @@ const view =  {
     batchCounter:   controller.equations.batchCounter.getLocal(),
     maxAllowedOnPage: 7,
     counter: controller.counter,
+
 
     //add start from square ONE !!!! zero all counters and generate new array
 
@@ -593,21 +596,23 @@ const view =  {
         tableSquares[ i ].addEventListener("keydown", function onEnter (e) {
           const lastElement = tableSquares[ i ].firstElementChild;
           const lastAnswer = lastElement.value;
-          const needToSkipOne = !tableSquares[ i + 1 ].firstElementChild;
-          let key = e.keyCode; // DEPRECATED !!!
-          if (key === 13) {
+          const focusOnClosestEmptyField = function() {
+            for (let j = 0; j < tableSquares.length; j ++) {
+                if (tableSquares[ j ].firstElementChild !== null && tableSquares[ j ].firstElementChild.value === "") {
+                  tableSquares[ j ].firstElementChild.focus();
+                };
+              };
+          };          
+          let key = e.keyCode; // DEPRECATED !?!
+          if (key === 13) { // enter key
             controller.array.setGlobalCurrent( i );
-            if (lastAnswer !== "") { // empty field
+            if (lastAnswer !== "") { // not an empty field
               controller.equations.number().checkAnswer( lastAnswer );
               controller.equations.proceed().ifDone( lastElement );
             };
             if ( !tableSquares[ i + 1 ] ) { // last field
-              for (let j = 0; j < tableSquares.length; j ++) {
-                if (tableSquares[ j ].firstElementChild !== null && tableSquares[ j ].firstElementChild.value === "") {
-                  tableSquares[ j ].firstElementChild.focus();
-                };
-              };              
-            } else if ( needToSkipOne ) { 
+              focusOnClosestEmptyField();
+            } else if ( !tableSquares[ i + 1 ].firstElementChild ) { // need to skip one
               tableSquares[ i + 2 ].firstElementChild.focus(); // skip one forward
             } else {
               tableSquares[ i + 1 ].firstElementChild.focus();
@@ -615,34 +620,48 @@ const view =  {
             
             view.score.render();
           } else if (key === 39) { // arrow right
-            if ( needToSkipOne ) {
+            if (!tableSquares[ i + 1 ] ) { // last field
+              focusOnClosestEmptyField();
+            } else if ( !tableSquares[ i + 1 ].firstElementChild ) { // need to skip one
               tableSquares[ i + 2 ].firstElementChild.focus(); // skip one forward
             } else {
               console.log("right")
               tableSquares[ i + 1 ].firstElementChild.focus();
-            };       
+            }; 
           } else if (key === 37) { // arrow left
-            if ( !tableSquares[ i - 1 ].firstElementChild ) { 
+            if (!tableSquares[ i - 11 ] ) { // last field
+              focusOnClosestEmptyField();
+            } else if ( !tableSquares[ i - 1 ].firstElementChild ) { // need to skip one
               tableSquares[ i - 2 ].firstElementChild.focus(); // skip one back
             } else {
               console.log("left")
               tableSquares[ i - 1 ].firstElementChild.focus();
             };            
           } else if (key === 38) { // arrow top
-            console.log("top")
-            tableSquares[ i - 9 ].firstElementChild.focus();
+            if (!tableSquares[ i - 9 ] ) { // last field
+              focusOnClosestEmptyField();
+            } else if ( !tableSquares[ i - 9 ].firstElementChild ) { // need to skip one
+              focusOnClosestEmptyField();
+            } else {
+              console.log("top")
+              tableSquares[ i - 9 ].firstElementChild.focus();
+            };       
           } else if (key === 40) { // arrow down
-            console.log("down")
-            tableSquares[ i + 9 ].firstElementChild.focus();
+            if (!tableSquares[ i + 9 ] ) { // last field
+              focusOnClosestEmptyField();
+            } else if ( !tableSquares[ i + 9 ].firstElementChild ) { // need to skip one
+              focusOnClosestEmptyField();
+            } else {
+              console.log("down")
+              tableSquares[ i + 9 ].firstElementChild.focus();
+            };
           } else if ( key >= 65 && key <= 90 || key >= 186 && key <= 226 ) { // non numeric
              console.log("wrong key");
              controller.equations.proceed().ifInvalid( lastElement );
           };
           
         });
-        // tableSquares[ i ].addEventListener("change", function onChange (e) {
-        //   controller.equations.number().validateAnswer( lastAnswer );
-        // });
+
       };
     },
 
