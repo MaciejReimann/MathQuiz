@@ -54,15 +54,10 @@ const ArrayOfEquations = function(givenArray) {
   this.getTempCurrent = function() {return shuffledArray [ tempIndex ] };
 };
 const Counter = function() {
-  let globalCounter = 0;
-  let localCounter = 0;
-  this.setGlobal = function(n) { globalCounter = n; return globalCounter };
-  this.getGlobal = function(n) { return globalCounter };
-  this.incrementGlobal = function(n) { globalCounter ++ ;  return globalCounter };
-
-  this.setLocal = function(n) { localCounter = n ;  return localCounter };
-  this.getLocal = function(n) { return localCounter };
-  this.incrementLocal = function(n) { localCounter ++ ; return localCounter };
+  let counter = 0;
+  this.set = function(n) { counter = n ;  return counter };
+  this.get = function(n) { return counter };
+  this.increment = function(n) { counter ++ ; return counter };
 };
 const Score = function(initialValue) {
   let globalScore = 0;
@@ -108,9 +103,12 @@ const createEl = function(tag, className, textContent) {
     newElement.textContent = textContent;
     return newElement;
   };
-
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// *** M O D E L *** ///////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
 const model = {
@@ -124,7 +122,11 @@ const model = {
     },
 };
 ////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// *** C O N T R O L L E R *** ////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
 const controller = {
@@ -134,12 +136,12 @@ const controller = {
   },
   array: new ArrayOfEquations(),
   score: new Score(),
-  counter: new Counter(),
   equations: {
     batchCounter: new Counter(),
+    displayedOnPage: new Counter(),
     number: function() {
       const currentItem = controller.array.getGlobalCurrent();
-      const currentBatch = controller.equations.batchCounter.getLocal();
+      const currentBatch = controller.equations.batchCounter.get();
       return {
         x: currentItem.x,
         y: currentItem.y,
@@ -158,8 +160,17 @@ const controller = {
         }, 
       };
     },
+    inputIsValid: function(answer, element) {
+      if ( isNaN( answer ) ) {
+        this.proceed().ifInvalid( element );
+        return false;
+      } else {
+        this.proceed().ifValid( element );
+        return true;
+      };
+    },
     proceed: function() {
-      const currentBatch = controller.equations.batchCounter.getLocal();
+      const currentBatch = controller.equations.batchCounter.get();
       return {
         ifCorrect: function(item) {
           model.userData.answers.correct.push(item);
@@ -175,6 +186,10 @@ const controller = {
           inputField.className = "invalid";
           console.log("not a number")
         },
+        ifValid: function(inputField) {
+          inputField.className = "input-fields";
+          console.log(" a number")
+        },
         ifDone: function(inputField) {
           inputField.className = "done";
           inputField.disabled = true;
@@ -184,8 +199,9 @@ const controller = {
     },
     type: function() {
       let number = this.number;
+      let displayedOnPage = this.displayedOnPage;
       const array = controller.array;
-      const counter = controller.counter;
+      // const counter = controller.counter;
       const inputField = createEl("input", "equationElements");
       const equationArray = [
         createEl ("div", "equationElements", this.number().x ),
@@ -200,20 +216,20 @@ const controller = {
             blankFirst: function() {
               equationArray[0] = inputField;
               equationArray[4] = createEl ("div", "equationElements",  number().z );
-              array.getShuffled()[ controller.counter.getLocal() ].inputPosition = "x";
-              counter.incrementLocal();
+              array.getShuffled()[ displayedOnPage.get() ].inputPosition = "x";
+              displayedOnPage.increment();
               return equationArray;
             },
             blankSecond: function() {
               equationArray[2] = inputField;
               equationArray[4] = createEl ("div", "equationElements",  number().z );
-              array.getShuffled()[controller.counter.getLocal()].inputPosition = "y";
-              counter.incrementLocal();
+              array.getShuffled()[displayedOnPage.get()].inputPosition = "y";
+              displayedOnPage.increment();
               return equationArray;
             },
             blankThird: function() {
-              array.getShuffled()[controller.counter.getLocal()].inputPosition = "z";
-              counter.incrementLocal();
+              array.getShuffled()[displayedOnPage.get()].inputPosition = "z";
+              displayedOnPage.increment();
               return equationArray;
             },
           };
@@ -228,20 +244,20 @@ const controller = {
             blankFirst: function() {
               equationArray[0] = inputField;
               equationArray[4] = createEl ("div", "equationElements",  number().x );
-              array.getShuffled()[ controller.counter.getLocal() ].inputPosition = "z";    
-              counter.incrementLocal();
+              array.getShuffled()[ displayedOnPage.get() ].inputPosition = "z";    
+              displayedOnPage.increment();
               return equationArray;
             },
             blankSecond: function() {
               equationArray[2] = inputField;
               equationArray[4] = createEl ("div", "equationElements",  number().x );
-              array.getShuffled()[ controller.counter.getLocal() ].inputPosition = "y";
-              counter.incrementLocal();
+              array.getShuffled()[ displayedOnPage.get() ].inputPosition = "y";
+              displayedOnPage.increment();
               return equationArray;
             },
             blankThird: function() {
-              array.getShuffled()[ controller.counter.getLocal() ].inputPosition = "x";
-              counter.incrementLocal();
+              array.getShuffled()[ displayedOnPage.get() ].inputPosition = "x";
+              displayedOnPage.increment();
               return equationArray;
             },
           };
@@ -294,7 +310,7 @@ const controller = {
         };
       };
       controller.array.setGlobalCurrent(0);
-      controller.counter.setLocal(0);
+      controller.equations.displayedOnPage.set(0);
       model.userData.answers.incorrect.addTopLevelArray();
       return listOfEquations;
     },
@@ -325,7 +341,11 @@ const controller = {
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////// *** V I E W *** //////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
 const view =  {
@@ -344,12 +364,12 @@ const view =  {
     this.sidebar.render();
   },
   clear: function() { // make a new ClearParent() constructor for all clear() functions and pass DOM elements as parameters
-    if (this.main.children) {
-      const allElements = this.main.children; 
+    if (view.main.children) {
+      const allElements = view.main.children;
       for (let i = allElements.length-1; i >= 0; i--) {
         view.main.removeChild( allElements[i] )
-      };        
-    };     
+      };
+    };
   },
   score: {
     scoreParent: document.querySelector('.score'),
@@ -446,66 +466,59 @@ const view =  {
     inputFields: document.getElementsByTagName('INPUT'),
     list: controller.equations.generateList(),
     pageCounter: new Counter(), 
-    batchLength: function() {return this.list.length },
-    batchCounter:   controller.equations.batchCounter.getLocal(),
     maxAllowedOnPage: 7,
-    counter: controller.counter,
+    batchLength: function() {return this.list.length },
+    batchCounter:   controller.equations.batchCounter.get(),    
+    displayedOnPage: controller.equations.displayedOnPage,
+    displayedUntilNow: new Counter(),
 
 
     //add start from square ONE !!!! zero all counters and generate new array
 
+    render: function() {      
+      let currentBatch = this.pageCounter.get() * this.maxAllowedOnPage;
 
-    render: function() {
-      console.log(  controller.array.getShuffled() )
-      this.counter.incrementGlobal();
-      let currentBatch = this.pageCounter.getLocal() * this.maxAllowedOnPage;
-      if (this.counter.getLocal() === this.maxAllowedOnPage - 1) {
-        this.pageCounter.incrementLocal();
+      this.displayedUntilNow.increment();
+      if (this.displayedOnPage.get() === this.maxAllowedOnPage - 1) {
+        this.pageCounter.increment();
       };
-      if (this.counter.getLocal() === this.maxAllowedOnPage) {
-        this.clearAll();
-        this.counter.setLocal(0);
+      if (this.displayedOnPage.get() === this.maxAllowedOnPage) {
+        view.clear();
+        this.displayedOnPage.set(0);
       };
-      if (this.counter.getLocal() >= 0 && this.counter.getLocal() < this.maxAllowedOnPage ) {
-        this.clearAll();
-        for (let i = currentBatch ; i <= this.counter.getLocal() + currentBatch ; i ++ ) {
+      if (this.displayedOnPage.get() >= 0 && this.displayedOnPage.get() < this.maxAllowedOnPage ) {
+        view.clear();
+        for (let i = currentBatch ; i <= this.displayedOnPage.get() + currentBatch ; i ++ ) {
             view.main.appendChild( this.list[ i ] );
         };          
       };
-      this.counter.incrementLocal();
-      if ( this.counter.getLocal() <= this.list.length ) {
-        this.events ( this.counter.getLocal() );
+      this.displayedOnPage.increment();
+      if ( this.displayedOnPage.get() <= this.list.length ) {
+        this.events ( this.displayedOnPage.get() );
       };      
     },
-    clearAll: function() { // clear
-      const allElements = view.main.children; 
-      if (allElements.length > 0) {
-        for (let i = allElements.length-1; i >= 0; i--) {
-          view.main.removeChild( allElements[i] )
-        };        
-      };
-    },
+
     update: function() {
-      if (this.counter.getGlobal() === this.batchLength() ) {
+      if (this.displayedUntilNow.get() === this.batchLength() ) {
         this.startNewBatch() 
       };
       if (this.batchLength === 0) {alert("proceed")} // TO NEXT PAGE
       controller.array.setNextAsGlobalCurrent(); // MODEL
-      console.log(  view.equations.pageCounter.getLocal() );
+      console.log(  view.equations.pageCounter.get() );
       view.render();       
     },
-    startNewBatch: function() {
-      let batchCounter = controller.equations.batchCounter.getLocal();      
-      controller.counter.setGlobal(0);
-      controller.counter.setLocal(0);
-      view.equations.pageCounter.setLocal(0);
-      model.equations = new ArrayOfEquations( model.userData.answers.incorrect.getArray( batchCounter ) );  // MODEL
-      this.list = controller.generateList();
-      model.equations.setGlobalCurrent(-1);   // MODEL
-      console.log(  model.userData.answers.incorrect.getArray( batchCounter ) )
-      console.log(  model.equations.getShuffled() )
-      controller.equations.batchCounter.incrementLocal();
-    }, 
+    // startNewBatch: function() {
+    //   let batchCounter = controller.equations.batchCounter.getLocal();      
+    //   controller.counter.setGlobal(0);
+    //   controller.counter.setLocal(0);
+    //   view.equations.pageCounter.setLocal(0);
+    //   model.equations = new ArrayOfEquations( model.userData.answers.incorrect.getArray( batchCounter ) );  // MODEL
+    //   this.list = controller.generateList();
+    //   model.equations.setGlobalCurrent(-1);   // MODEL
+    //   console.log(  model.userData.answers.incorrect.getArray( batchCounter ) )
+    //   console.log(  model.equations.getShuffled() )
+    //   controller.equations.batchCounter.incrementLocal();
+    // }, 
     
     events: function(i) {
       let currentBatch = view.equations.batchCounter;
@@ -513,7 +526,7 @@ const view =  {
       let currentItem = controller.array.getGlobalCurrent();
       let lastElement = inputFields[ i-1 ];      
       if (i <= inputFields.length ) { 
-        inputFields [ this.counter.getLocal() - 1 ].focus();
+        inputFields [ this.displayedOnPage.get() - 1 ].focus();
       };
       lastElement.addEventListener("keypress", function onEnter (e) {
         let key = e.keyCode;
@@ -578,7 +591,7 @@ const view =  {
       }
     },
     clear: function() {
-      const allElements = this.parentEl.children; 
+      const allElements = this.parentEl.children;
       if (allElements.length > 0) {
         for (let i = allElements.length-1; i >= 0; i--) {
           this.parentEl.removeChild( allElements[i] )
@@ -586,22 +599,33 @@ const view =  {
       };
     },
     events: function() {
-      const tableSquares = this.tableSquares();
+      const tableSquares = this.tableSquares();      
       tableSquares[ 10 ].firstElementChild.focus();
       controller.array.setGlobalCurrent(10);
+
       for (let i = 0; i < tableSquares.length; i++) {
+        tableSquares[ i ].addEventListener("input", function () {
+          const lastElement = tableSquares[ i ].firstElementChild;
+          const lastAnswer = lastElement.value;
+          const inputIsValid = controller.equations.inputIsValid( lastAnswer, lastElement );
+          if ( ! inputIsValid ) { 
+            tableSquares[ i ].firstElementChild.focus() 
+          };
+        });
         tableSquares[ i ].addEventListener("keydown", function onEnter (e) {
           const lastElement = tableSquares[ i ].firstElementChild;
           const lastAnswer = lastElement.value;
+          const inputIsValid = controller.equations.inputIsValid( lastAnswer, lastElement );
           const focusOnClosestEmptyField = function() {
             for (let j = 0; j < tableSquares.length; j ++) {
-                if (tableSquares[ j ].firstElementChild !== null && tableSquares[ j ].firstElementChild.value === "") {
-                  tableSquares[ j ].firstElementChild.focus();
-                };
+              if (tableSquares[ j ].firstElementChild !== null && tableSquares[ j ].firstElementChild.value === "") {
+                tableSquares[ j ].firstElementChild.focus();
               };
-          };          
+            };
+          };
           let key = e.keyCode; // DEPRECATED !?!
-          if (key === 13) { // enter key
+
+          if ( key === 13 && inputIsValid ) { // enter key
             controller.array.setGlobalCurrent( i );
             if (lastAnswer !== "") { // not an empty field
               controller.equations.number().checkAnswer( lastAnswer );
@@ -613,9 +637,9 @@ const view =  {
               tableSquares[ i + 2 ].firstElementChild.focus(); // skip one forward
             } else {
               tableSquares[ i + 1 ].firstElementChild.focus();
-            };
-            
+            };            
             view.score.render();
+
           } else if (key === 39) { // arrow right
             if (!tableSquares[ i + 1 ] ) { // last field
               focusOnClosestEmptyField();
@@ -624,7 +648,8 @@ const view =  {
             } else {
               console.log("right")
               tableSquares[ i + 1 ].firstElementChild.focus();
-            }; 
+            };
+
           } else if (key === 37) { // arrow left
             if (!tableSquares[ i - 11 ] ) { // last field
               focusOnClosestEmptyField();
@@ -633,7 +658,8 @@ const view =  {
             } else {
               console.log("left")
               tableSquares[ i - 1 ].firstElementChild.focus();
-            };            
+            };
+
           } else if (key === 38) { // arrow top
             if (!tableSquares[ i - 9 ] ) { // last field
               focusOnClosestEmptyField();
@@ -642,7 +668,8 @@ const view =  {
             } else {
               console.log("top")
               tableSquares[ i - 9 ].firstElementChild.focus();
-            };       
+            };
+
           } else if (key === 40) { // arrow down
             if (!tableSquares[ i + 9 ] ) { // last field
               focusOnClosestEmptyField();
@@ -652,11 +679,7 @@ const view =  {
               console.log("down")
               tableSquares[ i + 9 ].firstElementChild.focus();
             };
-          } else if ( key >= 65 && key <= 90 || key >= 186 && key <= 226 ) { // non numeric
-             console.log("wrong key");
-             controller.equations.proceed().ifInvalid( lastElement );
           };
-          
         });
 
       };
