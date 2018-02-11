@@ -72,9 +72,10 @@ const Score = function(initialValue) {
   this.getGlobal = function() { return globalScore };
   // this.getBaseFrom = function(n) { localBase = n }; // How to define parameteras an anonymous function?""
 };
-const StoredValue = function(n) {
+const StoredValue = function(k) {
   let value;
-  this.set = function(k) { value = k };
+  if (k) { value = k }
+  this.set = function(n) { value = n };
   this.get = function() { return value};
 };
 const Array2D = function() {
@@ -133,33 +134,37 @@ const controller = {
       model.init();
       view.init();
   },
-  currentArray: new StoredValue,
+  currentArray: new StoredValue(),
   score: new Score(),
   equations: {
     array: new ArrayOfEquations(),
     batchCounter: new Counter(),
-    displayedOnPage: new Counter(),
-    number: function() {
-      const currentItem = controller.equations.array.getGlobalCurrent();
-      const currentBatch = controller.equations.batchCounter.get();
-      return {
-        x: currentItem.x,
-        y: currentItem.y,
-        z: currentItem.z,
-        inputPosition: currentItem.inputPosition,
-        checkAnswer: function(inputValue) {
-          const answer = parseInt(inputValue);
-          const correctAnswer = this[this.inputPosition];
-          controller.equations.array.setUserAnswer(answer);
-          if (answer === correctAnswer) {
-            controller.equations.proceed().ifCorrect( this );
-            return true;
-          } else {
-            controller.equations.proceed().ifIncorrect( currentBatch, this );
-            return false;
-          };
-        }, 
-      };
+    number: function() {      
+      if (controller.currentArray.get() === undefined) {
+        controller.currentArray.set( controller.equations.array )
+        console.log("osadnfon")
+      }
+        let currentItem = controller.currentArray.get().getGlobalCurrent();
+        const currentBatch = controller.equations.batchCounter.get();
+        return {
+          x: currentItem.x,
+          y: currentItem.y,
+          z: currentItem.z,
+          inputPosition: currentItem.inputPosition,
+          checkAnswer: function(inputValue) {
+            const answer = parseInt(inputValue);
+            const correctAnswer = this[this.inputPosition];
+            controller.currentArray.get().setUserAnswer(answer);
+            if (answer === correctAnswer) {
+              controller.equations.proceed().ifCorrect( this );
+              return true;
+            } else {
+              controller.equations.proceed().ifIncorrect( currentBatch, this );
+              return false;
+            };
+          }, 
+        };
+      
     },
     inputIsValid: function(answer, element) {
       if ( isNaN( answer ) ) {
@@ -201,7 +206,6 @@ const controller = {
     counter: new Counter(-1),
     type: function() {
       let number = this.number;
-      let displayedOnPage = this.displayedOnPage;
       const array = this.array.getShuffled();
       const counter = this.counter;
      
@@ -396,7 +400,8 @@ const view =  {
         name: "Fill the gap",
         fire: function() {
           console.log(this.name + " fired");
-          controller.currentArray.set( controller.equations.array);
+          view.equations.checkIfDone()
+          controller.currentArray.set( controller.equations.array )
           view.currentMainContent.set( 0 );
           view.clear();
           view.equations.render();
@@ -406,6 +411,7 @@ const view =  {
         name: "Complete the table",
         fire: function() {
           console.log(this.name + " fired");
+          controller.currentArray.set( controller.table.array )
           view.currentMainContent.set( 1 );
           view.clear();
           view.table.render().empty();
@@ -473,13 +479,13 @@ const view =  {
 -----------------------------------------------------------------------------------------------------
 */
   equations: {
-    inputFields: document.getElementsByTagName('INPUT'),
+    inputFields: function() { return document.getElementsByTagName('INPUT') } ,
     list: controller.equations.generateList(),
     pageCounter: new Counter(), 
     maxAllowedOnPage: 7,
     batchLength: function() {return this.list.length },
     batchCounter: controller.equations.batchCounter.get(),    
-    displayedOnPage: controller.equations.displayedOnPage,
+    displayedOnPage: new Counter,
     displayedUntilNow: new Counter(),
 
 
@@ -489,6 +495,11 @@ const view =  {
       let maxAllowedOnPage = this.maxAllowedOnPage;
       let displayedOnPage = this.displayedOnPage;
       let currentBatch = this.pageCounter.get() * maxAllowedOnPage;
+      
+      if ( this.isNotDone.get() ) { 
+        console.log( displayedOnPage.get() )
+        displayedOnPage.set ( displayedOnPage.get() - 1 );
+      }
 
       if ( this.isFinished() ) {
         console.log("finished");
@@ -510,8 +521,12 @@ const view =  {
           };
           
         };
-        this.displayedOnPage.increment();
+        
+         this.isNotDone.set(false)
+        console.log( displayedOnPage.get() )
+        displayedOnPage.increment();
         this.displayedUntilNow.increment();
+       
 
         if ( displayedOnPage.get() <= this.batchLength() ) {
           this.events ( displayedOnPage.get() );
@@ -523,9 +538,17 @@ const view =  {
         return true;
       } else {
         return false;
-      };  
-            
+      };            
     },
+    checkIfDone: function() {
+      if (this.inputFields().length > 0) {
+        if (this.inputFields() [ this.inputFields().length - 1].className !== "done") {
+          this.isNotDone.set(true);
+          return true;
+        };
+      }
+    },
+    isNotDone: new StoredValue(),
     // startNewBatch: function() {
     //   let batchCounter = controller.equations.batchCounter.getLocal();      
     //   controller.counter.setGlobal(0);
@@ -541,7 +564,7 @@ const view =  {
     
     events: function(i) {
       let currentBatch = view.equations.batchCounter;
-      const inputFields = this.inputFields;      
+      const inputFields = this.inputFields();      
       // let currentItem = controller.array.getGlobalCurrent();
       let lastElement = inputFields[ i-1 ];
 
@@ -560,6 +583,8 @@ const view =  {
         if ( key === 13 && inputIsValid ) {          
           controller.equations.number().checkAnswer( lastAnswer );
           controller.equations.proceed().ifDone( lastElement );
+
+          console.log( lastAnswer )
           controller.equations.array.setNextAsGlobalCurrent();
           view.render();
           if ( inputFields.length > 1) {
