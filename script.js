@@ -21,6 +21,7 @@ const Equation = function(i, j) {
   this.z = i * j;
   this.inputPosition = "";
   this.index = (i-1).toString() + (j-1).toString();
+  this.userAnswer = "";
 };
 const ArrayOfEquations = function(givenArray) {
   let globalIndex = 0; 
@@ -73,11 +74,6 @@ const Score = function(initialValue) {
 };
 const StoredValue = function(n) {
   let value;
-  // if (n) {
-  //   value = n;
-  // } else { 
-  //   value = "no value"; 
-  // };
   this.set = function(k) { value = k };
   this.get = function() { return value};
 };
@@ -119,7 +115,7 @@ const model = {
   userData: {
       answers: {
         correct: [],
-        incorrect: new Array2D,
+        incorrect: new Array2D, // add a functions that fires when this.length = 0;
       },
       score: new StoredValue(),
     },
@@ -341,6 +337,7 @@ const controller = {
    },
 
  },
+ table: {},
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -478,36 +475,44 @@ const view =  {
 
     //add start from square ONE !!!! zero all counters and generate new array
 
-    render: function() {      
-      let currentBatch = this.pageCounter.get() * this.maxAllowedOnPage;
+    render: function() {
+      let maxAllowedOnPage = this.maxAllowedOnPage;
+      let displayedOnPage = this.displayedOnPage;
+      let currentBatch = this.pageCounter.get() * maxAllowedOnPage;
+      if ( this.isFinished() ) {
+        console.log("finished");
+        // proceed().toNextFunction();
+      } else { //rendernextequation?
+        if (displayedOnPage.get() === maxAllowedOnPage - 1) {
+          this.pageCounter.increment();
+        }; // this happens when the last (maxallowed) equation has been displayed;
 
-      this.displayedUntilNow.increment();
-      if (this.displayedOnPage.get() === this.maxAllowedOnPage - 1) {
-        this.pageCounter.increment();
+        if (displayedOnPage.get() === maxAllowedOnPage) {
+          view.clear();
+          displayedOnPage.set(0);
+        } // this happens when the last (maxallowed) equation has been displayed and enter hit;
+
+        if (displayedOnPage.get() >= 0 ) {
+          view.clear();
+          for (let i = currentBatch ; i <= displayedOnPage.get() + currentBatch ; i ++ ) {
+              view.main.appendChild( this.list[ i ] );
+          };
+        };
+        displayedOnPage.increment();
+        this.displayedUntilNow.increment();
+
+        if ( displayedOnPage.get() <= this.batchLength() ) {
+          this.events ( displayedOnPage.get() );
+        }; // this assigns event to the input field on the last equation when there is at least one on the page
       };
-      if (this.displayedOnPage.get() === this.maxAllowedOnPage) {
-        view.clear();
-        this.displayedOnPage.set(0);
-      };
-      if (this.displayedOnPage.get() >= 0 && this.displayedOnPage.get() < this.maxAllowedOnPage ) {
-        view.clear();
-        for (let i = currentBatch ; i <= this.displayedOnPage.get() + currentBatch ; i ++ ) {
-            view.main.appendChild( this.list[ i ] );
-        };          
-      };
-      this.displayedOnPage.increment();
-      if ( this.displayedOnPage.get() <= this.batchLength() ) {
-        this.events ( this.displayedOnPage.get() );
-      };      
     },
-
-    update: function() {
+    isFinished: function() {
       if (this.displayedUntilNow.get() === this.batchLength() ) {
-        this.startNewBatch() 
-      };
-      if (this.batchLength === 0) {alert("proceed")} // TO NEXT PAGE
-          controller.array.setNextAsGlobalCurrent(); // MODEL
-      view.render();       
+        return true;
+      } else {
+        return false;
+      };  
+            
     },
     // startNewBatch: function() {
     //   let batchCounter = controller.equations.batchCounter.getLocal();      
@@ -527,15 +532,13 @@ const view =  {
       const inputFields = this.inputFields;      
       let currentItem = controller.array.getGlobalCurrent();
       let lastElement = inputFields[ i-1 ];
-      let lastAnswer = lastElement.value;   
-      if (i <= inputFields.length ) { 
-        inputFields [ this.displayedOnPage.get() - 1 ].focus();
-      };
+
+      lastElement.focus();        
       lastElement.addEventListener("input", function () {
         const lastAnswer = lastElement.value;
         const inputIsValid = controller.equations.inputIsValid( lastAnswer, lastElement );
         if ( inputIsValid ) {
-          lastElement.focus();
+            lastElement.focus();
         };
       });
       lastElement.addEventListener("keypress", function onEnter (e) {        
@@ -545,15 +548,17 @@ const view =  {
         if ( key === 13 && inputIsValid ) { 
           controller.equations.number().checkAnswer( lastAnswer );
           controller.equations.proceed().ifDone( lastElement );
-          view.equations.update();
+          view.render();
           if ( inputFields.length > 1) {
             lastElement.removeEventListener("keypress", onEnter);
           };
         };       
       });
+      
     },
 
   },
+
   table: {
     tableSquares: function() {return document.getElementsByClassName('table')[0].children },
     parentEl: createEl("div", "table"),
@@ -577,7 +582,7 @@ const view =  {
               parentEl.appendChild(square);
               square.className = "the-rest";
               for (let i = 0; i < incorrectAnswers.length; i ++ ) {
-                if (value.x ===  incorrectAnswers[i].x && value.y === incorrectAnswers[i].y ) { 
+                if (value.x ===  incorrectAnswers[i].x && value.y === incorrectAnswers[i].y ) {
                   square.className = "first-rows" 
                 };
               };        
