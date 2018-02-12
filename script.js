@@ -142,7 +142,6 @@ const controller = {
     number: function() {      
       if (controller.currentArray.get() === undefined) {
         controller.currentArray.set( controller.equations.array )
-        console.log("osadnfon")
       }
         let currentItem = controller.currentArray.get().getGlobalCurrent();
         const currentBatch = controller.equations.batchCounter.get();
@@ -166,7 +165,7 @@ const controller = {
         };
       
     },
-    inputIsValid: function(answer, element) {
+    checkIfInputIsValid: function(answer, element) {
       if ( isNaN( answer ) ) {
         this.proceed().ifInvalid( element );
         return false;
@@ -190,11 +189,9 @@ const controller = {
         },
         ifInvalid: function(inputField) {
           inputField.className = "invalid";
-          console.log("not a number")
         },
         ifValid: function(inputField) {
           inputField.className = "input-fields";
-          console.log(" a number")
         },
         ifDone: function(inputField) {
           inputField.className = "done";
@@ -367,8 +364,8 @@ const view =  {
     this.sidebar.render();
   },
   clear: function() { // make a new ClearParent() constructor for all clear() functions and pass DOM elements as parameters
-    if (view.main.children) {
-      const allElements = view.main.children;
+    if (this.main.children) {
+      const allElements = this.main.children;
       for (let i = allElements.length-1; i >= 0; i--) {
         view.main.removeChild( allElements[i] )
       };
@@ -410,7 +407,7 @@ const view =  {
       {
         name: "Complete the table",
         fire: function() {
-          console.log(this.name + " fired");
+          console.log( view.equations.displayedOnPage.get() )
           controller.currentArray.set( controller.table.array )
           view.currentMainContent.set( 1 );
           view.clear();
@@ -492,17 +489,19 @@ const view =  {
     //add start from square ONE !!!! zero all counters and generate new array
 
     render: function() {
+      console.log("rendered")
       let maxAllowedOnPage = this.maxAllowedOnPage;
       let displayedOnPage = this.displayedOnPage;
       let currentBatch = this.pageCounter.get() * maxAllowedOnPage;
       
       if ( this.isNotDone.get() ) { 
-        console.log( displayedOnPage.get() )
+        console.log( "1 " + displayedOnPage.get() )
         displayedOnPage.set ( displayedOnPage.get() - 1 );
+
       }
+      console.log("2 " +  this.displayedOnPage.get() )
 
       if ( this.isFinished() ) {
-        console.log("finished");
         // proceed().toNextFunction();
       } else { //rendernextequation?
         if (displayedOnPage.get() === maxAllowedOnPage - 1) {
@@ -513,22 +512,17 @@ const view =  {
           view.clear();
           displayedOnPage.set(0);
         } // this happens when the last (maxallowed) equation has been displayed and enter hit;
-
+      
         if (displayedOnPage.get() >= 0 ) {
           view.clear();
           for (let i = currentBatch ; i <= displayedOnPage.get() + currentBatch ; i ++ ) {
               view.main.appendChild( this.list[ i ] );
-          };
-          
+          };          
         };
-        
-         this.isNotDone.set(false)
-        console.log( displayedOnPage.get() )
         displayedOnPage.increment();
         this.displayedUntilNow.increment();
-       
-
-        if ( displayedOnPage.get() <= this.batchLength() ) {
+        
+        if ( displayedOnPage.get() <= this.batchLength() && ! this.isNotDone.get() ) {
           this.events ( displayedOnPage.get() );
         }; // this assigns event to the input field on the last equation when there is at least one on the page
       };
@@ -571,21 +565,20 @@ const view =  {
       lastElement.focus();        
       lastElement.addEventListener("input", function () {
         const lastAnswer = lastElement.value;
-        const inputIsValid = controller.equations.inputIsValid( lastAnswer, lastElement );
+        const inputIsValid = controller.equations.checkIfInputIsValid ( lastAnswer, lastElement );
         if ( inputIsValid ) {
             lastElement.focus();
         };
       });
       lastElement.addEventListener("keypress", function onEnter (e) {        
         let lastAnswer = lastElement.value;
-        const inputIsValid = controller.equations.inputIsValid( lastAnswer, lastElement );
+        const inputIsValid = controller.equations.checkIfInputIsValid ( lastAnswer, lastElement );
         let key = e.keyCode;
         if ( key === 13 && inputIsValid ) {          
           controller.equations.number().checkAnswer( lastAnswer );
           controller.equations.proceed().ifDone( lastElement );
-
-          console.log( lastAnswer )
           controller.equations.array.setNextAsGlobalCurrent();
+          view.equations.isNotDone.set(false); // a flag to control adding one more eqation while rendering 
           view.render();
           if ( inputFields.length > 1) {
             lastElement.removeEventListener("keypress", onEnter);
@@ -670,7 +663,7 @@ const view =  {
         tableSquares[ i ].addEventListener("input", function () {
           const lastElement = tableSquares[ i ].firstElementChild;
           const lastAnswer = lastElement.value;
-          const inputIsValid = controller.equations.inputIsValid( lastAnswer, lastElement );
+          const inputIsValid = controller.equations.checkIfInputIsValid ( lastAnswer, lastElement );
           if ( ! inputIsValid ) {
             tableSquares[ i ].firstElementChild.focus() 
           };
@@ -678,7 +671,7 @@ const view =  {
         tableSquares[ i ].addEventListener("keydown", function onEnter (e) {
           const lastElement = tableSquares[ i ].firstElementChild;
           const lastAnswer = lastElement.value;
-          const inputIsValid = controller.equations.inputIsValid( lastAnswer, lastElement );
+          const inputIsValid = controller.equations.checkIfInputIsValid ( lastAnswer, lastElement );
           const focusOnClosestEmptyField = function() {
             for (let j = 0; j < tableSquares.length; j ++) {
               if (tableSquares[ j ].firstElementChild !== null && tableSquares[ j ].firstElementChild.value === "") {
