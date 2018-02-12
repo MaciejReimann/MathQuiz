@@ -9,17 +9,18 @@
   /**************  GRID  **************/ 
   .header { grid-area: header; }
   .score { grid-area: score; }
+  .table-miniature { grid-area: table-miniature; }
   .main { grid-area: main; }
   .sidebar { grid-area: sidebar; }
   .footer { grid-area: footer; }
 
   .page {
     display: grid; 
-    grid-template-columns: 250px 1fr 100px;
+    grid-template-columns: 250px 1fr 100px 100px;
     grid-template-rows: 100px 1fr 50px;
-    grid-template-areas: "header header score"
-                         "sidebar main main"
-                         "footer footer footer";
+    grid-template-areas: "header header table-miniature score"
+                         "sidebar main table-miniature score"
+                         "footer footer footer footer";
    
     height: 100vh;
     max-width: 100vw;
@@ -31,8 +32,14 @@
   }
 
   .score {
-     justify-self: center;
+    
+     justify-self: start;
      align-self: center;
+  }
+
+  .table-miniature {
+    justify-self: center;
+    align-self: center;
   }
 
   .table {
@@ -80,6 +87,12 @@
   }
 
   .score {
+    height: 80px;
+    width: 80px;
+    border: solid 2px black;
+    font-size: 40px;
+  }
+  .table-miniature {
     height: 80px;
     width: 80px;
     border: solid 2px black;
@@ -171,3 +184,15 @@
     text-align: center;
     font-family: 'Source Code Pro', monospace;
   }
+
+
+
+ /* interaction */
+
+ .inactive {
+  color: grey;
+ }
+
+  .inactive {
+  
+ }
