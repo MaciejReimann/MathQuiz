@@ -15,15 +15,17 @@ const shuffle = function(array) {
     }
   return array;
 };
-const Equation = function(i, j) {
+const Equation = function(i, j, counter) {
   this.x = i;
   this.y = j;
-  this.z = i * j;
+  this.z = this.x * this.y;
   this.inputPosition = "";
-  // this.index = (i-1).toString() + (j-1).toString();
+  this.index = counter;
   this.userAnswer = "";
+  this.numberOfTimesAnsweredCorrectly = 0;
 };
 const ArrayOfEquations = function(givenArray) {
+  let loopCounter = 0;
   let globalIndex = 0; 
   let tempIndex = 0;
   let array;
@@ -34,7 +36,8 @@ const ArrayOfEquations = function(givenArray) {
     array = new Array;
     for (let i = 1; i < 10; i++ ) {       
       for (let j = 1; j < 10; j++ ) {
-        let equation = new Equation(i, j);
+        loopCounter++
+        let equation = new Equation(i, j, loopCounter);
         array.push(equation);
       };
     };
@@ -55,6 +58,7 @@ const ArrayOfEquations = function(givenArray) {
   this.setGlobalCurrent = function(n) { globalIndex = n }
   this.setNextAsGlobalCurrent = function() { globalIndex ++; }
   this.getGlobalCurrent = function() {return currentArray [ globalIndex ] };
+  this.getGlobalIndex = function() {return globalIndex };
 };
 const Counter = function(k) {
   let counter;
@@ -113,6 +117,7 @@ const createEl = function(tag, className, textContent) {
 
 const model = {
   init: function() {},
+  array: new ArrayOfEquations().getInOrder(),
   userData: {
       answers: {
         correct: [],
@@ -141,9 +146,9 @@ const controller = {
     batchCounter: new Counter(),
     number: function() {      
       if (controller.currentArray.get() === undefined) {
-        controller.currentArray.set( controller.equations.array )
+        controller.currentArray.set( controller.equations.array );
       }
-        let currentItem = controller.currentArray.get().getGlobalCurrent();
+        let currentItem = controller.currentArray.get().getGlobalCurrent();        
         const currentBatch = controller.equations.batchCounter.get();
         return {
           x: currentItem.x,
@@ -151,9 +156,11 @@ const controller = {
           z: currentItem.z,
           inputPosition: currentItem.inputPosition,
           checkAnswer: function(inputValue) {
+            let index = currentItem.index
             const answer = parseInt(inputValue);
             const correctAnswer = this[this.inputPosition];
             controller.currentArray.get().setUserAnswer(answer);
+            model.array [ index - 1 ].numberOfTimesAnsweredCorrectly ++;
             if (answer === correctAnswer) {
               controller.equations.proceed().ifCorrect( this );
               return true;
@@ -181,7 +188,6 @@ const controller = {
           model.userData.answers.correct.push(item);
           controller.score.strikeIncrement();
           controller.score.globalIncrement();
-          console.log("correct")
         },
         ifIncorrect: function(currentBatch, item) {
           model.userData.answers.incorrect.addItem(currentBatch, item);
@@ -196,7 +202,6 @@ const controller = {
         ifDone: function(inputField) {
           inputField.className = "done";
           inputField.disabled = true;
-          console.log("done")
         },
       };
     },
@@ -360,6 +365,7 @@ const view =  {
     let index = this.currentMainContent.get()
     this.clear();
     this.sidebar.functionsAttached [ index ] .fire(); // decide oun variable name (index / currentMainContent)
+    this.results.render()
     this.score.render();
     this.sidebar.render();
   },
@@ -371,12 +377,33 @@ const view =  {
       };
     };
   },
+  results: {
+    parent: document.querySelector('.results'),
+    render: function() {
+
+      this.clear();
+      this.parent.appendChild( createEl("DIV", "resultsDiv", "results") );
+      this.events();
+    },
+    clear: function() {
+       if (this.parent.children.length > 0) {
+        this.parent.removeChild( this.parent.firstElementChild );
+      };
+    },
+    events: function() {
+      this.parent.addEventListener("click", function() {
+      view.equations.checkIfDone()
+      view.clear();
+      view.table.render().results()
+      })
+    },
+  },
   score: {
     scoreParent: document.querySelector('.score'),
     render: function() {
       let score = controller.score.getGlobal()
       this.clear();
-      this.scoreParent.appendChild( createEl("DIV", "scoreDiv", score) )
+      this.scoreParent.appendChild( createEl("DIV", "scoreDiv", score) );
     },
     clear: function() {
       if (this.scoreParent.children.length > 0) {
@@ -396,8 +423,9 @@ const view =  {
       {
         name: "Fill the gap",
         fire: function() {
-          console.log(this.name + " fired");
+         
           view.equations.checkIfDone()
+
           controller.currentArray.set( controller.equations.array )
           view.currentMainContent.set( 0 );
           view.clear();
@@ -407,7 +435,8 @@ const view =  {
       {
         name: "Complete the table",
         fire: function() {
-          console.log( view.equations.displayedOnPage.get() )
+         
+
           controller.currentArray.set( controller.table.array )
           view.currentMainContent.set( 1 );
           view.clear();
@@ -462,7 +491,7 @@ const view =  {
       let children = this.children;
       for (let i = 0; i < children.length; i++) {
         children[ i ].addEventListener("click", function (event) {
-          console.log("You clicked: " + children [ i ].textContent )
+
           view.sidebar.displayAs().active( children[ i ] );
           view.sidebar.functionsAttached[i].fire();
         })
@@ -489,17 +518,13 @@ const view =  {
     //add start from square ONE !!!! zero all counters and generate new array
 
     render: function() {
-      console.log("rendered")
       let maxAllowedOnPage = this.maxAllowedOnPage;
       let displayedOnPage = this.displayedOnPage;
       let currentBatch = this.pageCounter.get() * maxAllowedOnPage;
       
       if ( this.isNotDone.get() ) { 
-        console.log( "1 " + displayedOnPage.get() )
         displayedOnPage.set ( displayedOnPage.get() - 1 );
-
       }
-      console.log("2 " +  this.displayedOnPage.get() )
 
       if ( this.isFinished() ) {
         // proceed().toNextFunction();
@@ -526,6 +551,7 @@ const view =  {
           this.events ( displayedOnPage.get() );
         }; // this assigns event to the input field on the last equation when there is at least one on the page
       };
+      this.inputFields() [ this.inputFields().length - 1 ].focus()
     },
     isFinished: function() {
       if (this.displayedUntilNow.get() === this.batchLength() ) {
@@ -561,8 +587,7 @@ const view =  {
       const inputFields = this.inputFields();      
       // let currentItem = controller.array.getGlobalCurrent();
       let lastElement = inputFields[ i-1 ];
-
-      lastElement.focus();        
+       
       lastElement.addEventListener("input", function () {
         const lastAnswer = lastElement.value;
         const inputIsValid = controller.equations.checkIfInputIsValid ( lastAnswer, lastElement );
@@ -611,17 +636,24 @@ const view =  {
       this.clear();
       const parentEl = view.main.appendChild(this.parentEl);
         return {
-          filled: function() {
-            const incorrectAnswers = model.userData.answers.incorrect.getArray(0)
-            controller.table.array.getInOrder().map(function(value) {//!!!!!!!!!!!!!!!!!
-              const square = createEl("div", "equationElements", value.z );
-              parentEl.appendChild(square);
-              square.className = "the-rest";
-              for (let i = 0; i < incorrectAnswers.length; i ++ ) {
-                if (value.x ===  incorrectAnswers[i].x && value.y === incorrectAnswers[i].y ) {
-                  square.className = "first-rows" 
-                };
-              };        
+          results: function() {
+            model.array.map(function(equation) {     
+              if (equation.x === 1 || equation.y === 1 ) { 
+                let square = createEl("div", "first-rows", equation.z );
+                parentEl.appendChild(square);
+              } else if ( equation.numberOfTimesAnsweredCorrectly > 2 ) {
+                let square = createEl("div", "excellent", equation.z );
+                parentEl.appendChild(square);
+              } else if ( equation.numberOfTimesAnsweredCorrectly > 1 ) {
+                let square = createEl("div", "very-good", equation.z );
+                parentEl.appendChild(square);
+              } else if ( equation.numberOfTimesAnsweredCorrectly > 0 ) {
+                let square = createEl("div", "good", equation.z );
+                parentEl.appendChild(square);
+              } else {
+                let square = createEl("div", "the-rest");
+                parentEl.appendChild(square);
+              };                 
             });
           },
           empty: function() {            
