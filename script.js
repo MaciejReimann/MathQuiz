@@ -56,7 +56,7 @@ const ArrayOfEquations = function(givenArray) {
   };
   // this.getOne = function(n) {return allShuffled [n] };
   this.setGlobalCurrent = function(n) { globalIndex = n }
-  this.setNextAsGlobalCurrent = function() { globalIndex ++; }
+  this.setNextAsGlobalCurrent = function() { globalIndex ++;  }
   this.getGlobalCurrent = function() {return currentArray [ globalIndex ] };
   this.getGlobalIndex = function() {return globalIndex };
 };
@@ -784,12 +784,19 @@ const view =  {
 /*-------------------------------------------------------------------------------------------------------------*/
 
   photo: {
-    create: function(n,m) {
+    parentEl: createEl("div", "photo"),
+    array: new ArrayOfEquations(),
+    correctAnswers: function() {return view.photo.array.getInOrder().slice( 0, view.photo.array.getGlobalCurrent().index )}  ,
+
+    create: function(canvasWidth, canvasHeight) {
+      
+      const parentEl = view.main.appendChild(this.parentEl);
+
       const canvas = document.createElement('CANVAS');
-      view.main.appendChild(canvas);
+      this.parentEl.appendChild(canvas);
          
-      canvas.setAttribute('width', n)
-      canvas.setAttribute('height', m)
+      canvas.setAttribute('width', canvasWidth)
+      canvas.setAttribute('height', canvasHeight)
       canvas.style.border = 'dotted 1px black';
       const ctx = canvas.getContext('2d');
 
@@ -797,56 +804,62 @@ const view =  {
       picture.src = model.footballersPictures.Bale;      
 
       picture.addEventListener("load", () => {
-        let width = picture.naturalWidth;
-        let height = picture.naturalHeight;
+        let pictureWidth = picture.naturalWidth;
+        let pictureHeight = picture.naturalHeight;
         // let divideBy = 10;
         let numbers;
         for (let i = 0; i < 10; i ++) {
           for (let j = 0; j < 10; j ++) {
-            ctx.rect( n / 10 * i, m / 10 * j, n / 10, m / 10 ) // ctx.rect(x, y, width, height);
+            ctx.rect( canvasWidth / 10 * i, canvasHeight / 10 * j, 
+                      canvasWidth / 10, canvasHeight / 10
+            ); // ctx.rect(x, y, width, height);
             ctx.lineWidth="1";
             ctx.stroke();
-          }
-        }
-
+          };
+        };
+        view.photo.correctAnswers().map( function(equation) {
+          let x = equation.x;
+          let y = equation.y;
+          ctx.drawImage( picture,
+                         pictureWidth / 10 * x, pictureHeight / 10 * y, // sx, sy (crop starting point coords)
+                         pictureWidth / 10, pictureHeight / 10, // sWidth, sHeight (crop dimensions)
+                         canvasWidth / 10 * x, canvasHeight / 10 * y, // ?
+                         canvasWidth / 10, canvasHeight / 10 // ?
+          );
+        });
       });
     },
+
     render: function() {
+ 
+      this.clear()
       this.create(500, 500);
+      this.events();
       console.log("rendered")
+    },
+    clear: function() {
+      const allElements = this.parentEl.children;
+      if (allElements.length > 0) {
+        for (let i = allElements.length-1; i >= 0; i--) {
+          this.parentEl.removeChild( allElements[i] )
+        };        
+      };
+    }, 
+    events: function() {
+      // view.photo.array.setNextAsGlobalCurrent()
+      window.addEventListener("keypress", (event) => {
+        if (event.keyCode === 13) {
+          console.log("ok");
+          view.render();
+        };
+      });
+      
     },
   },
 
 };
 
 controller.init()
-
-//  pic.addEventListener ("load", () => {
-//    const w = pic.naturalWidth;
-//    const h = pic.naturalHeight;
-//    let f = 10;
-//    const nums = userInput.numbersLearnedinPairs;
-//    
-//    for (let i = 0; i <f; i++) {
-//      for (let j = 0; j <f; j++) {
-//        ctx.rect(n /f *i , m /f *j, n/f, m/f);
-//        ctx.lineWidth="1";
-//        ctx.stroke();
-//        };
-//    };
-//    
-//    for (let i = 0; i < nums.length; i++) {       
-//       ctx.drawImage(pic, 
-//                      w  / f * nums[i][0],      h / f * nums[i][1], //sx, sy
-//                      w / f,      h  / f,       //s-width, s-height
-//                      m/f*nums[i][0], m/f*nums[i][1],    n/f, m/f );                    //x,y   width, height
-//    };
-//    
-//  });
-////  context.drawImage(img,sx,sy,swidth,sheight,   x,y,width,height);  
-//};
-
-
 
 //const numericKeyboard = {
 //  show: function(divName) {
