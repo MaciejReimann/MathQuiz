@@ -12,7 +12,7 @@ const Equation = function(x, y, index) {
   this.z = this.x * this.y;
   this.index = index;
   this.blankPosition;  
-  this.userAnswer;
+  this.userAnswer = "";
   this.numberOfTimesAnsweredCorrectly = 0;
 };
 Equation.prototype.checkAnswer = function(answer) {
@@ -35,17 +35,23 @@ const EquationsArray = function(givenArray) {
 	};
 };
 EquationsArray.prototype.getOrdered = function() { return this.array };
+EquationsArray.prototype.setBlankPositionForAll = function(p) {
+	this.array.map(function(equation) {
+		equation.blankPosition = p;
+	})
+};
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
 const model = {
 	array: new EquationsArray(),
+	currentIndexes:[],
 	// activeFunctionIndex: new StoredValue(0),
 	currentState: new Array(),
 	update: function() {
 
-	};
+	},
 };
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -65,8 +71,23 @@ StoredValue.prototype.get = function(n) {return this.value};
 ////////////////////////////////////////////////////////////////////////////////////////
 
 const controller = function() {
-	currentState: new Array2D( new Array() )
+	// currentState = new Array2D( new Array() )
+	this.array = [
+		(function() {
+			model.array.setBlankPositionForAll("z");
+			return model.array.getOrdered();
+		}),		
+	];
+	const currentIndexes = model.currentIndexes;
 	return {
+		array: array,
+		currentIndex: function() {
+			return {
+				set: function(i, n) {currentIndexes[i] = n },
+				get: function(i) { return currentIndexes[i] }
+			}
+		},
+		
 		// setActiveFunctionIndex: function(n) { model.activeFunctionIndex.set(n) },
 		// getActiveFunctionIndex: function() { return model.activeFunctionIndex.get() },
 		setCurrentState: function() { },
@@ -82,40 +103,115 @@ const controller = function() {
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
-const Page = function(array, containerClassName) {
-	this.parentElement = document.querySelector(".main");
-	this.containerElement = document.createElement("DIV");
-	this.containerElement.className = containerClassName;
-	this.array = array;
+const createTable = function(array) {
+	const containerElement = document.createElement("DIV");
+  containerElement.className = "table";
+	array.map(function(equation) {
+		if (equation.x === 1 || equation.y === 1 ) { 
+	  	let square = createEl("div", "first-rows", equation.z );
+	    containerElement.appendChild(square);
+ 		} else {
+			let square = createEl("div", "the-rest");
+      containerElement.appendChild(square);
+      const inputField = createEl("input", "input-fields" );
+      inputField.id = equation.index - 10;
+      square.appendChild(inputField);
+      inputField.value = equation.userAnswer; // if there is one entered previously;
+      if (inputField.value !== "") { // marked as "done"; otherwise it would be editable
+         // controller.equations.proceed().ifDone(inputfields)
+      };    
+    };
+	})
+	return containerElement;
 };
-Page.prototype.render = function(first_argument) {
-	this.create();
-	this.parentElement.appendChild(this.containerElement);
-};
-Page.prototype.create = function(attachedFunction) {
-	console.log ("create")
-	// this.array.map ( function );
-};
+const createEl = function(tag, className, textContent) {
+    const newElement = document.createElement(tag);
+    newElement.className = className;
+    newElement.textContent = textContent;
+    return newElement;
+  };
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
 const view = {
-	activeFunctionIndex: new StoredValue(0),
+	parentElement: document.querySelector(".main"),
+	activeFunctionIndex: new StoredValue(0).get() ,
+	currentArray: controller().array[0](),
 	pages: [
-		table = new Page(model.array.getOrdered(), "table")		
+			(function(n) {return createTable(n)}),
 	],
+	render: function() {
+		this.clear();
+		this.parentElement.appendChild(this.pages[this.activeFunctionIndex](this.currentArray));
+		eventHandlers().inputFields.focusOnFirst();			
+	},
+	clear: function() {
+		if (this.parentElement.firstChild) {
+			this.parentElement.removeChild(this.parentElement.firstChild);
+		}
+	},
+}
+
+const events = function() {
+	const inputFields = Array.from(document.querySelectorAll("input"));
+
+	const tableEvents = function() {
+		inputFields.map(function(item) {
+			eventHandlers().inputFields.focusOnFirst();
+			// currentEquation = item.id !!!!!!!!!!!!!!!!!!!!!
+			item.addEventListener("input", function() { eventHandlers().inputFields.validate(item.value) })
+		})
+	}
+	return {
+		table: function() {
+				tableEvents()
+		},
+	}
+};
+
+const eventHandlers = function() {
+	const inputFields = document.querySelectorAll("input");
+	const activeID = function(){ return parseInt(document.activeElement.id) } 
+	return {
+		inputFields: {
+			validate: function(inputValue) { console.log ( inputValue )},
+			focusOnFirst: function() {
+				inputFields[0].focus()
+				// console.log(activeID() )
+			},
+			moveFocus: function() {
+				return {
+					right: function() { document.getElementById(activeID() + 1).focus() },
+					
+					
+					left: function() {
+					},
+					up: function() {},
+					down: function() {},
+				}
+			},
+
+		},
+
+	};
+}
+
+
+view.render()
+events().table()
+
+
+
+keyEvents : {
+
+
 
 }
 
 
 
-const createTable = function(equation) {
-	if (equation.x === 1 || equation.y === 1 ) { 
-  	let square = createEl("div", "first-rows", equation.z );
-    this.containerElement.appendChild(square);
-  };
-};
+
   // controller.table.array.getInOrder().map(function( equation ) {
   //             if (equation.x === 1 || equation.y === 1 ) { 
   //               let square = createEl("div", "first-rows", equation.z );
@@ -165,9 +261,3 @@ const SidebarComponent = function(content, attachedFunction) {
 
 
 
-const createEl = function(tag, className, textContent) {
-    const newElement = document.createElement(tag);
-    newElement.className = className;
-    newElement.textContent = textContent;
-    return newElement;
-  };
