@@ -1,8 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////// *** M O D E L *** ///////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -71,11 +69,10 @@ const model = {
 	// currentState: new Array(),
 	score: new Score(),
 };
-////////////////////////////////////////////////////////////////////////////////////////
+
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// *** C O N T R O L L E R *** ////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -101,9 +98,7 @@ const controller = function() {
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////// *** V I E W *** //////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -138,6 +133,7 @@ const createEl = function(tag, className, textContent) {
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
+
 const view = {}
 view.score = {
 	parentElement: document.querySelector('.score'),
@@ -179,7 +175,7 @@ view.main = {
 
 const updateView = function() {
 	for (component in view) { view[component].render() }
-	
+	events().tableEvents()
 };
 
 
@@ -187,11 +183,12 @@ const updateView = function() {
 
 const events = function() {
 	const inputFields = Array.from(document.querySelectorAll("input"));
+	inputFields[0].focus()
 	const tableEvents = function() {
 		inputFields.map(function(item) {
-			eventHandlers().inputFields.focusOnFirst();
-			item.addEventListener("input", function() { console.log(this.value) })
-			item.addEventListener("keydown", function() { keypressController.fireHandler(event.code) })
+			item.addEventListener("input", function() { input().checkIfValid() })
+			
+			item.addEventListener("keydown", function() { keypress(event.code).fireHandler() })
 			// item.addEventListener("change", function() { updateView() })
 		})
 	}
@@ -200,93 +197,97 @@ const events = function() {
 	}
 };
 
-keypressController = {
-	events: {
-		Enter: (function() {console.log("enter") } ),
+const keypress = function(keyName) { // keypress controller
+	let inputField = function() {lastActive = document.activeElement; return document.activeElement };
+	let inputValue = function() {return inputField().value};	
+	const events = {
+		Enter: (function() { accept() || moveRight() }),
 		ArrowDown: (function() {console.log("down") } ),
 		ArrowUp: (function() {console.log("up") } ),
 		ArrowLeft: (function() {console.log("left") } ),
 		ArrowRight: (function() {console.log("right") } ),
-	},
-	fireHandler: function(name) {
-		for (key in this.events) {
-			if (key === name) { this.events[key]() }
+	};
+	const accept = function() {
+		if (inputValue()!=="") {input().checkIfCorrect()} 
+		// console.log("accept")
+	};
+	const moveRight = function() {
+		console.log("right")
+	};
+	const fireHandler = function() {
+		for (key in events) {
+			if (key === keyName) { events[key]() }
 		}
-	},		
-}
-
-inputController = {
-	validate: 
-}
-
-
-
-const checkInput = function() {
-	const setCurrentEquation = function() {
-		let activeElementIndex = parseInt(document.activeElement.getAttribute("index"))
-		controller().setCurrentArrayIndex(activeElementIndex);
-	}();
-	const getCurrentEquation =  function() {return controller().getCurrentElement() };
+	};
 	return {
-		validate: function(inputValue) {
-			if ( isNaN( inputValue ) ) {
-        proceed().ifInvalid( element );
-      } else {
-        proceed().ifValid( element );
-      };
-		},
-		ifCorrect: function(inputValue) {
-			if ( getCurrentEquation().checkAnswer(parseInt(inputValue)) ) {
-				model.score.strikeIncrement();
-        model.score.increment();
-			} else {
+		fireHandler: fireHandler,
+	}
+}
+
+const input = function() { // input controller
+	const inputFields = Array.from(document.querySelectorAll("input"));
+	let lastActive;
+	let inputField = function() {lastActive = document.activeElement; return document.activeElement };
+	let inputValue = function() {return parseInt(inputField().value)};	
+	let activeElementIndex = function() { return parseInt(document.activeElement.getAttribute("index"))};	
+	let currentEquation = function() {return controller().getCurrentElement() };
+	let isCorrect = function() {return currentEquation().checkAnswer(inputValue())} 
+
+	controller().setCurrentArrayIndex(activeElementIndex());
+
+	const checkIfValid = function() {
+		if (isNaN( inputValue() )) { 
+      proceedWhen().isInvalid();
+		} else {
+			proceedWhen().isValid();
+		}
+	};
+	const checkIfCorrect = function() {
+		if (isCorrect()) { 
+			proceedWhen().isCorrect();
+		} else {
+			proceedWhen().isIncorrect();
+		}			
+		
+	};
+	const proceedWhen = function() {
+		return {
+			isInvalid: function() {
+				inputFields.map(function(item) {item.disabled = true});
+				lastActive.disabled = false;
+				lastActive.className = "invalid";
+				lastActive.focus();
+			},
+			isValid: function() {
+				inputFields.map(function(item) {item.disabled = false});
+				inputField().className = "input-fields";			
+			},
+			isIncorrect: function() {
 				model.score.strikeReset();
-			};
-			// console.log(getCurrentEquation().checkAnswer(inputValue))
-		},
+				this.isDone();
+				updateView();
+			},
+			isCorrect: 	function() {
+			 	model.score.strikeIncrement();
+		    model.score.increment();
+		    this.isDone();
+		    updateView();
+			},
+			isDone: function() {
+				inputField().className = "done";
+		    inputField().disabled = true;
+			},
+		};
+	};
+	return {
+		checkIfValid: checkIfValid,
+		checkIfCorrect: checkIfCorrect,
 	}
 }
 
 
 
-const eventHandlers = function() {
-	const inputFields = document.querySelectorAll("input");
-	const activeID = function(){ return parseInt(document.activeElement.id) } 
-	return {
-		onEnter: function(event) {
-			if(event.keyCode = 13) {console.log("enter")}
-		},
-		onChange: function(inputValue) {
-				checkInput().ifCorrect(inputValue);
-				updateView();
-		},
-		inputFields: {
-
-			focusOnFirst: function() {
-				inputFields[0].focus()
-				// console.log(activeID() )
-			},
-			moveFocus: function() {
-				return {
-					right: function() { document.getElementById(activeID() + 1).focus() },
-					
-					
-					left: function() {
-					},
-					up: function() {},
-					down: function() {},
-				}
-			},
-
-		},
-
-	};
-}
-
-
 updateView()
-// view.render()
-events().tableEvents()
 
 const SidebarComponent = function(content, attachedFunction) {
 	this.content = content;
