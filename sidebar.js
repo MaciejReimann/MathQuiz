@@ -15,6 +15,7 @@ const Equation = function(x, y, index) {
 };
 Equation.prototype.checkAnswer = function(answer) {
 	let correctAnswer = this[this.blankPosition];
+	this.userAnswer = answer;
 	if (answer===correctAnswer) {return true} else {return false};
 };
 Equation.prototype.setBlankPosition = function(p) {
@@ -85,14 +86,15 @@ const controller = function() {
 	];
 	let getActiveFunctionIndex = model.activeFunctionIndex.get();
 	return {
-		setActiveFunctionIndex: function(n) { activeFunctionIndex.set(n) },
+		setActiveFunctionIndex: function(n) { model.activeFunctionIndex.set(n) },
 		getActiveFunctionIndex: function() { return getActiveFunctionIndex },
 
 		getCurrentArrayState: function() { return array[getActiveFunctionIndex] () },
 		getCurrentElement: function() { return this.getCurrentArrayState()[ this.getCurrentArrayIndex() ] },
 
-		setCurrentArrayIndex: function(n) {model.currentIndexes[ getActiveFunctionIndex ] = n},
+		setCurrentArrayIndex: function(n) { model.currentIndexes[ getActiveFunctionIndex ] = n},
 		getCurrentArrayIndex: function() { return model.currentIndexes[ getActiveFunctionIndex ] },
+		
 	};
 }
 
@@ -113,14 +115,19 @@ const createTable = function(array) {
 			let square = createEl("div", "the-rest");
       containerElement.appendChild(square);
       const inputField = createEl("input", "input-fields" );
-      inputField.id = equation.index - 10;
       inputField.setAttribute("index", equation.index);
       square.appendChild(inputField);
       inputField.value = equation.userAnswer; // if there is one entered previously;
       if (inputField.value !== "") { // marked as "done"; otherwise it would be editable
-         // controller.equations.proceed().ifDone(inputfields)
+        inputField.className = "done";
       };    
     };
+    let id = 0;
+    let allInputFields = Array.from(containerElement.querySelectorAll("input"));
+    allInputFields.map(function(item) {
+    	item.id = id; 
+    	id++
+    })
 	})
 	return containerElement;
 };
@@ -150,8 +157,8 @@ view.score = {
 }
 view.main = {
 	parentElement: document.querySelector(".main"),
-	activeFunctionIndex: controller().getActiveFunctionIndex(),
-	currentArrayState: controller().getCurrentArrayState(),
+	activeFunctionIndex: function() {return controller().getActiveFunctionIndex() },
+	currentArrayState: function() { return controller().getCurrentArrayState() },
 
 	pages: [
 			(function(n) {return createTable(n)}),
@@ -162,7 +169,7 @@ view.main = {
 	render: function() {
 		this.clear();
 		// view.score.render()
-		this.parentElement.appendChild(this.pages[this.activeFunctionIndex](this.currentArrayState));
+		this.parentElement.appendChild(this.pages[this.activeFunctionIndex()](this.currentArrayState()));
 		// eventHandlers().inputFields.focusOnFirst();			
 	},
 	clear: function() {
@@ -176,6 +183,9 @@ view.main = {
 const updateView = function() {
 	for (component in view) { view[component].render() }
 	events().tableEvents()
+	events().focus()
+	console.log( controller().getActiveFunctionIndex() )
+	
 };
 
 
@@ -183,36 +193,76 @@ const updateView = function() {
 
 const events = function() {
 	const inputFields = Array.from(document.querySelectorAll("input"));
-	inputFields[0].focus()
+	const nextID = parseInt( keypress().getIDFromIndex( controller().getCurrentArrayIndex()) ) + 1;
+
+	const focus = function() {
+			if (controller().getCurrentArrayIndex() === undefined) {
+				controller().setCurrentArrayIndex( inputFields[0].getAttribute("index") )
+				inputFields[0].focus()
+			} else {
+				// console.log( nextID )
+				inputFields [ nextID ].focus()
+			}
+	};
+	
 	const tableEvents = function() {
 		inputFields.map(function(item) {
-			item.addEventListener("input", function() { input().checkIfValid() })
-			
+			item.addEventListener("input", function() { input().checkIfValid() })			
 			item.addEventListener("keydown", function() { keypress(event.code).fireHandler() })
 			// item.addEventListener("change", function() { updateView() })
 		})
 	}
+
 	return {
+		focus: focus,
 		tableEvents: tableEvents,
 	}
 };
 
 const keypress = function(keyName) { // keypress controller
+
+	let lastActive;
 	let inputField = function() {lastActive = document.activeElement; return document.activeElement };
-	let inputValue = function() {return inputField().value};	
+	// let inputValue = function() {return inputField().value};
+	let currentID = function() {return parseInt(inputField().id)};
 	const events = {
-		Enter: (function() { accept() || moveRight() }),
-		ArrowDown: (function() {console.log("down") } ),
-		ArrowUp: (function() {console.log("up") } ),
-		ArrowLeft: (function() {console.log("left") } ),
-		ArrowRight: (function() {console.log("right") } ),
+		Enter: (function() { accept() }),
+		ArrowRight: (function() { move().right() }),
+		ArrowLeft: (function() { move().left() }),
+		ArrowDown: (function() { move().down() }),
+		ArrowUp: (function() { move().up() }),		
+	};
+	const getIDFromIndex = function(indexAtrribute) {
+		const inputFields = document.querySelectorAll("input");
+		const pairs = {};
+		for (i=0; i<inputFields.length; i++) {
+			pairs [ inputFields[i].getAttribute("index") ] = inputFields[i].id;			
+		}
+		return pairs[indexAtrribute];
+	}
+
+	const move = function() {
+		// console.log(currentID())
+		// console.log(lastActive.id)
+		
+		const oneRight = function() {return document.getElementById(currentID()+1)};
+		const oneLeft = function() {return document.getElementById(currentID()-1)};
+		const oneDown = function() {return document.getElementById(currentID()+8)};
+		const oneUp = function() {return document.getElementById(currentID()-8)};
+		return {
+			right: function() {if (oneRight()) {oneRight().focus()}},
+			left: function() {if (oneLeft()) {oneLeft().focus()}},
+			down: function() {if (oneDown()) {oneDown().focus()}},
+			up: function() {if (oneUp()) {oneUp().focus()}},
+		};
 	};
 	const accept = function() {
-		if (inputValue()!=="") {input().checkIfCorrect()} 
-		// console.log("accept")
-	};
-	const moveRight = function() {
-		console.log("right")
+		if (inputField().value!=="" && input().checkIfValid()) {
+			input().checkIfCorrect();
+		}
+		// console.log( inputField() )
+		// console.log(currentID()); 
+		// console.log( move().right() )
 	};
 	const fireHandler = function() {
 		for (key in events) {
@@ -221,6 +271,7 @@ const keypress = function(keyName) { // keypress controller
 	};
 	return {
 		fireHandler: fireHandler,
+		getIDFromIndex: getIDFromIndex,
 	}
 }
 
@@ -231,24 +282,16 @@ const input = function() { // input controller
 	let inputValue = function() {return parseInt(inputField().value)};	
 	let activeElementIndex = function() { return parseInt(document.activeElement.getAttribute("index"))};	
 	let currentEquation = function() {return controller().getCurrentElement() };
-	let isCorrect = function() {return currentEquation().checkAnswer(inputValue())} 
+	let isCorrect = function() {return currentEquation().checkAnswer(inputValue())}
 
-	controller().setCurrentArrayIndex(activeElementIndex());
+	controller().setCurrentArrayIndex(activeElementIndex())
+	
 
 	const checkIfValid = function() {
-		if (isNaN( inputValue() )) { 
-      proceedWhen().isInvalid();
-		} else {
-			proceedWhen().isValid();
-		}
+		if (isNaN( inputValue() )) {proceedWhen().isInvalid(); return false} else {proceedWhen().isValid(); return true}
 	};
 	const checkIfCorrect = function() {
-		if (isCorrect()) { 
-			proceedWhen().isCorrect();
-		} else {
-			proceedWhen().isIncorrect();
-		}			
-		
+		if (isCorrect()) {proceedWhen().isCorrect()} else { proceedWhen().isIncorrect()}		
 	};
 	const proceedWhen = function() {
 		return {
@@ -256,7 +299,7 @@ const input = function() { // input controller
 				inputFields.map(function(item) {item.disabled = true});
 				lastActive.disabled = false;
 				lastActive.className = "invalid";
-				lastActive.focus();
+				// lastActive.focus();
 			},
 			isValid: function() {
 				inputFields.map(function(item) {item.disabled = false});
@@ -274,8 +317,8 @@ const input = function() { // input controller
 		    updateView();
 			},
 			isDone: function() {
-				inputField().className = "done";
-		    inputField().disabled = true;
+				lastActive.className = "done";
+		    // inputField().disabled = true;
 			},
 		};
 	};
@@ -303,10 +346,14 @@ const SidebarComponent = function(content, attachedFunction) {
 	const sidebarContainer = document.createElement("DIV");
 	sidebarContainer.className = "sidebarContainer";
 	const sidebarComponents = [
-			new SidebarComponent("Fill the table", (function() { controller().setActiveFunctionIndex(0) }) ),
-			new SidebarComponent("Fill the gaps", (function() { controller().setActiveFunctionIndex(1) }) ),
-			new SidebarComponent("Reveal the photo", (function() { controller().setActiveFunctionIndex(2) }) ),
-			new SidebarComponent("Fast counting", (function() { controller().setActiveFunctionIndex(3) }) ),
+			new SidebarComponent("Fill the table", (function() { controller().setActiveFunctionIndex(0); updateView()
+ }) ),
+			new SidebarComponent("Fill the gaps", (function() { controller().setActiveFunctionIndex(1); updateView()
+ }) ),
+			new SidebarComponent("Reveal the photo", (function() { controller().setActiveFunctionIndex(2); updateView()
+ }) ),
+			new SidebarComponent("Fast counting", (function() { controller().setActiveFunctionIndex(3); updateView()
+ }) ),
 	]
 
 	sidebarComponents.forEach(function(item) {
