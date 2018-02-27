@@ -1,113 +1,146 @@
 
-  body {
-      text-align: center;
-      font-family: 'Source Code Pro', monospace;
-      font-weight: 400;    
-      margin: 0;
-      }
+body {
+  text-align: center;
+  font-family: 'Source Code Pro', monospace;
+  font-weight: 400;
+  margin: 0;
+}
 
-  /**************  GRID  **************/ 
-  .header { grid-area: header; }
-  .score { grid-area: score; }
-  .table-miniature { grid-area: results; }
-  .main { grid-area: main; }
-  .sidebar { grid-area: sidebar; }
-  .footer { grid-area: footer; }
+/************ PAGE SETUP ************/ 
+/* grid container*/
+.page {
+  display: grid; 
+  grid-template-columns: 250px 1fr 100px 100px;
+  grid-template-rows: 100px 1fr 50px;
+  grid-template-areas: "header header results score"
+                       "sidebar main . ."
+                       "footer footer footer footer"; 
+  height: 100vh;
+  max-width: 100vw;
+}
+ /*grid items*/
+.header { grid-area: header; }
+.score { grid-area: score; }
+.results { grid-area: results; }
+.main { grid-area: main; }
+.sidebar { grid-area: sidebar; }
+.footer { grid-area: footer; }
 
-  .page {
-    display: grid; 
-    grid-template-columns: 250px 1fr 100px 100px;
-    grid-template-rows: 100px 1fr 50px;
-    grid-template-areas: "header header results score"
-                         "sidebar main results score"
-                         "footer footer footer footer";
+/********** PAGE COMPONENTS SETUP **********/ 
+
+header {
+  border-bottom: dashed 2px black;  
+}
+footer {
+  border-top: dashed 2px black;
+  padding: 10px;
+}
+aside {
+  display: grid;
+}
+.sidebarContainer {
+  display: grid;
+  align-self: stretch;
+  justify-self: stretch;
+  padding-left: 30px;
+  border: dashed 2px black;
+  position: relative;
+}
+.sidebarContainer div {
+  align-self: center;
+  justify-self: start;
+  position: relative;
+  transition: all 0.2s ease;
+}
+.sidebarContainer div:hover {
+  left: 1px;
+  cursor: pointer;
+  font-weight: 600;
    
-    height: 100vh;
-    max-width: 100vw;
+}
+
+.score, .results {
+  display: grid;
+  /*background: black;*/
+  border-bottom: dashed 2px black; 
+  justify-self: stretch;
+  align-self: stretch;
+  justify-content: center;
+}
+.score div, .results div {
+  justify-self: center;
+  align-self: center;
+}
+.score {
+  font-size: 40px;
+}
+.results {
+  font-size: 15px;
+}
+
+            /* OPTIONAL CONTENT */
+main > div {
+  justify-content: center;  
+  font-size: 25px;
+  /*border: dashed 2px black;*/
+  position: relative;
+  top: 30px;
+}
+input {    
+  font-size: 25px;
+  width: 40px; 
+  height: 40px;
+  border: solid 1px black;
+  text-align: center;
+  font-family: 'Source Code Pro', monospace;
+  outline: none;
+  transition: all 0.2s ease;
   }
 
-  .main {
-    justify-self: center;
-     align-self: center;
-  }
+                 /* TABLE */
+.table {
+  display: grid;
+  grid-template-columns: repeat(9, 46px);
+  grid-template-rows: repeat(9, 46px);
+  grid-gap: 3px;  
+}
+.first-rows {
+  background-color: white;
+  font-weight: 600;
+}
+.table div {
+  position: relative;
+}
+.table div input {
+  padding: : 5px; 
+  position: relative;
+}
+input:focus {
+  right: 1px;
+  bottom: 3px;
+  border: solid 2px black;
+  width: 43px; 
+  height: 43px;
+  box-shadow: 2px 2px 3px 3px #ccc;
+}
+                /* PHOTO */
+.photo {
+  
+}
+               /* SQUARES */
+.squares {
 
-  .score {
-     justify-self: center;
-     /*align-self: center;*/
-  }
+}
+ 
+/*/*         EQUATIONS              
+*/
 
-  .results {
-    justify-self: center;
-    /*align-self: center;*/
-  }
-
-  .table {
-    display: grid;
-    grid-template-columns: 40px 40px 40px 40px 40px 40px 40px 40px 40px;
-    grid-template-rows: 40px 40px 40px 40px 40px 40px 40px 40px 40px;
-    grid-gap: 10px;
-   justify-content: center;
-  }
-
-  /**************  FLEX  **************/
-
-  .equationParagraph {
+/*  .equationParagraph {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
   }
-
-  .score {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-
-  .sidebar {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-  }
-
-  /**************  CONTENT  **************/
-
-  header {
-      text-align: center; 
-      border: dashed 1px black;    
-  }
-
-  footer {
-      border: dashed 1px black;
-  }
-  footer p {
-      margin: 0;
-      padding: 5px;
-  }
-
-  .score {
-    margin-top: 10px;
-    height: 80px;
-    width: 80px;
-    border: solid 2px black;
-    font-size: 40px;
-  }
-  .results {
-    margin-top: 10px;
-    height: 80px;
-    width: 80px;
-    border: solid 2px black;
-    font-size: 15px;
-  }
-
-  .sidebar {
-    text-align: left;
-    padding-left: 30px;
-    border: dashed 1px black;
-  }
-
-/*         EQUATIONS              
-*/
   .equationParagraph {
     margin-top: 10px;
     font-size: 40px;
@@ -124,103 +157,41 @@
     border: solid 1px black;
     text-align: center;
     font-family: 'Source Code Pro', monospace;
-  }
+  }*/
 
-/*            TABLE              
-*/
-  .table {
-    border: dashed 2px black;
-    padding: 50px;
-    font-weight: 300;  
-    font-size: 26px;
-  }
+/*-----------  USER INTERACTION  ---------------          
 
-   .the-rest {
-   /* padding: 4px 4px 4px 0px;*/
-    padding-top: 4px;
-    text-align: center;
-    border: solid 1px black;
-    width: 44px; 
-    height: 40px; 
-   /* padding: 3px;*/
-  }
+/* --- filling the gaps ---- */
 
+[valid = false] {
+  background-color: pink;
+}
 
-  .first-rows { 
-    padding-top: 4px;
-    /*padding: 4px 4px 4px 0px;*/
-    font-weight: 600;
-    border: solid 1px black;
-    width: 44px; 
-    height: 40px; 
-    /*padding: 3px;*/
-  }
+[done] {
+  background-color: grey;
+}
 
-  .input-fields {
-    font-size: 26px;
-    width: 30px;
-    border: none;
-    text-align: center;
-    font-family: 'Source Code Pro', monospace;
-  }
+/* ---     results    ---- */
 
-  .invalid {
-    background-color: pink;
-    font-size: 26px;
-    width: 30px;
-    border: none;
-    text-align: center;
-    font-family: 'Source Code Pro', monospace;
-  }
+[excellent] {
+  border: solid 2.5px black;
+  font-weight: 600;
+}
+[very_good] {
+  border: solid 2px black;
+  font-weight: 500;
+}
+[good] {
+  border: solid 1.5px black;
+  font-weight: 400;
+}
 
-  .done {
-    /*background-color: grey;*/
-    font-size: 26px;
-    width: 30px;
-    border: none;
-    text-align: center;
-    font-family: 'Source Code Pro', monospace;
-  }
-  .excellent {
-    padding-top: 4px;
-    text-align: center;
-    border: solid 2.5px black;
-    width: 44px; 
-    height: 40px; 
-    font-size: 26px;    
-    font-family: 'Source Code Pro', monospace;
-     font-weight: 600;
-  }
-  .very-good {
-    padding-top: 4px;
-    text-align: center;
-    border: solid 2px black;
-    width: 44px; 
-    height: 40px; 
-    font-size: 26px;    
-    font-family: 'Source Code Pro', monospace;
-    font-weight: 500;
-  }
+/* ---    links    ---- */
 
-  .good {
-    padding-top: 4px;
-    text-align: center;
-    border: solid 1.5px black;
-    width: 44px; 
-    height: 40px; 
-    font-size: 26px;    
-    font-family: 'Source Code Pro', monospace;
-    font-weight: 400;
-  }
+[active] {
+ font-weight: 600;
+}
 
+.inactive {
 
-
- /* interaction */
-
- .inactive {
-  color: grey;
- }
-
-  .inactive {
-  
- }
+}
