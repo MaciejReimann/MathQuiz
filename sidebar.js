@@ -82,7 +82,16 @@ const controller = function() {
 		(function() {
 			model.array.setBlankPositionForAll("z");
 			return model.array.getOrdered();
-		}),		
+		}),
+		(function() {
+			model.array.setBlankPositionForAll("z");
+			return model.array.getOrdered();
+		}),
+		(function() {
+			model.array.setBlankPositionForAll("z");
+			return model.array.getOrdered();
+		}),
+
 	];
 	let getActiveFunctionIndex = model.activeFunctionIndex.get();
 	return {
@@ -103,45 +112,132 @@ const controller = function() {
 ///////////////////////////////// *** V I E W *** //////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
-
-const createTable = function(array) {
-	const containerElement = document.createElement("DIV");
-  containerElement.className = "table";
-	array.map(function(equation) {
-		if (equation.x === 1 || equation.y === 1 ) { 
-	  	let square = createEl("div", "first-rows", equation.z );
-	    containerElement.appendChild(square);
- 		} else {
-			let square = createEl("div", "the-rest");
-      containerElement.appendChild(square);
-      const inputField = createEl("input", "input-fields" );
-      inputField.setAttribute("index", equation.index);
-      square.appendChild(inputField);
-      inputField.value = equation.userAnswer; // if there is one entered previously;
-      if (inputField.value !== "") { // marked as "done"; otherwise it would be editable
-        inputField.className = "done";
-      };    
-    };
-    let id = 0;
-    let allInputFields = Array.from(containerElement.querySelectorAll("input"));
-    allInputFields.map(function(item) {
-    	item.id = id; 
-    	id++
-    })
-	})
-	return containerElement;
-};
 const createEl = function(tag, className, textContent) {
     const newElement = document.createElement(tag);
     newElement.className = className;
     newElement.textContent = textContent;
     return newElement;
-  };
+};
+const SidebarComponent = function(content, attachedFunction) {
+	this.content = content;
+	this.attachedFunction = attachedFunction;
+	this.divElement = document.createElement("DIV");
+	this.divElement.className = "sidebarChildren";
+	this.divElement.textContent = content;
+	
+	this.divElement.addEventListener("click", this.attachedFunction.bind(this) )
+};
+SidebarComponent.prototype.setActiveAttribute = function() {
+	this.divElement.setAttribute("active", true);
+};
+const createSidebar = function() {
+	const containerElement = createEl( "DIV", "sidebarContainer");
+	const sidebarComponents = [
+			new SidebarComponent("Fill the table", (function() {controller().setActiveFunctionIndex(0); updateView() }) ),
+			new SidebarComponent("Fill the gaps", (function() {controller().setActiveFunctionIndex(1); updateView() }) ),
+			new SidebarComponent("Reveal the photo", (function() {controller().setActiveFunctionIndex(2); updateView() }) ),
+			new SidebarComponent("Fast counting", (function() {controller().setActiveFunctionIndex(3); updateView() }) ),
+	];
+	sidebarComponents.forEach(function(item) {
+		containerElement.appendChild( item.divElement );
+	})
+	const setActiveAttribite = function() {
+		sidebarComponents[ controller().getActiveFunctionIndex() ].setActiveAttribute();
+	}();
+	return containerElement;
+};
+
+
+const createResults = function() {
+	const content = function() {
+		return "RESULTS"
+	}
+	const containerElement = createEl( "DIV", "rrrresults", content());
+	return containerElement;	 
+}
+
+const createTable = function(array) {
+	const containerElement = createEl( "DIV", "table");
+	let id = 0;
+	array.map(function(equation) {
+		const inputField = createEl("INPUT", "table-input");
+		const inputFieldDiv = createEl("DIV", "table-squares");
+		containerElement.appendChild(inputFieldDiv);
+		inputFieldDiv.appendChild(inputField);
+		inputField.setAttribute("index", equation.index)
+		if (equation.x === 1 || equation.y === 1 ) { 
+			inputField.value = equation.z;
+			inputField.setAttribute("disabled", true)
+			inputField.className = "first-rows";
+ 		} else {
+ 			inputField.id = id; id++
+      inputField.value = equation.userAnswer; // if there is one entered previously;
+      if (inputField.value !== "") { // marked as "done"; otherwise it would be editable
+        inputField.setAttribute("done", true);
+      };    
+    };
+	})
+	return containerElement;
+};
+
+
+const createPhotoContent = function(array) {
+	const containerElement = createEl( "DIV", "photo");
+
+	const canvas = document.createElement('CANVAS');
+	let [canvasWidth, canvasHeight] = [9*48, 9*48];
+ 	canvas.setAttribute('width', canvasWidth);
+  canvas.setAttribute('height', canvasHeight);
+  const ctx = canvas.getContext("2d");
+
+  const drawGrid = function(lineWidth, rows, columns) {
+  	console.log("draw")
+    for (let i = 0; i < rows; i ++) {
+      for (let j = 0; j < columns; j ++) {
+        ctx.rect(canvasWidth / rows * i, canvasHeight / columns * j,
+                 canvasWidth / rows, canvasHeight / columns
+        ); // ctx.rect(x, y, width, height);
+        ctx.lineWidth = lineWidth;
+        ctx.stroke();
+      };
+    };
+  }(1, 9, 9);
+  containerElement.appendChild(canvas);
+  return containerElement;
+};
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 
 const view = {}
+
+view.sidebar = {
+	parentElement: document.querySelector('.sidebar'),
+  render: function() {
+  	// console.log ( createResults().toString() )
+    this.clear();
+    this.parentElement.appendChild( createSidebar() );
+    },
+   clear: function() {
+    if (this.parentElement.firstChild) {
+        this.parentElement.removeChild(this.parentElement.firstChild);
+      };
+    }, 
+}
+
+view.results = {
+	parentElement: document.querySelector('.results'),
+  render: function() {
+  	// console.log ( createResults().toString() )
+    this.clear();
+    this.parentElement.appendChild( createResults() );
+    },
+   clear: function() {
+    if (this.parentElement.firstChild) {
+        this.parentElement.removeChild(this.parentElement.firstChild);
+      };
+    }, 
+}
 view.score = {
 	parentElement: document.querySelector('.score'),
   render: function() {
@@ -162,15 +258,18 @@ view.main = {
 
 	pages: [
 			(function(n) {return createTable(n)}),
+			(function(n) {   }),
+			(function(n) {return createPhotoContent(n)}),
+			(function(n) {   }),
 	],
 	events: [
 
 	],
 	render: function() {
-		this.clear();
-		// view.score.render()
-		this.parentElement.appendChild(this.pages[this.activeFunctionIndex()](this.currentArrayState()));
-		// eventHandlers().inputFields.focusOnFirst();			
+			// console.log( controller().getActiveFunctionIndex() )
+			this.clear();
+
+			this.parentElement.appendChild(this.pages[this.activeFunctionIndex()](this.currentArrayState()));
 	},
 	clear: function() {
 		if (this.parentElement.firstChild) {
@@ -179,42 +278,34 @@ view.main = {
 	},
 };
 
-
 const updateView = function() {
 	for (component in view) { view[component].render() }
-	events().tableEvents()
-	events().focus()
-	console.log( controller().getActiveFunctionIndex() )
-	
+	events().tableEvents();
+	events().focus(); //to należy równiez wrzucić do array
 };
-
-
-// console.log( keypressController.events.Enter())
 
 const events = function() {
 	const inputFields = Array.from(document.querySelectorAll("input"));
-	const nextID = parseInt( keypress().getIDFromIndex( controller().getCurrentArrayIndex()) ) + 1;
+	const nextID = parseInt(controller().getCurrentArrayIndex()) + 1;
 
-	const focus = function() {
+	const focus = (function() {
 			if (controller().getCurrentArrayIndex() === undefined) {
-				controller().setCurrentArrayIndex( inputFields[0].getAttribute("index") )
-				inputFields[0].focus()
+				controller().setCurrentArrayIndex( 10 )
+				inputFields[10].focus()
 			} else {
-				// console.log( nextID )
 				inputFields [ nextID ].focus()
 			}
-	};
+	});
 	
 	const tableEvents = function() {
 		inputFields.map(function(item) {
 			item.addEventListener("input", function() { input().checkIfValid() })			
 			item.addEventListener("keydown", function() { keypress(event.code).fireHandler() })
-			// item.addEventListener("change", function() { updateView() })
 		})
 	}
 
 	return {
-		focus: focus,
+		focus: focus, // I changes this - check if it works with tableCreate in View
 		tableEvents: tableEvents,
 	}
 };
@@ -242,9 +333,6 @@ const keypress = function(keyName) { // keypress controller
 	}
 
 	const move = function() {
-		// console.log(currentID())
-		// console.log(lastActive.id)
-		
 		const oneRight = function() {return document.getElementById(currentID()+1)};
 		const oneLeft = function() {return document.getElementById(currentID()-1)};
 		const oneDown = function() {return document.getElementById(currentID()+8)};
@@ -260,9 +348,6 @@ const keypress = function(keyName) { // keypress controller
 		if (inputField().value!=="" && input().checkIfValid()) {
 			input().checkIfCorrect();
 		}
-		// console.log( inputField() )
-		// console.log(currentID()); 
-		// console.log( move().right() )
 	};
 	const fireHandler = function() {
 		for (key in events) {
@@ -298,12 +383,12 @@ const input = function() { // input controller
 			isInvalid: function() {
 				inputFields.map(function(item) {item.disabled = true});
 				lastActive.disabled = false;
-				lastActive.className = "invalid";
+				lastActive.setAttribute("valid", false);
 				// lastActive.focus();
 			},
 			isValid: function() {
 				inputFields.map(function(item) {item.disabled = false});
-				inputField().className = "input-fields";			
+				inputField().setAttribute("valid", true);
 			},
 			isIncorrect: function() {
 				model.score.strikeReset();
@@ -317,8 +402,8 @@ const input = function() { // input controller
 		    updateView();
 			},
 			isDone: function() {
-				lastActive.className = "done";
-		    // inputField().disabled = true;
+				inputField().setAttribute("done", true)
+		    inputField().disabled = true;
 			},
 		};
 	};
@@ -332,35 +417,8 @@ const input = function() { // input controller
 
 updateView()
 
-const SidebarComponent = function(content, attachedFunction) {
-	this.content = content;
-	this.attachedFunction = attachedFunction;
-	this.containerElement = document.createElement("DIV");
-	this.containerElement.className = "sidebarChildren";
-	this.containerElement.textContent = content;
-	
-	this.containerElement.addEventListener("click", this.attachedFunction.bind(this) )
-};
 
-(function() {
-	const sidebarContainer = document.createElement("DIV");
-	sidebarContainer.className = "sidebarContainer";
-	const sidebarComponents = [
-			new SidebarComponent("Fill the table", (function() { controller().setActiveFunctionIndex(0); updateView()
- }) ),
-			new SidebarComponent("Fill the gaps", (function() { controller().setActiveFunctionIndex(1); updateView()
- }) ),
-			new SidebarComponent("Reveal the photo", (function() { controller().setActiveFunctionIndex(2); updateView()
- }) ),
-			new SidebarComponent("Fast counting", (function() { controller().setActiveFunctionIndex(3); updateView()
- }) ),
-	]
 
-	sidebarComponents.forEach(function(item) {
-		sidebarContainer.appendChild( item.containerElement )
-	})
-	document.querySelector(".sidebar").appendChild (sidebarContainer)
-})();
 
 
 
