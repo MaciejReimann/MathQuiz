@@ -58,7 +58,6 @@ aside {
   font-weight: 600;
    
 }
-
 .score, .results {
   display: grid;
   /*background: black;*/
@@ -104,7 +103,7 @@ input {
   grid-template-rows: repeat(9, 46px);
   grid-gap: 3px;  
 }
-.first-rows {
+input:disabled {
   background-color: white;
   font-weight: 600;
 }
@@ -123,9 +122,12 @@ input:focus {
   height: 43px;
   box-shadow: 2px 2px 3px 3px #ccc;
 }
+              /* EQUATIONS */
+
+
                 /* PHOTO */
-.photo {
-  
+.photo canvas {
+   box-shadow: 2px 2px 3px 3px #ccc;
 }
                /* SQUARES */
 .squares {
@@ -134,30 +136,15 @@ input:focus {
  
 /*/*         EQUATIONS              
 */
-
-/*  .equationParagraph {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
   .equationParagraph {
-    margin-top: 10px;
-    font-size: 40px;
+    margin-top: 30px;
+    /*animation: fadein 2s;*/
   }
-
   .equationElements {
-    margin: 10px;
+    border: none;
+    /*box-shadow: 0px 0px 3px 3px #ccc;*/
+    /*border-bottom: solid 2px black;*/
   }
-
-   .equationParagraph input {
-    margin: 10px;
-    width: 40px;
-    height: 40px;
-    border: solid 1px black;
-    text-align: center;
-    font-family: 'Source Code Pro', monospace;
-  }*/
 
 /*-----------  USER INTERACTION  ---------------          
 
@@ -190,8 +177,4 @@ input:focus {
 
 [active] {
  font-weight: 600;
-}
-
-.inactive {
-
 }
