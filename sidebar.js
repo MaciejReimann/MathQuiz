@@ -65,7 +65,7 @@ Score.prototype.get = function() { return this.globalScore };
 const model = {
 	array: new EquationsArray(),
 	activeFunctionIndex: new StoredValue(0),
-	currentIndexes:[],
+	currentIndexes:[0,0,0,0],
 	// activeFunctionIndex: new StoredValue(0),
 	// currentState: new Array(),
 	score: new Score(),
@@ -84,7 +84,7 @@ const controller = function() {
 			return model.array.getOrdered();
 		}),
 		(function() {
-			model.array.setBlankPositionForAll("z");
+			// model.array.setBlankPositionForAll("z");
 			return model.array.getOrdered();
 		}),
 		(function() {
@@ -179,7 +179,39 @@ const createTable = function(array) {
 	})
 	return containerElement;
 };
+const createEquationParagraph = function() {
+	const containerElement = createEl( "DIV", "equationParagraph")
+	const currentEquation = function() {return controller().getCurrentElement()}
+	
+	const assignElementValues = function(arrayOfElements) {
+		const equationElements = [];
+		for (let i = 0; i<5; i++) {
+			let inputField = createEl ("INPUT", "equationElements");
+			equationElements.push(inputField)
+			containerElement.appendChild(inputField);
+			inputField.id = i;
+			inputField.value = arrayOfElements[i];			
+		}
+		
+			for (key in arrayOfElements) {
+			equationElements[key].disabled = true;
+				if (arrayOfElements[key] === "") {
+					equationElements[key].setAttribute("index", currentEquation().index);
+					equationElements[key].className = "table-input";
+					equationElements[key].disabled = false;
+						// console.log(equationElements[key])
+				}
+			}
+		
+	}
 
+	let equationTypes = [
+		assignElementValues([currentEquation().x, "*", currentEquation().y, "=", ""									]),
+		// assignElementValues([currentEquation().x, "*",  ""								, "=", currentEquation().z]),
+	]
+	// equationTypes[1]
+	return containerElement
+};
 
 const createPhotoContent = function(array) {
 	const containerElement = createEl( "DIV", "photo");
@@ -202,9 +234,26 @@ const createPhotoContent = function(array) {
       };
     };
   }(1, 9, 9);
+//   array.map( function(equation) {
+//   let x = equation.x;
+//   let y = equation.y;
+//   ctx.drawImage(picture,
+//                 pictureWidth / 10 * x, pictureHeight / 10 * y, // sx, sy (crop starting point coords)
+//                 pictureWidth / 10, pictureHeight / 10, // sWidth, sHeight (crop dimensions)
+//                 canvasWidth / 10 * x, canvasHeight / 10 * y, // ?
+//                 canvasWidth / 10, canvasHeight / 10 // ?
+//   );
+// });
   containerElement.appendChild(canvas);
+  containerElement.appendChild(createEquationParagraph());
+
   return containerElement;
 };
+
+
+
+
+
 
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -257,18 +306,16 @@ view.main = {
 	currentArrayState: function() { return controller().getCurrentArrayState() },
 
 	pages: [
-			(function(n) {return createTable(n)}),
-			(function(n) {   }),
-			(function(n) {return createPhotoContent(n)}),
+			(function(n) {return createTable(n) }),
+			(function(n) {return createEquationParagraph() }),
+			(function(n) {return createPhotoContent(n) }),
 			(function(n) {   }),
 	],
 	events: [
 
 	],
 	render: function() {
-			// console.log( controller().getActiveFunctionIndex() )
 			this.clear();
-
 			this.parentElement.appendChild(this.pages[this.activeFunctionIndex()](this.currentArrayState()));
 	},
 	clear: function() {
@@ -305,12 +352,12 @@ const events = function() {
 	}
 
 	return {
-		focus: focus, // I changes this - check if it works with tableCreate in View
+		focus: focus, 
 		tableEvents: tableEvents,
 	}
 };
 
-const keypress = function(keyName) { // keypress controller
+const keypress = function(keyName) { // keypress controller; reads the ID of input elements
 
 	let lastActive;
 	let inputField = function() {lastActive = document.activeElement; return document.activeElement };
@@ -360,7 +407,8 @@ const keypress = function(keyName) { // keypress controller
 	}
 }
 
-const input = function() { // input controller
+const input = function() { // input controller; reads the INDEX attribute of input elements
+	// index attribute needs to be equal to currentEquation.index
 	const inputFields = Array.from(document.querySelectorAll("input"));
 	let lastActive;
 	let inputField = function() {lastActive = document.activeElement; return document.activeElement };
