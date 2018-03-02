@@ -46,6 +46,9 @@ const StoredValue = function(value) {
 };
 StoredValue.prototype.set = function(n) {this.value = n};
 StoredValue.prototype.get = function(n) {return this.value};
+StoredValue.prototype.noChange = function() {
+	return this.set(this.get())
+};
 
 const Score = function(initialValue) {
 	if (initialValue) {
@@ -56,7 +59,7 @@ const Score = function(initialValue) {
 };
 Score.prototype.strikeIncrement = function() { this.strike ++ };
 Score.prototype.strikeReset = function() { this.strike = 0 };
-Score.prototype.increment = function() { this.globalScore = this.globalScore + this.strike * 2 };
+Score.prototype.increment = function() { this.globalScore = this.globalScore + 1 + this.strike * 2; return this.globalScore };
 Score.prototype.get = function() { return this.globalScore };
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -64,10 +67,8 @@ Score.prototype.get = function() { return this.globalScore };
 
 const model = {
 	array: new EquationsArray(),
-	activeFunctionIndex: new StoredValue(0),
+	activeFunctionIndex: new StoredValue(),
 	currentIndexes:[0,0,0,0],
-	// activeFunctionIndex: new StoredValue(0),
-	// currentState: new Array(),
 	score: new Score(),
 };
 
@@ -93,16 +94,18 @@ const controller = function() {
 		}),
 
 	];
-	let getActiveFunctionIndex = model.activeFunctionIndex.get();
+	// let getActiveFunctionIndex = model.activeFunctionIndex.get();
+	const score = model.score;
+	const activeFunctionIndex = model.activeFunctionIndex;
 	return {
-		setActiveFunctionIndex: function(n) { model.activeFunctionIndex.set(n) },
-		getActiveFunctionIndex: function() { return getActiveFunctionIndex },
+		score: score,
+		activeFunctionIndex: activeFunctionIndex,
 
-		getCurrentArrayState: function() { return array[getActiveFunctionIndex] () },
+		getCurrentArrayState: function() { return array[ this.activeFunctionIndex.get() ] () },
 		getCurrentElement: function() { return this.getCurrentArrayState()[ this.getCurrentArrayIndex() ] },
 
-		setCurrentArrayIndex: function(n) { model.currentIndexes[ getActiveFunctionIndex ] = n},
-		getCurrentArrayIndex: function() { return model.currentIndexes[ getActiveFunctionIndex ] },
+		setCurrentArrayIndex: function(n) { model.currentIndexes[ this.activeFunctionIndex.get() ] = n},
+		getCurrentArrayIndex: function() { return model.currentIndexes[ this.activeFunctionIndex.get() ] },
 		
 	};
 }
@@ -119,13 +122,8 @@ const createEl = function(tag, className, textContent) {
     return newElement;
 };
 const SidebarComponent = function(content, attachedFunction) {
-	this.content = content;
-	this.attachedFunction = attachedFunction;
-	this.divElement = document.createElement("DIV");
-	this.divElement.className = "sidebarChildren";
-	this.divElement.textContent = content;
-	
-	this.divElement.addEventListener("click", this.attachedFunction.bind(this) )
+	this.divElement = createEl( "DIV", "sidebarChildren", content);	
+	this.divElement.addEventListener("click", attachedFunction.bind(this) )
 };
 SidebarComponent.prototype.setActiveAttribute = function() {
 	this.divElement.setAttribute("active", true);
@@ -133,29 +131,39 @@ SidebarComponent.prototype.setActiveAttribute = function() {
 const createSidebar = function() {
 	const containerElement = createEl( "DIV", "sidebarContainer");
 	const sidebarComponents = [
-			new SidebarComponent("Fill the table", (function() {controller().setActiveFunctionIndex(0); updateView() }) ),
-			new SidebarComponent("Fill the gaps", (function() {controller().setActiveFunctionIndex(1); updateView() }) ),
-			new SidebarComponent("Reveal the photo", (function() {controller().setActiveFunctionIndex(2); updateView() }) ),
-			new SidebarComponent("Fast counting", (function() {controller().setActiveFunctionIndex(3); updateView() }) ),
+			new SidebarComponent("Fill the table", (function() { view.update(0) }) ),
+			new SidebarComponent("Fill the gaps", (function() { view.update(1) }) ),
+			new SidebarComponent("Reveal the photo", (function() { view.update(2) }) ),
+			new SidebarComponent("Fast counting", (function() { view.update(3) }) ),
 	];
 	sidebarComponents.forEach(function(item) {
 		containerElement.appendChild( item.divElement );
 	})
 	const setActiveAttribite = function() {
-		sidebarComponents[ controller().getActiveFunctionIndex() ].setActiveAttribute();
+		sidebarComponents[ controller().activeFunctionIndex.get() ].setActiveAttribute();
 	}();
 	return containerElement;
 };
-
-
 const createResults = function() {
 	const content = function() {
 		return "RESULTS"
 	}
-	const containerElement = createEl( "DIV", "rrrresults", content());
-	return containerElement;	 
+	return createEl( "DIV", "resultsDiv", content()); 
 }
-
+const createScore = function() {
+	return createEl( "DIV", "scoreDiv", controller().score.get());
+}
+const createMain = function() {
+	active = (function() {return controller().activeFunctionIndex.get() });
+	currentArray = (function() { return controller().getCurrentArrayState() });
+	const pages = [
+			(function(n) {return createTable(n) }),
+			(function(n) {return createEquationParagraph() }),
+			(function(n) {return createPhotoContent(n) }),
+			(function(n) {   }),
+	];
+	return pages[active()]( currentArray() )
+};
 const createTable = function(array) {
 	const containerElement = createEl( "DIV", "table");
 	let id = 0;
@@ -250,135 +258,70 @@ const createPhotoContent = function(array) {
   return containerElement;
 };
 
-
-
-
-
-
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
-
-const view = {}
-
-view.sidebar = {
-	parentElement: document.querySelector('.sidebar'),
-  render: function() {
-  	// console.log ( createResults().toString() )
-    this.clear();
-    this.parentElement.appendChild( createSidebar() );
-    },
-   clear: function() {
-    if (this.parentElement.firstChild) {
-        this.parentElement.removeChild(this.parentElement.firstChild);
-      };
-    }, 
-}
-
-view.results = {
-	parentElement: document.querySelector('.results'),
-  render: function() {
-  	// console.log ( createResults().toString() )
-    this.clear();
-    this.parentElement.appendChild( createResults() );
-    },
-   clear: function() {
-    if (this.parentElement.firstChild) {
-        this.parentElement.removeChild(this.parentElement.firstChild);
-      };
-    }, 
-}
-view.score = {
-	parentElement: document.querySelector('.score'),
-  render: function() {
-    let content = model.score.get();
-    this.clear();
-    this.parentElement.appendChild( createEl("DIV", "scoreDiv", content) );
-    },
-   clear: function() {
-    if (this.parentElement.firstChild) {
-        this.parentElement.removeChild(this.parentElement.firstChild);
-      };
-    }, 
-}
-view.main = {
-	parentElement: document.querySelector(".main"),
-	activeFunctionIndex: function() {return controller().getActiveFunctionIndex() },
-	currentArrayState: function() { return controller().getCurrentArrayState() },
-
-	pages: [
-			(function(n) {return createTable(n) }),
-			(function(n) {return createEquationParagraph() }),
-			(function(n) {return createPhotoContent(n) }),
-			(function(n) {   }),
-	],
-	events: [
-
-	],
-	render: function() {
-			this.clear();
-			this.parentElement.appendChild(this.pages[this.activeFunctionIndex()](this.currentArrayState()));
-	},
-	clear: function() {
-		if (this.parentElement.firstChild) {
-			this.parentElement.removeChild(this.parentElement.firstChild);
-		}
-	},
+const ViewComponent = function(parentElement, attachedFunction) {
+	this.parentElement = parentElement;
+	this.attachedFunction = attachedFunction;
+};
+ViewComponent.prototype.clear = function() {
+	if (this.parentElement.firstChild) {
+ 		this.parentElement.removeChild(this.parentElement.firstChild);
+ 	};
+};
+ViewComponent.prototype.render = function() {
+	this.clear();
+  this.parentElement.appendChild( this.attachedFunction() );
 };
 
-const updateView = function() {
-	for (component in view) { view[component].render() }
-	events().tableEvents();
-	events().focus(); //to należy równiez wrzucić do array
+const view = {}
+view.components = {}
+view.components.sidebar = new ViewComponent(document.querySelector('.sidebar'), createSidebar );
+view.components.results = new ViewComponent(document.querySelector('.results'), createResults );
+view.components.score = new ViewComponent(document.querySelector('.score'), createScore );
+view.components.main = new ViewComponent(document.querySelector('.main'), createMain );
+
+view.update = function(v) {
+	if(!v) { controller().activeFunctionIndex.noChange() };
+	controller().activeFunctionIndex.set(v);
+	for (component in this.components) {this.components[component].render() }
+	events().inputHandlers();
+	events().focus();
 };
 
 const events = function() {
 	const inputFields = Array.from(document.querySelectorAll("input"));
 	const nextID = parseInt(controller().getCurrentArrayIndex()) + 1;
-
-	const focus = (function() {
-			if (controller().getCurrentArrayIndex() === undefined) {
-				controller().setCurrentArrayIndex( 10 )
-				inputFields[10].focus()
-			} else {
-				inputFields [ nextID ].focus()
-			}
-	});
-	
-	const tableEvents = function() {
+	const focus = function() {
+		for (let i = 0; i < inputFields.length; i ++) {
+			if (inputFields[i].value === "") {
+				inputFields[i].focus();
+				break;
+			} 
+		}
+	};	
+	const inputHandlers = function() {
 		inputFields.map(function(item) {
 			item.addEventListener("input", function() { input().checkIfValid() })			
-			item.addEventListener("keydown", function() { keypress(event.code).fireHandler() })
+			item.addEventListener("keydown", function() { keydown(event.code).fireHandler() })
 		})
 	}
-
 	return {
 		focus: focus, 
-		tableEvents: tableEvents,
+		inputHandlers: inputHandlers,
 	}
 };
 
-const keypress = function(keyName) { // keypress controller; reads the ID of input elements
-
-	let lastActive;
-	let inputField = function() {lastActive = document.activeElement; return document.activeElement };
-	// let inputValue = function() {return inputField().value};
+const keydown = function(keyName) { // keypress controller; reads the ID of input elements
+	let inputField = function() {return document.activeElement };
 	let currentID = function() {return parseInt(inputField().id)};
-	const events = {
+	const keys = {
 		Enter: (function() { accept() }),
 		ArrowRight: (function() { move().right() }),
 		ArrowLeft: (function() { move().left() }),
 		ArrowDown: (function() { move().down() }),
 		ArrowUp: (function() { move().up() }),		
 	};
-	const getIDFromIndex = function(indexAtrribute) {
-		const inputFields = document.querySelectorAll("input");
-		const pairs = {};
-		for (i=0; i<inputFields.length; i++) {
-			pairs [ inputFields[i].getAttribute("index") ] = inputFields[i].id;			
-		}
-		return pairs[indexAtrribute];
-	}
-
 	const move = function() {
 		const oneRight = function() {return document.getElementById(currentID()+1)};
 		const oneLeft = function() {return document.getElementById(currentID()-1)};
@@ -397,18 +340,18 @@ const keypress = function(keyName) { // keypress controller; reads the ID of inp
 		}
 	};
 	const fireHandler = function() {
-		for (key in events) {
-			if (key === keyName) { events[key]() }
-		}
+		for (key in keys) {
+			if (key === keyName) { keys[key]() }
+		};
 	};
 	return {
 		fireHandler: fireHandler,
-		getIDFromIndex: getIDFromIndex,
 	}
 }
 
 const input = function() { // input controller; reads the INDEX attribute of input elements
 	// index attribute needs to be equal to currentEquation.index
+	const score = controller().score;
 	const inputFields = Array.from(document.querySelectorAll("input"));
 	let lastActive;
 	let inputField = function() {lastActive = document.activeElement; return document.activeElement };
@@ -417,8 +360,7 @@ const input = function() { // input controller; reads the INDEX attribute of inp
 	let currentEquation = function() {return controller().getCurrentElement() };
 	let isCorrect = function() {return currentEquation().checkAnswer(inputValue())}
 
-	controller().setCurrentArrayIndex(activeElementIndex())
-	
+	controller().setCurrentArrayIndex(activeElementIndex())	
 
 	const checkIfValid = function() {
 		if (isNaN( inputValue() )) {proceedWhen().isInvalid(); return false} else {proceedWhen().isValid(); return true}
@@ -439,15 +381,15 @@ const input = function() { // input controller; reads the INDEX attribute of inp
 				inputField().setAttribute("valid", true);
 			},
 			isIncorrect: function() {
-				model.score.strikeReset();
+				score.strikeReset();
 				this.isDone();
-				updateView();
+				view.update( controller().activeFunctionIndex.get() );
 			},
 			isCorrect: 	function() {
-			 	model.score.strikeIncrement();
-		    model.score.increment();
+			 	score.strikeIncrement();
+		    score.increment();
 		    this.isDone();
-		    updateView();
+		    view.update( controller().activeFunctionIndex.get() );
 			},
 			isDone: function() {
 				inputField().setAttribute("done", true)
@@ -461,9 +403,7 @@ const input = function() { // input controller; reads the INDEX attribute of inp
 	}
 }
 
-
-
-updateView()
+view.update(0)
 
 
 
