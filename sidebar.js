@@ -9,6 +9,7 @@ const Equation = function(x, y, index) {
   this.y = y;
   this.z = this.x * this.y;
   this.index = index;
+  this.displayIndex = this.index;
   this.blankPosition;  
   this.userAnswer = "";
   this.numberOfTimesAnsweredCorrectly = 0;
@@ -42,15 +43,21 @@ const EquationsArray = function(givenArray) {
 	  	this.array.push(equation);
 		};
 	};
-	this.shuffledArray = shuffle(this.array.slice());
-};
-EquationsArray.prototype.getOrdered = function() { return this.array };
-EquationsArray.prototype.getShuffled = function() { 
+	this.copiedArray = this.array.slice()
+	this.shuffledArray = shuffle(this.copiedArray);
 	
-	this.shuffledArray.map(function() {
-
-	})
-		return this.shuffledArray 
+};
+EquationsArray.prototype.getOrdered = function() { 
+	for (let i = 0; i < this.array.length; i++ ) {
+		this.array[i].displayIndex = i;
+	}
+	return this.array 
+};
+EquationsArray.prototype.getShuffled = function() {
+	for (let i = 0; i < this.shuffledArray.length; i++ ) {
+		this.shuffledArray[i].displayIndex = i;
+	}
+	return this.shuffledArray 
 };
 EquationsArray.prototype.setBlankPositionForAll = function(p) {
 	this.array.map(function(equation) {
@@ -107,7 +114,7 @@ const controller = function() {
 			return model.array.getOrdered();
 		}),
 		(function() {
-			// model.array.setBlankPositionForAll("z");
+			model.array.setBlankPositionForAll("z");
 			return model.array.getShuffled();
 		}),
 		(function() {
@@ -194,7 +201,7 @@ const insertTable = function(array) {
 		const inputFieldDiv = createEl("DIV", "table-squares");
 		containerElement.appendChild(inputFieldDiv);
 		inputFieldDiv.appendChild(inputField);
-		inputField.setAttribute("index", equation.index)
+		inputField.setAttribute("displayIndex", equation.displayIndex)
 		// console.log(equation.index)
 		if (equation.x === 1 || equation.y === 1 ) { 
 			inputField.value = equation.z;
@@ -223,23 +230,22 @@ const insertEquationParagraph = function() {
 			inputField.id = i;
 			inputField.value = arrayOfElements[i];			
 		}
-		
-			for (key in arrayOfElements) {
-			equationElements[key].disabled = true;
-				if (arrayOfElements[key] === "") {
-					equationElements[key].setAttribute("index", currentEquation.index);
-					console.log("for equation par index is " + currentEquation.index)
-					console.log("for equation par z is " + currentEquation.z)
-					equationElements[key].className = "table-input";
-					equationElements[key].disabled = false;
-						// console.log(equationElements[key])
-				}
-			}
-		
+		for (let i = 0; i<5; i++) {
+			equationElements[i].disabled = true;
+			if (arrayOfElements[i] === "") {
+				equationElements[i].setAttribute("displayIndex", currentEquation.displayIndex);
+				equationElements[i].setAttribute("blankposition", arrayOfElements[5]);
+				console.log("for equation par displayindex is " + currentEquation.displayindex)
+				console.log("for equation par z is " + currentEquation.z)
+				equationElements[i].className = "table-input";
+				equationElements[i].disabled = false;
+					// console.log(equationElements[key])
+			}		
+		}		
 	}
 
 	let equationTypes = [
-		assignElementValues([currentEquation.x, "*", currentEquation.y, "=", ""									]),
+		assignElementValues([currentEquation.x, "*", currentEquation.y, "=", ""									, "z"]),
 		// assignElementValues([currentEquation().x, "*",  ""								, "=", currentEquation().z]),
 	]
 	// equationTypes[1]
@@ -312,8 +318,9 @@ view.update = function(v) {
 	controller().activeFunctionIndex.set(v);
 	for (component in this.components) {this.components[component].render() };
 	inputFocus();
-	controller().setCurrentArrayIndex( getActiveElement().getAttribute("index") );
-	console.log(getActiveElement().getAttribute("index"))
+	controller().setCurrentArrayIndex( getActiveElement().getAttribute("displayindex") );
+	console.log(" on update function current equation is " + controller().getCurrentArrayIndex() )
+	console.log(" on update function active element index is " + getActiveElement().getAttribute("displayindex"));
 
 	events( controller().getCurrentElement(), getActiveElement() );
 };
