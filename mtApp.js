@@ -18,7 +18,7 @@ function proceedWhen(input) {
 	};
 	const isValid = function() {
 		console.log("valid")
-		inputIsValid = true;
+		// inputIsValid = true;
 				// inputFields.map(function(item) {item.disabled = false});
 		input.setAttribute("valid", true);
 	};
@@ -36,8 +36,9 @@ function proceedWhen(input) {
 		view.update( controller().activeFunctionIndex.get() )
 	};
 	const isDone = function() {
-		input.setAttribute("done", true)
 		input.disabled = true;
+		input.setAttribute("done", true)
+		
 	};	 
 	return {
 		isInvalid: isInvalid,
@@ -55,37 +56,71 @@ function proceedWhen(input) {
 const InputField = function(value) {
 	this.element = document.createElement("INPUT");
 	this.value = value;
+	this.userAnswer = "";
 };
-InputField.prototype.checkIfValid = function(input) {
-	if(!isNaN(input.value)) {proceedWhen(input).isValid()} else {proceedWhen(input).isInvalid()}
+InputField.prototype.getElement = function() {
+	return this.element;
 };
+// setup
+
+
+InputField.prototype.checkIfValid = function() {
+	if(!isNaN(this.value)) {proceedWhen(this).isValid()} else {proceedWhen(this).isInvalid()}
+};
+InputField.prototype.onKeydown = function(event, input) {	
+	 {
+		this.checkIfCorrect(input.element)
+}
+	// return this.checkIfValid(this.element);
+};
+
+// InputField.prototype.checkIfValid = function(input) {
+// 	if(!isNaN(input.value)) {proceedWhen(input).isValid()} else {proceedWhen(input).isInvalid()}
+// };
 InputField.prototype.checkIfCorrect = function(input) {
-	if(parseInt(input.value)===this.value) {
+	this.userAnswer = parseInt(input.value);
+	if(this.userAnswer === this.value) {
 		proceedWhen(input).isCorrect()
 	} else {
 		proceedWhen(input).isIncorrect()
 	}
 };
-InputField.prototype.setUpActive = function() {
-	this.element.value = "";
-	// let expectedValue = this.expectedValue;
-	this.element.addEventListener("input", function() {
-		this.userAnswer = event.target.value;
-		this.checkIfValid(event.target)}.bind(this));
-	this.element.addEventListener("keydown", function() { 
-		if(enterPressed()&&!isEmpty(event.target)) {
-			this.checkIfCorrect(event.target);
-		}
-	}.bind(this));
+InputField.prototype.isActive = function() {
+	if (this.userAnswer !== "") { this.isDone() } else {
+		this.element.value = "";
+		this.element.addEventListener("input", this.checkIfValid) //passes the target element to the handler, NICE!
+		this.element.addEventListener("keydown", function onKeydown (event) {
+			if( enterPressed() && !isEmpty(this.element)) {
+				this.checkIfCorrect(this.element)
+			}
+			this.element.removeEventListener("keydown", onKeydown)
+		}.bind(this));
+
+	}
 	return this.element;
 };
-InputField.prototype.setUpInactive = function() {
+InputField.prototype.isInactive = function(className) {
 	this.element.value = this.value;
 	this.element.disabled = true;
+	this.element.className = className;
+	return this.element;
 }
+InputField.prototype.isDone = function(className) {
+	console.log("saodfn")
+	// this.element.removeEventListener("input", validate)
+// 	this.element.removeEventListener("input", checkIfCorrect)
+// 	this.element.disabled = true;
+// 	this.element.className = className;
+// 	return this.element;
+}
+// USERANSWER, DONE, REMOVE EVENT LISTENERS I WSZYSTKIE ZMIANY DANYCH PRZEZ USERA
+// MUSI BYĆ ZAPISANE W MODELU - CZYLI PRZECHODZI DO FUNKCJI PROCEED,
+// KTÓRA ZACIĄGA PARAMETR ARRAY (MODEL.ARRAY), I MOŻE W NIM ZAPISYWAĆ TE DANE. (GETCURRENTEEMENT)
+// CAŁA RESZTA JEST TWORZONA OD ZERA PO VIEW.UPDATE, 
+// CZYLI GENERALNY SETUP POWSTAJE W CONSTRUKTORACH, SETUP DLA SESJI I UZYTKOWNIKA ODTWARZA SIE Z MODELU. 
 
 const EquationParagraph = function(x,y,index) {
-	this.x = x;
+this.x = x;
   this.y = y;
   this.z = this.x * this.y;
   this.index = index;
@@ -94,16 +129,20 @@ const EquationParagraph = function(x,y,index) {
   this.elementZ = new InputField(this.z)
   this.elementMultiplication = new InputField("*")
   this.elementEqual = new InputField("=")
-  this.userAnswer = "";
+   // [ 2, 6, 12, 64 ]
 };
 // EquationParagraph.prototype.setBlankPosition = function(p) {
 // 	this.blankPosition = p;
 // };
-EquationParagraph.prototype.setUp = function(i) {
+EquationParagraph.prototype.isDone = function() {
+	if (this.userAnswer !=="") {return true} else {return false}
+}
+
+EquationParagraph.prototype.setUpOptions = function(i) {
 	this.options = [
 		(function() {
 			// this.elementZ.create()
-			
+			("first-rows")
 			// console.log(this.elementZ instanceof InputField)
 			// this.elementBlank.setAttribute("position", "z")
 			return [ this.elementZ.setUpActive() ]
@@ -117,23 +156,37 @@ EquationParagraph.prototype.setUp = function(i) {
 		}.bind(this)),
 
 	]
-	return this.options[i]();
+	return appendAllTo("DIV", this.options[i]() );
 }
-EquationParagraph.prototype.print = function(n) {
-	return appendAllTo("DIV", this.setUp(n) );
-};
-EquationParagraph.prototype.checkAnswer = function(answer) {
-	// console.log( this.elementZ.value )
-	this.correctAnswer = this[this.blankPosition];
-	// console.log( this.elementBlank.getAttribute("position") )
-	this.userAnswer = answer;
-	if (answer=== this.correctAnswer) {return true} else {return false};
-};
+
+// EquationParagraph.prototype.checkAnswer = function(answer) {
+// 	// console.log( this.elementZ.value )
+// 	this.correctAnswer = this[this.blankPosition];
+// 	// console.log( this.elementBlank.getAttribute("position") )
+// 	this.userAnswer = answer;
+// 	if (answer=== this.correctAnswer) {return true} else {return false};
+// };
 
 const test = function() {
-	const equationParagraph = controller().getCurrentElement().print(0);
+	const equationParagraph = controller().getCurrentElement().setUpOptions(0);
 	console.log(controller().getCurrentElement())
 	return equationParagraph
+};
+
+function insertTable (array) {
+	const containerElement = createEl( "DIV", "table");
+	array.map(function(equation) {
+		containerElement.appendChild(equation.elementZ.getElement());
+		if (equation.x === 1 || equation.y === 1 ) { 
+			equation.elementZ.isInactive(("given-number"));	
+ 		} else { equation.elementZ.isActive() }
+      // inputField.value = equation.userAnswer; // if there is one entered previously;
+      // if (inputField.value !== "") { // marked as "done"; otherwise it would be editable
+      //   inputField.setAttribute("done", true);
+      // };    
+    	// };
+	})
+	return containerElement;
 };
 
 const ArrayOfEquations = function(givenArray) {
@@ -368,30 +421,30 @@ const createMain = function() {
 	];
 	return pages[active()]( currentArray() )
 };
-const insertTable = function(array) {
-	const containerElement = createEl( "DIV", "table");
-	let id = 0;
-	array.map(function(equation) {
-		const inputField = createEl("INPUT", "table-input");
-		const inputFieldDiv = createEl("DIV", "table-squares");
-		containerElement.appendChild(inputFieldDiv);
-		inputFieldDiv.appendChild(inputField);
-		inputField.setAttribute("displayIndex", equation.displayIndex)
-		// console.log(equation.index)
-		if (equation.x === 1 || equation.y === 1 ) { 
-			inputField.value = equation.z;
-			inputField.setAttribute("disabled", true)
-			inputField.className = "first-rows";
- 		} else {
- 			inputField.id = id; id++
-      inputField.value = equation.userAnswer; // if there is one entered previously;
-      if (inputField.value !== "") { // marked as "done"; otherwise it would be editable
-        inputField.setAttribute("done", true);
-      };    
-    };
-	})
-	return containerElement;
-};
+// const insertTable = function(array) {
+// 	const containerElement = createEl( "DIV", "table");
+// 	let id = 0;
+// 	array.map(function(equation) {
+// 		const inputField = createEl("INPUT", "table-input");
+// 		const inputFieldDiv = createEl("DIV", "table-squares");
+// 		containerElement.appendChild(inputFieldDiv);
+// 		inputFieldDiv.appendChild(inputField);
+// 		inputField.setAttribute("displayIndex", equation.displayIndex)
+// 		// console.log(equation.index)
+// 		if (equation.x === 1 || equation.y === 1 ) { 
+// 			inputField.value = equation.z;
+// 			inputField.setAttribute("disabled", true)
+// 			inputField.className = "first-rows";
+//  		} else {
+//  			inputField.id = id; id++
+//       inputField.value = equation.userAnswer; // if there is one entered previously;
+//       if (inputField.value !== "") { // marked as "done"; otherwise it would be editable
+//         inputField.setAttribute("done", true);
+//       };    
+//     };
+// 	})
+// 	return containerElement;
+// };
 const insertEquationParagraph = function() {
 	const containerElement = createEl( "DIV", "equationParagraph")
 	const currentEquation = controller().getCurrentElement()
