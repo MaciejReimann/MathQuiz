@@ -6,8 +6,8 @@ function appendAllTo(elementType, array) {
 function enterPressed() { 
 	if(event.code==="Enter") {return true} else {return false} 
 };
-function isEmpty(input) { 
-	if(input==="") {return true} else {return false} 
+function isNotEmpty() { 
+	if(event.target.value!=="") {return true} else {return false} 
 };
 function proceedWhen(input) {
 	const score = controller().score;
@@ -57,6 +57,7 @@ const InputField = function(value) {
 	this.element = document.createElement("INPUT");
 	this.value = value;
 	this.userAnswer = "";
+	this.hasListeners = false;
 };
 InputField.prototype.getElement = function() {
 	return this.element;
@@ -67,38 +68,40 @@ InputField.prototype.getElement = function() {
 InputField.prototype.checkIfValid = function() {
 	if(!isNaN(this.value)) {proceedWhen(this).isValid()} else {proceedWhen(this).isInvalid()}
 };
-InputField.prototype.onKeydown = function(event, input) {	
-	 {
-		this.checkIfCorrect(input.element)
-}
-	// return this.checkIfValid(this.element);
-};
-
-// InputField.prototype.checkIfValid = function(input) {
-// 	if(!isNaN(input.value)) {proceedWhen(input).isValid()} else {proceedWhen(input).isInvalid()}
-// };
-InputField.prototype.checkIfCorrect = function(input) {
-	this.userAnswer = parseInt(input.value);
+InputField.prototype.checkIfCorrect = function(answer) {
+	this.userAnswer = parseInt(answer);
 	if(this.userAnswer === this.value) {
-		proceedWhen(input).isCorrect()
+		proceedWhen(this.element).isCorrect()
 	} else {
-		proceedWhen(input).isIncorrect()
+		proceedWhen(this.element).isIncorrect()
 	}
 };
-InputField.prototype.isActive = function() {
-	if (this.userAnswer !== "") { this.isDone() } else {
+InputField.prototype.checkKeyPressed = function() {
+	// this.keyPressed = event.key;
+	if(enterPressed()&&isNotEmpty()) {
+		this.checkIfCorrect(this.element.value)
+	}
+};
+InputField.prototype.isActive = function() {	
+	if (this.userAnswer !== "") {
+		this.removeListeners()
+		this.isDone()
+	} else {
 		this.element.value = "";
-		this.element.addEventListener("input", this.checkIfValid) //passes the target element to the handler, NICE!
-		this.element.addEventListener("keydown", function onKeydown (event) {
-			if( enterPressed() && !isEmpty(this.element)) {
-				this.checkIfCorrect(this.element)
-			}
-			this.element.removeEventListener("keydown", onKeydown)
-		}.bind(this));
-
+		if (this.hasListeners===false) {this.addListeners()};				
 	}
 	return this.element;
 };
+InputField.prototype.addListeners = function() {
+	this.element.addEventListener("input", this.checkIfValid)
+	this.element.addEventListener("keydown", this.checkKeyPressed.bind(this))
+	this.hasListeners = true;
+}
+InputField.prototype.removeListeners = function() {
+	this.element.removeEventListener("input", this.checkIfValid);
+	this.element.removeEventListener("keydown", this.checkKeyPressed.bind(this))
+}
+
 InputField.prototype.isInactive = function(className) {
 	this.element.value = this.value;
 	this.element.disabled = true;
@@ -113,11 +116,6 @@ InputField.prototype.isDone = function(className) {
 // 	this.element.className = className;
 // 	return this.element;
 }
-// USERANSWER, DONE, REMOVE EVENT LISTENERS I WSZYSTKIE ZMIANY DANYCH PRZEZ USERA
-// MUSI BYĆ ZAPISANE W MODELU - CZYLI PRZECHODZI DO FUNKCJI PROCEED,
-// KTÓRA ZACIĄGA PARAMETR ARRAY (MODEL.ARRAY), I MOŻE W NIM ZAPISYWAĆ TE DANE. (GETCURRENTEEMENT)
-// CAŁA RESZTA JEST TWORZONA OD ZERA PO VIEW.UPDATE, 
-// CZYLI GENERALNY SETUP POWSTAJE W CONSTRUKTORACH, SETUP DLA SESJI I UZYTKOWNIKA ODTWARZA SIE Z MODELU. 
 
 const EquationParagraph = function(x,y,index) {
 this.x = x;
