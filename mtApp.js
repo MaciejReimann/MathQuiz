@@ -25,14 +25,14 @@ function proceedWhen(input) {
 	const isIncorrect = function() {
 		console.log("incorrect")
 		score.strikeReset();
-		isDone();
+		// isDone();
 		view.update( controller().activeFunctionIndex.get() )
 	};
 	const isCorrect = function() {
 		console.log("correct")
 		score.strikeIncrement();
 		score.increment();
-		isDone();
+		// isDone();
 		view.update( controller().activeFunctionIndex.get() )
 	};
 	const isDone = function() {
@@ -62,11 +62,13 @@ const InputField = function(value) {
 InputField.prototype.getElement = function() {
 	return this.element;
 };
-// setup
-
-
 InputField.prototype.checkIfValid = function() {
-	if(!isNaN(this.value)) {proceedWhen(this).isValid()} else {proceedWhen(this).isInvalid()}
+	if(!isNaN(this.element.value) && isNotEmpty()) {
+		proceedWhen(this.element).isValid();
+		return true;
+	} else {
+		proceedWhen(this.element).isInvalid()}
+		return false;
 };
 InputField.prototype.checkIfCorrect = function(answer) {
 	this.userAnswer = parseInt(answer);
@@ -78,7 +80,7 @@ InputField.prototype.checkIfCorrect = function(answer) {
 };
 InputField.prototype.checkKeyPressed = function() {
 	// this.keyPressed = event.key;
-	if(enterPressed()&&isNotEmpty()) {
+	if(enterPressed() && this.checkIfValid()) {
 		this.checkIfCorrect(this.element.value)
 	}
 };
@@ -93,13 +95,15 @@ InputField.prototype.isActive = function() {
 	return this.element;
 };
 InputField.prototype.addListeners = function() {
-	this.element.addEventListener("input", this.checkIfValid)
-	this.element.addEventListener("keydown", this.checkKeyPressed.bind(this))
+	this.inputHandler = this.checkIfValid.bind(this);
+	this.keydownHandler = this.checkKeyPressed.bind(this);
+	this.element.addEventListener("input", this.inputHandler)
+	this.element.addEventListener("keydown",this.keydownHandler)
 	this.hasListeners = true;
 }
 InputField.prototype.removeListeners = function() {
-	this.element.removeEventListener("input", this.checkIfValid);
-	this.element.removeEventListener("keydown", this.checkKeyPressed.bind(this))
+	this.element.removeEventListener("input", this.inputHandler);
+	this.element.removeEventListener("keydown", this.keydownHandler)
 }
 
 InputField.prototype.isInactive = function(className) {
@@ -110,11 +114,10 @@ InputField.prototype.isInactive = function(className) {
 }
 InputField.prototype.isDone = function(className) {
 	console.log("saodfn")
-	// this.element.removeEventListener("input", validate)
-// 	this.element.removeEventListener("input", checkIfCorrect)
-// 	this.element.disabled = true;
-// 	this.element.className = className;
-// 	return this.element;
+	this.element.className = className;
+	this.element.disabled = true;
+	this.element.setAttribute("done", true)
+	return this.element;
 }
 
 const EquationParagraph = function(x,y,index) {
