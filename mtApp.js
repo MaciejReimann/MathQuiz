@@ -14,38 +14,27 @@ function proceedWhen(input) {
 	const isInvalid = function() {
 		console.log("invalid")
 		input.setAttribute("valid", false);
-		return 
+		return
 	};
 	const isValid = function() {
 		console.log("valid")
-		// inputIsValid = true;
-				// inputFields.map(function(item) {item.disabled = false});
 		input.setAttribute("valid", true);
 	};
 	const isIncorrect = function() {
 		console.log("incorrect")
 		score.strikeReset();
-		// isDone();
-		view.update( controller().activeFunctionIndex.get() )
 	};
 	const isCorrect = function() {
 		console.log("correct")
 		score.strikeIncrement();
 		score.increment();
-		// isDone();
 		view.update( controller().activeFunctionIndex.get() )
-	};
-	const isDone = function() {
-		input.disabled = true;
-		input.setAttribute("done", true)
-		
 	};	 
 	return {
 		isInvalid: isInvalid,
 		isValid: isValid,
 		isIncorrect: isIncorrect,
 		isCorrect: 	isCorrect,
-		isDone: isDone,
 	};
 };		
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -78,10 +67,38 @@ InputField.prototype.checkIfCorrect = function(answer) {
 		proceedWhen(this.element).isIncorrect()
 	}
 };
-InputField.prototype.checkKeyPressed = function() {
-	// this.keyPressed = event.key;
-	if(enterPressed() && this.checkIfValid()) {
-		this.checkIfCorrect(this.element.value)
+InputField.prototype.checkKeyPressed = function() { //  reads the ID of input elements
+	this.keyPressed = event.key;
+	let currentID = function() {return parseInt(this.element.id)}.bind(this);
+	const accept = function () {
+		if (this.checkIfValid()) {
+			this.checkIfCorrect(this.element.value);
+			console.log("accepted");
+		} else {
+			console.log("not-accepted")
+		}			
+	}.bind(this);
+	const keys = {
+		Enter: (function() {if (isNotEmpty()) {accept()} else {move().right()} }),
+		ArrowRight: (function() { move().right() }),
+		ArrowLeft: (function() { move().left() }),
+		ArrowDown: (function() { move().down() }),
+		ArrowUp: (function() { move().up() }),		
+	};
+	for (name in keys) {
+		if (event.key === name) {keys[name]()}
+	}		
+	function move () {
+		const oneRight = function() {return document.getElementById(currentID()+1)};
+		const oneLeft = function() {return document.getElementById(currentID()-1)};
+		const oneDown = function() {return document.getElementById(currentID()+8)};
+		const oneUp = function() {return document.getElementById(currentID()-8)};
+		return {
+			right: function() {if (oneRight()) {oneRight().focus()}},
+			left: function() {if (oneLeft()) {oneLeft().focus()}},
+			down: function() {if (oneDown()) {oneDown().focus()}},
+			up: function() {if (oneUp()) {oneUp().focus()}},
+		}
 	}
 };
 InputField.prototype.isActive = function() {	
@@ -94,18 +111,6 @@ InputField.prototype.isActive = function() {
 	}
 	return this.element;
 };
-InputField.prototype.addListeners = function() {
-	this.inputHandler = this.checkIfValid.bind(this);
-	this.keydownHandler = this.checkKeyPressed.bind(this);
-	this.element.addEventListener("input", this.inputHandler)
-	this.element.addEventListener("keydown",this.keydownHandler)
-	this.hasListeners = true;
-}
-InputField.prototype.removeListeners = function() {
-	this.element.removeEventListener("input", this.inputHandler);
-	this.element.removeEventListener("keydown", this.keydownHandler)
-}
-
 InputField.prototype.isInactive = function(className) {
 	this.element.value = this.value;
 	this.element.disabled = true;
@@ -119,6 +124,18 @@ InputField.prototype.isDone = function(className) {
 	this.element.setAttribute("done", true)
 	return this.element;
 }
+InputField.prototype.addListeners = function() {
+	this.inputHandler = this.checkIfValid.bind(this);
+	this.keydownHandler = this.checkKeyPressed.bind(this);
+	this.element.addEventListener("input", this.inputHandler)
+	this.element.addEventListener("keydown",this.keydownHandler)
+	this.hasListeners = true;
+}
+InputField.prototype.removeListeners = function() {
+	this.element.removeEventListener("input", this.inputHandler);
+	this.element.removeEventListener("keydown", this.keydownHandler)
+}
+///////////////////////////////////////////////////////////////////////
 
 const EquationParagraph = function(x,y,index) {
 this.x = x;
@@ -132,9 +149,7 @@ this.x = x;
   this.elementEqual = new InputField("=")
    // [ 2, 6, 12, 64 ]
 };
-// EquationParagraph.prototype.setBlankPosition = function(p) {
-// 	this.blankPosition = p;
-// };
+
 EquationParagraph.prototype.isDone = function() {
 	if (this.userAnswer !=="") {return true} else {return false}
 }
@@ -160,14 +175,6 @@ EquationParagraph.prototype.setUpOptions = function(i) {
 	return appendAllTo("DIV", this.options[i]() );
 }
 
-// EquationParagraph.prototype.checkAnswer = function(answer) {
-// 	// console.log( this.elementZ.value )
-// 	this.correctAnswer = this[this.blankPosition];
-// 	// console.log( this.elementBlank.getAttribute("position") )
-// 	this.userAnswer = answer;
-// 	if (answer=== this.correctAnswer) {return true} else {return false};
-// };
-
 const test = function() {
 	const equationParagraph = controller().getCurrentElement().setUpOptions(0);
 	console.log(controller().getCurrentElement())
@@ -176,16 +183,15 @@ const test = function() {
 
 function insertTable (array) {
 	const containerElement = createEl( "DIV", "table");
-	array.map(function(equation) {
+	let id = 0;
+	array.map(function(equation) {		
 		containerElement.appendChild(equation.elementZ.getElement());
 		if (equation.x === 1 || equation.y === 1 ) { 
-			equation.elementZ.isInactive(("given-number"));	
- 		} else { equation.elementZ.isActive() }
-      // inputField.value = equation.userAnswer; // if there is one entered previously;
-      // if (inputField.value !== "") { // marked as "done"; otherwise it would be editable
-      //   inputField.setAttribute("done", true);
-      // };    
-    	// };
+			equation.elementZ.isInactive(("inactive"));	
+ 		} else { 
+ 			equation.elementZ.isActive();
+ 			equation.elementZ.element.id = id; id++;
+ 		}
 	})
 	return containerElement;
 };
@@ -594,27 +600,27 @@ const inputFocus = function () {
 //  		if (isCorrect()) {proceedWhen().isCorrect()} else { proceedWhen().isIncorrect() }		
 // 	};
 
-// 	function keydown (keyName) { // keypress controller; reads the ID of input elements
-// 		let currentID = function() {return activeInput.id};
-// 		const keys = {
-// 			Enter: (function() { accept() }),
-// 			ArrowRight: (function() { move().right() }),
-// 			ArrowLeft: (function() { move().left() }),
-// 			ArrowDown: (function() { move().down() }),
-// 			ArrowUp: (function() { move().up() }),		
-// 		};
-// 		const move = function() {
-// 			const oneRight = function() {return document.getElementById(currentID()+1)};
-// 			const oneLeft = function() {return document.getElementById(currentID()-1)};
-// 			const oneDown = function() {return document.getElementById(currentID()+8)};
-// 			const oneUp = function() {return document.getElementById(currentID()-8)};
-// 			return {
-// 				right: function() {if (oneRight()) {oneRight().focus()}},
-// 				left: function() {if (oneLeft()) {oneLeft().focus()}},
-// 				down: function() {if (oneDown()) {oneDown().focus()}},
-// 				up: function() {if (oneUp()) {oneUp().focus()}},
-// 			};
-// 		};
+	// function keydown (keyName) { // keypress controller; reads the ID of input elements
+	// 	let currentID = function() {return activeInput.id};
+	// 	const keys = {
+	// 		Enter: (function() { accept() }),
+	// 		ArrowRight: (function() { move().right() }),
+	// 		ArrowLeft: (function() { move().left() }),
+	// 		ArrowDown: (function() { move().down() }),
+	// 		ArrowUp: (function() { move().up() }),		
+	// 	};
+	// 	const move = function() {
+	// 		const oneRight = function() {return document.getElementById(currentID()+1)};
+	// 		const oneLeft = function() {return document.getElementById(currentID()-1)};
+	// 		const oneDown = function() {return document.getElementById(currentID()+8)};
+	// 		const oneUp = function() {return document.getElementById(currentID()-8)};
+	// 		return {
+	// 			right: function() {if (oneRight()) {oneRight().focus()}},
+	// 			left: function() {if (oneLeft()) {oneLeft().focus()}},
+	// 			down: function() {if (oneDown()) {oneDown().focus()}},
+	// 			up: function() {if (oneUp()) {oneUp().focus()}},
+	// 		};
+	// 	};
 // 		const accept = function() { console.log( answer() ); if (answer()!=="" && isValid) {checkIfCorrect( answer() )} };
 // 		const fireHandler = function() {
 // 			for (key in keys) {
