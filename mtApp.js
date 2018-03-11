@@ -1,5 +1,11 @@
+function createElement (tag, className, textContent) {
+    const newElement = document.createElement(tag);
+    newElement.className = className;
+    newElement.textContent = textContent;
+    return newElement;
+};
 function appendAllTo(elementType, array) {
-	const parent = document.createElement(elementType)
+	const parent = document.createElementement(elementType)
 	array.map(function(item) {parent.appendChild(item)})		
 	return parent;
 };
@@ -28,7 +34,7 @@ function proceedWhen(input) {
 		console.log("correct")
 		score.strikeIncrement();
 		score.increment();
-		view.update( controller().activeFunctionIndex.get() )
+		viewModule().update( controller().activePageIndex.get() )
 	};	 
 	return {
 		isInvalid: isInvalid,
@@ -156,13 +162,7 @@ EquationParagraph.prototype.isDone = function() {
 
 EquationParagraph.prototype.setUpOptions = function(i) {
 	this.options = [
-		(function() {
-			// this.elementZ.create()
-			("first-rows")
-			// console.log(this.elementZ instanceof InputField)
-			// this.elementBlank.setAttribute("position", "z")
-			return [ this.elementZ.setUpActive() ]
-		}.bind(this)),
+		(function() { return [ this.elementZ.setUpActive() ] }.bind(this)), // 1st view; the default option;
 
 		(function() { console.log(this)
 			return [this.elementX, this.elementMultiplication, this.elementY, this.elementEqual, this.elementBlank]
@@ -182,7 +182,7 @@ const test = function() {
 };
 
 function insertTable (array) {
-	const containerElement = createEl( "DIV", "table");
+	const containerElement = createElement( "DIV", "table");
 	let id = 0;
 	array.map(function(equation) {		
 		containerElement.appendChild(equation.elementZ.getElement());
@@ -194,6 +194,78 @@ function insertTable (array) {
  		}
 	})
 	return containerElement;
+};
+
+const insertEquationParagraph = function(activeEquation) {
+	const containerElement = createElement( "DIV", "equationParagraph")
+	const currentEquation = activeEquation;
+	
+	const assignElementValues = function(arrayOfElements) {
+		const equationElements = [];
+		for (let i = 0; i<5; i++) {
+			let inputField = createElement ("INPUT", "equationElements");
+			equationElements.push(inputField)
+			containerElement.appendChild(inputField);
+			inputField.id = i;
+			inputField.value = arrayOfElements[i];			
+		}
+		for (let i = 0; i<5; i++) {
+			equationElements[i].disabled = true;
+			if (arrayOfElements[i] === "") {
+				equationElements[i].setAttribute("displayIndex", currentEquation.displayIndex);
+				equationElements[i].setAttribute("blankposition", arrayOfElements[5]);
+				console.log("for equation par displayindex is " + currentEquation.displayindex)
+				console.log("for equation par z is " + currentEquation.z)
+				equationElements[i].className = "table-input";
+				equationElements[i].disabled = false;
+					// console.log(equationElements[key])
+			}		
+		}		
+	}
+
+	let equationTypes = [
+		assignElementValues([currentEquation.x, "*", currentEquation.y, "=", ""									, "z"]),
+		// assignElementValues([currentEquation().x, "*",  ""								, "=", currentEquation().z]),
+	]
+	// equationTypes[1]
+	return containerElement
+};
+
+const insertPhoto = function(activeEquation) {
+	const containerElement = createElement( "DIV", "photo");
+
+	const canvas = document.createElement('CANVAS');
+	let [canvasWidth, canvasHeight] = [9*48, 9*48];
+ 	canvas.setAttribute('width', canvasWidth);
+  canvas.setAttribute('height', canvasHeight);
+  const ctx = canvas.getContext("2d");
+
+  const drawGrid = function(lineWidth, rows, columns) {
+  	console.log("draw")
+    for (let i = 0; i < rows; i ++) {
+      for (let j = 0; j < columns; j ++) {
+        ctx.rect(canvasWidth / rows * i, canvasHeight / columns * j,
+                 canvasWidth / rows, canvasHeight / columns
+        ); // ctx.rect(x, y, width, height);
+        ctx.lineWidth = lineWidth;
+        ctx.stroke();
+      };
+    };
+  }(1, 9, 9);
+//   array.map( function(equation) {
+//   let x = equation.x;
+//   let y = equation.y;
+//   ctx.drawImage(picture,
+//                 pictureWidth / 10 * x, pictureHeight / 10 * y, // sx, sy (crop starting point coords)
+//                 pictureWidth / 10, pictureHeight / 10, // sWidth, sHeight (crop dimensions)
+//                 canvasWidth / 10 * x, canvasHeight / 10 * y, // ?
+//                 canvasWidth / 10, canvasHeight / 10 // ?
+//   );
+// });
+  containerElement.appendChild(canvas);
+  containerElement.appendChild(insertEquationParagraph(activeEquation));
+
+  return containerElement;
 };
 
 const ArrayOfEquations = function(givenArray) {
@@ -227,32 +299,6 @@ ArrayOfEquations.prototype.getShuffled = function() {
 	}
 	return this.shuffledArray 
 };
-
-
-
-
-
-const Equation = function(x, y, index) {
-  this.x = x;
-  this.y = y;
-  this.z = this.x * this.y;
-  this.index = index;
-  this.displayIndex = this.index;
-  this.blankPosition;  
-  this.userAnswer = "";
-  // this.numberOfTimesAnsweredCorrectly = 0;
-
-  this.input = new InputField
-};
-Equation.prototype.checkAnswer = function(answer) {
-	let correctAnswer = this[this.blankPosition];
-	this.userAnswer = answer;
-	if (answer===correctAnswer) {return true} else {return false};
-};
-Equation.prototype.setBlankPosition = function(p) {
-	this.blankPosition = p;
-};
-
 function shuffle (array) {
    for (let i = array.length - 1; i > 0; i--) {
         let j = Math.floor(Math.random() * (i + 1));
@@ -262,49 +308,12 @@ function shuffle (array) {
     }
   return array;
 };
-const EquationsArray = function(givenArray) {
-	this.index = 0;
-	this.array = new Array();
-	let loopCounter = -1;
-	for (let i = 1; i < 10; i++ ) {       
-		for (let j = 1; j < 10; j++ ) {
-	  	loopCounter ++;
-	  	let equation = new Equation(i, j, loopCounter);
-	  	this.array.push(equation);
-		};
-	};
-	this.copiedArray = this.array.slice()
-	this.shuffledArray = shuffle(this.copiedArray);
-	
-};
-EquationsArray.prototype.getOrdered = function() { 
-	for (let i = 0; i < this.array.length; i++ ) {
-		this.array[i].displayIndex = i;
-	}
-	return this.array 
-};
-EquationsArray.prototype.getShuffled = function() {
-	for (let i = 0; i < this.shuffledArray.length; i++ ) {
-		this.shuffledArray[i].displayIndex = i;
-	}
-	return this.shuffledArray 
-};
-EquationsArray.prototype.setBlankPositionForAll = function(p) {
-	this.array.map(function(equation) {
-		equation.blankPosition = p;
-	})
-};
-EquationsArray.prototype.getCurrentElement = function() { return this.array[this.index] };
 
-
-const StoredValue = function(value) {
-  this.value = value;
+const StoredValue = function() {
+  	this.value;
 };
 StoredValue.prototype.set = function(n) {this.value = n};
 StoredValue.prototype.get = function(n) {return this.value};
-StoredValue.prototype.noChange = function() {
-	return this.set(this.get())
-};
 
 
 const Score = function(initialValue) {
@@ -312,7 +321,7 @@ const Score = function(initialValue) {
 		this.globalScore = initialValue;
 	} else { this.globalScore = 0 };  
   this.strike = 0;
-  // this.getBaseFrom = function(n) { localBase = n }; // How to define parameteras an anonymous function?""
+
 };
 Score.prototype.strikeIncrement = function() { this.strike ++ };
 Score.prototype.strikeReset = function() { this.strike = 0 };
@@ -323,10 +332,13 @@ Score.prototype.get = function() { return this.globalScore };
 ////////////////////////////////////////////////////////////////////////////////////////
 
 const model = {
-	array: new ArrayOfEquations(),
-	activeFunctionIndex: new StoredValue(),
-	currentIndexes:[-1,0,0,0],
 	score: new Score(),
+	sidebar: {
+		options: [ "Fill the table", "Fill the gaps", "Reveal the photo", "Fast counting" ],
+		activePageIndex: new StoredValue(), // stores the index value of the currenttly displayed option in .main
+	},
+	array: new ArrayOfEquations(),	
+	currentIndexes:[-1,0,0,0],	
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -337,40 +349,58 @@ const model = {
 
 const controller = function() {
 	const score = model.score;
-	const activeFunctionIndex = model.activeFunctionIndex;
-	const array = [
-		(function() {
-			// model.array.setBlankPositionForAll("z");
-			return model.array.getOrdered();
-		}),
-		(function() {
-			model.array.setBlankPositionForAll("z");
-			return model.array.getShuffled();
-		}),
-		(function() {
-			model.array.setBlankPositionForAll("z");
-			return model.array.getOrdered();
-		}),
-		(function() {
-			return model.array.getShuffled();
-		}),
+	const activePageIndex = model.sidebar.activePageIndex;
+	let i = activePageIndex.get();
 
+	const arrayStates = [
+		(function() {return model.array.getOrdered()}),
+		(function() {return model.array.getShuffled()}),
+		(function() {return model.array.getOrdered()}),
+		(function() {return model.array.getShuffled()}),
 	];
-	getCurrentArrayState = function() { return array[ activeFunctionIndex.get() ] () };
+	function getActiveArray() { return arrayStates[i] () };
+
+	const args = [ 
+		(function() {return getActiveArray() }),
+		(function() {return getActiveEquation() }),
+		(function() {return getActiveEquation() }),
+		(function() {return model.array.getShuffled()}),
+	];
+	function getActiveArgument() { return args[i] () };
+
+	const pageOptions = [
+		(function(arg) {return insertTable(arg) }),
+		(function(arg) {return insertEquationParagraph(arg) }),
+		(function(arg) {return insertPhoto(arg) }),
+		(function(arg) {return test()   }),
+	];
+	function getActivePage() {return pageOptions[i] (getActiveArgument())};	
+	function getIndexOfCurrentElementinActiveArray() {return model.currentIndexes[i]};
+	function setIndexOfCurrentElementinActiveArray(n) {model.currentIndexes[i] = n};
+	function incrementIndexOfCurrentElementinActiveArray() {model.currentIndexes[i]++};
+	function getActiveEquation() {return getActiveArray()[getIndexOfCurrentElementinActiveArray()]};
+
+	function informed() {
+		function whenViewUpdated(v) {
+			activePageIndex.set(v);
+			console.log("upsakfdniasonfnasokdgnoaing")
+		}
+		return {
+			 whenViewUpdated:  whenViewUpdated,
+		}
+	}
+
+	getCurrentArrayState = function() { return arrayStates[ activePageIndex.get() ] () };
 	getCurrentElement = function() { return getCurrentArrayState()[ getCurrentArrayIndex() ] };
 	// getPreviousElement = function() { return getCurrentArrayState()[ getCurrentArrayIndex() -1 ] };
-	setCurrentArrayIndex = function(n) { model.currentIndexes[ activeFunctionIndex.get() ] = n};
-	getCurrentArrayIndex = function() { return model.currentIndexes[ activeFunctionIndex.get() ] };	
-	incrementCurrentArrayIndex = function(n) { model.currentIndexes[ activeFunctionIndex.get() ] ++};
+	setCurrentArrayIndex = function(n) { model.currentIndexes[ activePageIndex.get() ] = n};
+	getCurrentArrayIndex = function() { return model.currentIndexes[ activePageIndex.get() ] };	
+	incrementCurrentArrayIndex = function(n) { model.currentIndexes[ activePageIndex.get() ] ++};
 	return {
+		informed: informed,
 		score: score,
-		activeFunctionIndex: activeFunctionIndex,
-		getCurrentArrayState: getCurrentArrayState,		
-		getCurrentElement: getCurrentElement,
-		// getPreviousElement: getPreviousElement,
-		setCurrentArrayIndex: setCurrentArrayIndex,
-		getCurrentArrayIndex: getCurrentArrayIndex,	
-		incrementCurrentArrayIndex: incrementCurrentArrayIndex,	
+		getActivePage: getActivePage,
+		activePageIndex: activePageIndex,
 	};
 }
 
@@ -379,259 +409,91 @@ const controller = function() {
 ///////////////////////////////// *** V I E W *** //////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
-const createEl = function(tag, className, textContent) {
-    const newElement = document.createElement(tag);
-    newElement.className = className;
-    newElement.textContent = textContent;
-    return newElement;
-};
-const SidebarComponent = function(content, attachedFunction) {
-	this.divElement = createEl( "DIV", "sidebarChildren", content);	
-	this.divElement.addEventListener("click", attachedFunction.bind(this) )
-};
-SidebarComponent.prototype.setActiveAttribute = function() {
-	this.divElement.setAttribute("active", true);
-};
-const createSidebar = function() {
-	const containerElement = createEl( "DIV", "sidebarContainer");
-	const sidebarComponents = [
-			new SidebarComponent("Fill the table", (function() { view.update(0) }) ),
-			new SidebarComponent("Fill the gaps", (function() { view.update(1) }) ),
-			new SidebarComponent("Reveal the photo", (function() { view.update(2) }) ),
-			new SidebarComponent("Fast counting", (function() { view.update(3) }) ),
-	];
-	sidebarComponents.forEach(function(item) {
-		containerElement.appendChild( item.divElement );
-	})
-	const setActiveAttribite = function() {
-		sidebarComponents[ controller().activeFunctionIndex.get() ].setActiveAttribute();
-	}();
-	return containerElement;
-};
-const createResults = function() {
-	const content = function() {
-		return "RESULTS"
-	}
-	return createEl( "DIV", "resultsDiv", content()); 
-}
-const createScore = function() {
-	return createEl( "DIV", "scoreDiv", controller().score.get());
-}
-const createMain = function() {
-	active = (function() {return controller().activeFunctionIndex.get() });
-	currentArray = (function() { return controller().getCurrentArrayState() });
-	const pages = [
-			(function(n) {return insertTable(n) }),
-			(function(n) {return insertEquationParagraph() }),
-			(function(n) {return insertPhoto(n) }),
-			(function(n) {return test()   }),
-	];
-	return pages[active()]( currentArray() )
-};
-// const insertTable = function(array) {
-// 	const containerElement = createEl( "DIV", "table");
-// 	let id = 0;
-// 	array.map(function(equation) {
-// 		const inputField = createEl("INPUT", "table-input");
-// 		const inputFieldDiv = createEl("DIV", "table-squares");
-// 		containerElement.appendChild(inputFieldDiv);
-// 		inputFieldDiv.appendChild(inputField);
-// 		inputField.setAttribute("displayIndex", equation.displayIndex)
-// 		// console.log(equation.index)
-// 		if (equation.x === 1 || equation.y === 1 ) { 
-// 			inputField.value = equation.z;
-// 			inputField.setAttribute("disabled", true)
-// 			inputField.className = "first-rows";
-//  		} else {
-//  			inputField.id = id; id++
-//       inputField.value = equation.userAnswer; // if there is one entered previously;
-//       if (inputField.value !== "") { // marked as "done"; otherwise it would be editable
-//         inputField.setAttribute("done", true);
-//       };    
-//     };
-// 	})
-// 	return containerElement;
-// };
-const insertEquationParagraph = function() {
-	const containerElement = createEl( "DIV", "equationParagraph")
-	const currentEquation = controller().getCurrentElement()
-	
-	const assignElementValues = function(arrayOfElements) {
-		const equationElements = [];
-		for (let i = 0; i<5; i++) {
-			let inputField = createEl ("INPUT", "equationElements");
-			equationElements.push(inputField)
-			containerElement.appendChild(inputField);
-			inputField.id = i;
-			inputField.value = arrayOfElements[i];			
+function viewModule() {
+	const scoreContent = function() {return controller().score.get()}
+	const mainContent = function() {return controller().getActivePage()}  
+	const mainIndex = function() {return controller().activePageIndex.get()} 
+	// let sidebarComponents = []
+	const SidebarComponent = function(content, attachedFunction) {
+		this.divElement = createElement( "DIV", "sidebarChildren", content);	
+		this.divElement.addEventListener("click", attachedFunction.bind(this) )
+	};
+	SidebarComponent.prototype.setActiveAttribute = function() {
+		this.divElement.setAttribute("active", true);
+	};
+	function createSidebar() {
+		const containerElement = createElement( "DIV", "sidebarContainer");
+		const sidebarComponents = [
+				new SidebarComponent("Fill the table", (function() { view.update(0) }) ),
+				new SidebarComponent("Fill the gaps", (function() { view.update(1) }) ),
+				new SidebarComponent("Reveal the photo", (function() { view.update(2) }) ),
+				new SidebarComponent("Fast counting", (function() { view.update(3) }) ),
+		];
+		sidebarComponents.forEach(function(item) {
+			containerElement.appendChild( item.divElement );
+		})
+		const setActiveAttribite = function() {
+			sidebarComponents[mainIndex()].setActiveAttribute(); // calling controller HERE!
+		}();
+		return containerElement;
+	};
+	function createResults() {
+		const content = function() {
+			return "RESULTS"
 		}
-		for (let i = 0; i<5; i++) {
-			equationElements[i].disabled = true;
-			if (arrayOfElements[i] === "") {
-				equationElements[i].setAttribute("displayIndex", currentEquation.displayIndex);
-				equationElements[i].setAttribute("blankposition", arrayOfElements[5]);
-				console.log("for equation par displayindex is " + currentEquation.displayindex)
-				console.log("for equation par z is " + currentEquation.z)
-				equationElements[i].className = "table-input";
-				equationElements[i].disabled = false;
-					// console.log(equationElements[key])
-			}		
-		}		
+		return createElement( "DIV", "resultsDiv", content()); // calling controller HERE!
 	}
-
-	let equationTypes = [
-		assignElementValues([currentEquation.x, "*", currentEquation.y, "=", ""									, "z"]),
-		// assignElementValues([currentEquation().x, "*",  ""								, "=", currentEquation().z]),
-	]
-	// equationTypes[1]
-	return containerElement
-};
-
-const insertPhoto = function(array) {
-	const containerElement = createEl( "DIV", "photo");
-
-	const canvas = document.createElement('CANVAS');
-	let [canvasWidth, canvasHeight] = [9*48, 9*48];
- 	canvas.setAttribute('width', canvasWidth);
-  canvas.setAttribute('height', canvasHeight);
-  const ctx = canvas.getContext("2d");
-
-  const drawGrid = function(lineWidth, rows, columns) {
-  	console.log("draw")
-    for (let i = 0; i < rows; i ++) {
-      for (let j = 0; j < columns; j ++) {
-        ctx.rect(canvasWidth / rows * i, canvasHeight / columns * j,
-                 canvasWidth / rows, canvasHeight / columns
-        ); // ctx.rect(x, y, width, height);
-        ctx.lineWidth = lineWidth;
-        ctx.stroke();
-      };
-    };
-  }(1, 9, 9);
-//   array.map( function(equation) {
-//   let x = equation.x;
-//   let y = equation.y;
-//   ctx.drawImage(picture,
-//                 pictureWidth / 10 * x, pictureHeight / 10 * y, // sx, sy (crop starting point coords)
-//                 pictureWidth / 10, pictureHeight / 10, // sWidth, sHeight (crop dimensions)
-//                 canvasWidth / 10 * x, canvasHeight / 10 * y, // ?
-//                 canvasWidth / 10, canvasHeight / 10 // ?
-//   );
-// });
-  containerElement.appendChild(canvas);
-  containerElement.appendChild(insertEquationParagraph());
-
-  return containerElement;
-};
+	function createScore() {
+		return createElement( "DIV", "scoreDiv", scoreContent()); // calling controller HERE!
+	}
+	function createMain() { return mainContent() }; // calling controller HERE!
 
 ////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////
-const ViewComponent = function(parentElement, attachedFunction) {
-	this.parentElement = parentElement;
-	this.attachedFunction = attachedFunction;
-};
-ViewComponent.prototype.clear = function() {
-	if (this.parentElement.firstChild) {
- 		this.parentElement.removeChild(this.parentElement.firstChild);
- 	};
-};
-ViewComponent.prototype.render = function() {
-	this.clear();
-  this.parentElement.appendChild( this.attachedFunction() );
-};
 
-const view = {}
-view.components = {}
-view.components.sidebar = new ViewComponent(document.querySelector('.sidebar'), createSidebar );
-view.components.results = new ViewComponent(document.querySelector('.results'), createResults );
-view.components.score = new ViewComponent(document.querySelector('.score'), createScore );
-view.components.main = new ViewComponent(document.querySelector('.main'), createMain );
+	const ViewComponent = function(parentElement, attachedFunction) {
+		this.parentElement = parentElement;
+		this.attachedFunction = attachedFunction;
+	};
+	ViewComponent.prototype.clear = function() {
+		if (this.parentElement.firstChild) {
+	 		this.parentElement.removeChild(this.parentElement.firstChild);
+	 	};
+	};
+	ViewComponent.prototype.render = function() {
+		this.clear();
+	  this.parentElement.appendChild( this.attachedFunction() );
+	};
 
-view.update = function(v) {
-	
-	// const getActiveElement = function() { return document.activeElement }
-	if(!v) { controller().activeFunctionIndex.noChange() };
-	controller().activeFunctionIndex.set(v);
-	for (component in this.components) {this.components[component].render() };
-	inputFocus();
-	
-
-	// controller().setCurrentArrayIndex( getActiveElement().getAttribute("displayindex") );
-
-	// console.log(" on update function current equation is " + controller().getCurrentArrayIndex() )
-	// console.log(" on update function active element index is " + getActiveElement().getAttribute("displayindex"));
-
-	// events( controller().getCurrentElement(), getActiveElement() );
-		controller().incrementCurrentArrayIndex();
-};
-const inputFocus = function () {
-	const inputFields = Array.from(document.querySelectorAll("input"));
-	for (let i = 0; i < inputFields.length; i ++) {
-		if (inputFields[i].value === "") {
-			inputFields[i].focus();
-			break;
-		} 
+	const view = {
+		components: {
+			sidebar: new ViewComponent(document.querySelector('.sidebar'), createSidebar ),
+			results: new ViewComponent(document.querySelector('.results'), createResults ),
+			score: new ViewComponent(document.querySelector('.score'), createScore ),
+			main: new ViewComponent(document.querySelector('.main'), createMain ),
+		},
+		update: function(v) {
+			controller().informed().whenViewUpdated(v) // calling controller HERE!
+			
+			for (component in this.components) {this.components[component].render() };
+			find().firstEmptyInputAnd().focus()
+			
+		},
+	};
+	function find () {
+		const firstEmptyInputAnd = function() {
+			const inputFields = Array.from(document.querySelectorAll("input"));
+			for (let i = 0; i < inputFields.length; i ++) {
+				if (inputFields[i].value === "") {return inputFields[i]} 
+			}
+		};
+		return {
+			firstEmptyInputAnd: firstEmptyInputAnd,
+		}
+	};
+	const update = function(n) {return view.update(n)} 
+	return {
+		update: update,
 	}
 };
-// const events = function(currentEquation, activeInput) {
-// 	const inputFields = Array.from(document.querySelectorAll("input"));
-// 	// let activeInput;
-// 	const answer = function() {return parseInt(activeInput.value)};
-// 	let isValid = false;
-// 	console.log(activeInput.value)
 
-// 	const inputEvents = function () {
-// 		inputFields.map(function(item) {
-// 			item.addEventListener("input", function() { console.log(activeInput.valueu); checkIfValid(this) })			
-// 			item.addEventListener("keydown", function() { keydown(event.code).fireHandler() })
-// 		})
-// 	}();
-// 	function checkIfValid (inputField) {
-// 		if (isNaN( answer() )) { proceedWhen(inputField).isInvalid(); 		
-// 		} else { isValid = true; proceedWhen(inputField).isValid(); 
-// 		}
-// 	};
-// 	function checkIfCorrect(value) {
-// 		const isCorrect = function() {
-// 			console.log( currentEquation.checkAnswer(value) )
-// 			console.log( currentEquation )
-// 			return currentEquation.checkAnswer(value) // returns true / false
-// 			}
-//  		if (isCorrect()) {proceedWhen().isCorrect()} else { proceedWhen().isIncorrect() }		
-// 	};
-
-	// function keydown (keyName) { // keypress controller; reads the ID of input elements
-	// 	let currentID = function() {return activeInput.id};
-	// 	const keys = {
-	// 		Enter: (function() { accept() }),
-	// 		ArrowRight: (function() { move().right() }),
-	// 		ArrowLeft: (function() { move().left() }),
-	// 		ArrowDown: (function() { move().down() }),
-	// 		ArrowUp: (function() { move().up() }),		
-	// 	};
-	// 	const move = function() {
-	// 		const oneRight = function() {return document.getElementById(currentID()+1)};
-	// 		const oneLeft = function() {return document.getElementById(currentID()-1)};
-	// 		const oneDown = function() {return document.getElementById(currentID()+8)};
-	// 		const oneUp = function() {return document.getElementById(currentID()-8)};
-	// 		return {
-	// 			right: function() {if (oneRight()) {oneRight().focus()}},
-	// 			left: function() {if (oneLeft()) {oneLeft().focus()}},
-	// 			down: function() {if (oneDown()) {oneDown().focus()}},
-	// 			up: function() {if (oneUp()) {oneUp().focus()}},
-	// 		};
-	// 	};
-// 		const accept = function() { console.log( answer() ); if (answer()!=="" && isValid) {checkIfCorrect( answer() )} };
-// 		const fireHandler = function() {
-// 			for (key in keys) {
-// 				if (key === keyName) { keys[key]() }
-// 			};
-// 		};
-// 		return {
-// 			fireHandler: fireHandler,
-// 		}
-// 	};
-	
-// };
-
-view.update(0)
+viewModule().update(0)
