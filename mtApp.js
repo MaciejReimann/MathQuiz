@@ -29,6 +29,7 @@ function proceedWhen(input) {
 	const isIncorrect = function() {
 		console.log("incorrect")
 		score.strikeReset();
+		viewModule().update( controller().activePageIndex.get() )
 	};
 	const isCorrect = function() {
 		console.log("correct")
@@ -52,10 +53,17 @@ const InputField = function(value) {
 	this.element = document.createElement("INPUT");
 	this.value = value;
 	this.userAnswer = "";
+	this.answers = new Array(4)
 	this.hasListeners = false;
 };
 InputField.prototype.getElement = function() {
 	return this.element;
+};
+InputField.prototype.saveAnswer = function(answer) {
+	this.answers[ controller().activePageIndex.get() ] = parseInt(answer);
+};
+InputField.prototype.showAnswer = function() {
+	return this.answers[ controller().activePageIndex.get() ];
 };
 InputField.prototype.checkIfValid = function() {
 	if(!isNaN(this.element.value) && isNotEmpty()) {
@@ -66,12 +74,14 @@ InputField.prototype.checkIfValid = function() {
 		return false;
 };
 InputField.prototype.checkIfCorrect = function(answer) {
-	this.userAnswer = parseInt(answer);
-	if(this.userAnswer === this.value) {
+	this.element.value = "";
+	this.saveAnswer(answer);
+	if(this.showAnswer() === this.value) {
 		proceedWhen(this.element).isCorrect()
 	} else {
 		proceedWhen(this.element).isIncorrect()
 	}
+	 // clears the input element from its value
 };
 InputField.prototype.checkKeyPressed = function() { //  reads the ID of input elements
 	this.keyPressed = event.key;
@@ -107,14 +117,10 @@ InputField.prototype.checkKeyPressed = function() { //  reads the ID of input el
 		}
 	}
 };
-InputField.prototype.isActive = function() {	
-	if (this.userAnswer !== "") {
-		this.removeListeners()
-		this.isDone()
-	} else {
-		this.element.value = "";
-		if (this.hasListeners===false) {this.addListeners()};				
-	}
+InputField.prototype.isActive = function() {
+	this.element.disabled = false;
+	this.element.value = "";
+	if (this.hasListeners===false) { this.addListeners() };
 	return this.element;
 };
 InputField.prototype.isInactive = function(className) {
@@ -125,6 +131,7 @@ InputField.prototype.isInactive = function(className) {
 }
 InputField.prototype.isDone = function(className) {
 	console.log("saodfn")
+	this.element.value = this.showAnswer();
 	this.element.className = className;
 	this.element.disabled = true;
 	this.element.setAttribute("done", true)
@@ -155,25 +162,35 @@ this.x = x;
   this.elementEqual = new InputField("=")
    // [ 2, 6, 12, 64 ]
 };
+EquationParagraph.prototype.createLeftSide = function(n) {
+	let equationElements = [
+		this.elementX, this.elementMultiplication, this.elementY, this.elementEqual, this.elementZ
+	];
+	let equationElementsSetUp = []
+	for (i=0; i<equationElements.length; i++) {
 
-EquationParagraph.prototype.isDone = function() {
-	if (this.userAnswer !=="") {return true} else {return false}
+		equationElementsSetUp.push( equationElements[i].isInactive("inactive") )
+		if (i===n) {equationElementsSetUp.push( equationElements[i].isActive("active") )}
+	}
+	// equationElements = equationElements[0].isInactive()
+	return equationElementsSetUp;
 }
 
-EquationParagraph.prototype.setUpOptions = function(i) {
-	this.options = [
-		(function() { return [ this.elementZ.setUpActive() ] }.bind(this)), // 1st view; the default option;
 
-		(function() { console.log(this)
-			return [this.elementX, this.elementMultiplication, this.elementY, this.elementEqual, this.elementBlank]
-		}.bind(this)),
-		(function() { console.log(this)
-			return [this.elementX]
-		}.bind(this)),
+// EquationParagraph.prototype.setUpOptions = function(i) {
+// 	this.options = [
+// 		(function() { return [ this.elementZ.setUpActive() ] }.bind(this)), // 1st view; the default option;
 
-	]
-	return appendAllTo("DIV", this.options[i]() );
-}
+// 		(function() { console.log(this)
+// 			return [this.elementX, this.elementMultiplication, this.elementY, this.elementEqual, this.elementBlank]
+// 		}.bind(this)),
+// 		(function() { console.log(this)
+// 			return [this.elementX]
+// 		}.bind(this)),
+
+// 	]
+// 	return appendAllTo("DIV", this.options[i]() );
+// }
 
 const test = function() {
 	const equationParagraph = controller().getCurrentElement().setUpOptions(0);
@@ -186,50 +203,67 @@ function insertTable (array) {
 	let id = 0;
 	array.map(function(equation) {		
 		containerElement.appendChild(equation.elementZ.getElement());
+		let tableSquare = equation.elementZ;
 		if (equation.x === 1 || equation.y === 1 ) { 
-			equation.elementZ.isInactive(("inactive"));	
- 		} else { 
- 			equation.elementZ.isActive();
- 			equation.elementZ.element.id = id; id++;
+			tableSquare.isInactive(("inactive"));	
+ 		} else {
+ 			if (tableSquare.showAnswer()!==undefined) {
+ 				tableSquare.isDone();
+				tableSquare.removeListeners()
+ 			} else { 
+ 				tableSquare.isActive() 
+ 			}
+ 			tableSquare.element.id = id; id++;
  		}
 	})
 	return containerElement;
 };
 
-const insertEquationParagraph = function(activeEquation) {
+function insertEquationParagraph (activeEquation) {
 	const containerElement = createElement( "DIV", "equationParagraph")
-	const currentEquation = activeEquation;
-	
-	const assignElementValues = function(arrayOfElements) {
-		const equationElements = [];
-		for (let i = 0; i<5; i++) {
-			let inputField = createElement ("INPUT", "equationElements");
-			equationElements.push(inputField)
-			containerElement.appendChild(inputField);
-			inputField.id = i;
-			inputField.value = arrayOfElements[i];			
-		}
-		for (let i = 0; i<5; i++) {
-			equationElements[i].disabled = true;
-			if (arrayOfElements[i] === "") {
-				equationElements[i].setAttribute("displayIndex", currentEquation.displayIndex);
-				equationElements[i].setAttribute("blankposition", arrayOfElements[5]);
-				console.log("for equation par displayindex is " + currentEquation.displayindex)
-				console.log("for equation par z is " + currentEquation.z)
-				equationElements[i].className = "table-input";
-				equationElements[i].disabled = false;
-					// console.log(equationElements[key])
-			}		
-		}		
-	}
+	console.log( activeEquation.createLeftSide() )
+	activeEquation.createLeftSide(4).map(function(item) {
+		containerElement.appendChild(item)
+	})
 
-	let equationTypes = [
-		assignElementValues([currentEquation.x, "*", currentEquation.y, "=", ""									, "z"]),
-		// assignElementValues([currentEquation().x, "*",  ""								, "=", currentEquation().z]),
-	]
-	// equationTypes[1]
-	return containerElement
+
+	return containerElement;
 };
+
+// const insertEquationParagraph = function(activeEquation) {
+// 	const containerElement = createElement( "DIV", "equationParagraph")
+// 	const currentEquation = activeEquation;
+	
+// 	const assignElementValues = function(arrayOfElements) {
+// 		const equationElements = [];
+// 		for (let i = 0; i<5; i++) {
+// 			let inputField = createElement ("INPUT", "equationElements");
+// 			equationElements.push(inputField)
+// 			containerElement.appendChild(inputField);
+// 			inputField.id = i;
+// 			inputField.value = arrayOfElements[i];			
+// 		}
+// 		for (let i = 0; i<5; i++) {
+// 			equationElements[i].disabled = true;
+// 			if (arrayOfElements[i] === "") {
+// 				equationElements[i].setAttribute("displayIndex", currentEquation.displayIndex);
+// 				equationElements[i].setAttribute("blankposition", arrayOfElements[5]);
+// 				console.log("for equation par displayindex is " + currentEquation.displayindex)
+// 				console.log("for equation par z is " + currentEquation.z)
+// 				equationElements[i].className = "table-input";
+// 				equationElements[i].disabled = false;
+// 					// console.log(equationElements[key])
+// 			}		
+// 		}		
+// 	}
+
+// 	let equationTypes = [
+// 		assignElementValues([currentEquation.x, "*", currentEquation.y, "=", ""									, "z"]),
+// 		// assignElementValues([currentEquation().x, "*",  ""								, "=", currentEquation().z]),
+// 	]
+// 	// equationTypes[1]
+// 	return containerElement
+// };
 
 const insertPhoto = function(activeEquation) {
 	const containerElement = createElement( "DIV", "photo");
@@ -278,9 +312,7 @@ const ArrayOfEquations = function(givenArray) {
 	  	let equation = new EquationParagraph(i, j, loopCounter);
 	  	this.array.push(equation);
 		};
-	};
-	this.copiedArray = this.array.slice()
-	this.shuffledArray = shuffle(this.copiedArray);
+	};	
 };
 ArrayOfEquations.prototype.setBlankPositionForAll = function(p) {
 	this.array.map(function(equation) {
@@ -294,6 +326,8 @@ ArrayOfEquations.prototype.getOrdered = function() {
 	return this.array 
 };
 ArrayOfEquations.prototype.getShuffled = function() {
+	this.copiedArray = this.array.slice()
+	this.shuffledArray = shuffle(this.copiedArray);
 	for (let i = 0; i < this.shuffledArray.length; i++ ) {
 		this.shuffledArray[i].displayIndex = i;
 	}
@@ -337,7 +371,8 @@ const model = {
 		options: [ "Fill the table", "Fill the gaps", "Reveal the photo", "Fast counting" ],
 		activePageIndex: new StoredValue(), // stores the index value of the currenttly displayed option in .main
 	},
-	array: new ArrayOfEquations(),	
+	array: new ArrayOfEquations(),
+	
 	currentIndexes:[-1,0,0,0],	
 };
 
@@ -355,7 +390,7 @@ const controller = function() {
 	const arrayStates = [
 		(function() {return model.array.getOrdered()}),
 		(function() {return model.array.getShuffled()}),
-		(function() {return model.array.getOrdered()}),
+		(function() {return model.array.getShuffled()}),
 		(function() {return model.array.getShuffled()}),
 	];
 	function getActiveArray() { return arrayStates[i] () };
@@ -375,15 +410,15 @@ const controller = function() {
 		(function(arg) {return test()   }),
 	];
 	function getActivePage() {return pageOptions[i] (getActiveArgument())};	
-	function getIndexOfCurrentElementinActiveArray() {return model.currentIndexes[i]};
-	function setIndexOfCurrentElementinActiveArray(n) {model.currentIndexes[i] = n};
-	function incrementIndexOfCurrentElementinActiveArray() {model.currentIndexes[i]++};
-	function getActiveEquation() {return getActiveArray()[getIndexOfCurrentElementinActiveArray()]};
+	function getIndex() {return model.currentIndexes[i]};
+	function setIndex(n) {model.currentIndexes[i] = n};
+	function incrementIndex() {model.currentIndexes[i]++};
+	function getActiveEquation() {return getActiveArray()[getIndex()]};
 
 	function informed() {
 		function whenViewUpdated(v) {
-			activePageIndex.set(v);
-			console.log("upsakfdniasonfnasokdgnoaing")
+			if (activePageIndex.get() === v) { incrementIndex() };
+			activePageIndex.set(v);			
 		}
 		return {
 			 whenViewUpdated:  whenViewUpdated,
@@ -401,6 +436,8 @@ const controller = function() {
 		score: score,
 		getActivePage: getActivePage,
 		activePageIndex: activePageIndex,
+
+		getActiveEquation: getActiveEquation,
 	};
 }
 
@@ -472,11 +509,9 @@ function viewModule() {
 			main: new ViewComponent(document.querySelector('.main'), createMain ),
 		},
 		update: function(v) {
-			controller().informed().whenViewUpdated(v) // calling controller HERE!
-			
+			controller().informed().whenViewUpdated(v) // calling controller HERE!			
 			for (component in this.components) {this.components[component].render() };
-			find().firstEmptyInputAnd().focus()
-			
+			find().firstEmptyInputAnd().focus()		
 		},
 	};
 	function find () {
