@@ -168,7 +168,6 @@ EquationParagraph.prototype.createLeftSide = function(n) {
 	];
 	let equationElementsSetUp = []
 	for (i=0; i<equationElements.length; i++) {
-
 		equationElementsSetUp.push( equationElements[i].isInactive("inactive") )
 		if (i===n) {equationElementsSetUp.push( equationElements[i].isActive("active") )}
 	}
@@ -176,21 +175,6 @@ EquationParagraph.prototype.createLeftSide = function(n) {
 	return equationElementsSetUp;
 }
 
-
-// EquationParagraph.prototype.setUpOptions = function(i) {
-// 	this.options = [
-// 		(function() { return [ this.elementZ.setUpActive() ] }.bind(this)), // 1st view; the default option;
-
-// 		(function() { console.log(this)
-// 			return [this.elementX, this.elementMultiplication, this.elementY, this.elementEqual, this.elementBlank]
-// 		}.bind(this)),
-// 		(function() { console.log(this)
-// 			return [this.elementX]
-// 		}.bind(this)),
-
-// 	]
-// 	return appendAllTo("DIV", this.options[i]() );
-// }
 
 const test = function() {
 	const equationParagraph = controller().getCurrentElement().setUpOptions(0);
@@ -221,49 +205,55 @@ function insertTable (array) {
 
 function insertEquationParagraph (activeEquation) {
 	const containerElement = createElement( "DIV", "equationParagraph")
-	console.log( activeEquation.createLeftSide() )
 	activeEquation.createLeftSide(4).map(function(item) {
 		containerElement.appendChild(item)
 	})
-
-
 	return containerElement;
 };
 
-// const insertEquationParagraph = function(activeEquation) {
-// 	const containerElement = createElement( "DIV", "equationParagraph")
-// 	const currentEquation = activeEquation;
-	
-// 	const assignElementValues = function(arrayOfElements) {
-// 		const equationElements = [];
-// 		for (let i = 0; i<5; i++) {
-// 			let inputField = createElement ("INPUT", "equationElements");
-// 			equationElements.push(inputField)
-// 			containerElement.appendChild(inputField);
-// 			inputField.id = i;
-// 			inputField.value = arrayOfElements[i];			
-// 		}
-// 		for (let i = 0; i<5; i++) {
-// 			equationElements[i].disabled = true;
-// 			if (arrayOfElements[i] === "") {
-// 				equationElements[i].setAttribute("displayIndex", currentEquation.displayIndex);
-// 				equationElements[i].setAttribute("blankposition", arrayOfElements[5]);
-// 				console.log("for equation par displayindex is " + currentEquation.displayindex)
-// 				console.log("for equation par z is " + currentEquation.z)
-// 				equationElements[i].className = "table-input";
-// 				equationElements[i].disabled = false;
-// 					// console.log(equationElements[key])
-// 			}		
-// 		}		
-// 	}
+function insertArea (activeEquation) {
+	const containerElement = createElement( "DIV", "photo");
+	let tableSquare = activeEquation.elementZ.getElement();
+	const tableSquareContainer = createElement( "DIV", "equationParagraph");
+	tableSquareContainer.appendChild(tableSquare)
 
-// 	let equationTypes = [
-// 		assignElementValues([currentEquation.x, "*", currentEquation.y, "=", ""									, "z"]),
-// 		// assignElementValues([currentEquation().x, "*",  ""								, "=", currentEquation().z]),
-// 	]
-// 	// equationTypes[1]
-// 	return containerElement
-// };
+	const canvas = document.createElement('CANVAS');
+	let [canvasWidth, canvasHeight] = [9*48, 9*48];
+ 	canvas.setAttribute('width', canvasWidth);
+  	canvas.setAttribute('height', canvasHeight);
+  	const ctx = canvas.getContext("2d");
+
+
+  	(function drawArea(rows, columns, x, y) {
+  		for (let i = 0; i < rows; i ++) {
+      		for (let j = 0; j < columns; j ++) {
+      			ctx.beginPath();
+        		ctx.rect(canvasWidth / rows * i, canvasHeight / columns * j,
+                 		 canvasWidth / rows, canvasHeight / columns
+        		); // ctx.rect(x, y, width, height);
+        		
+        		ctx.lineWidth = 1;
+       			ctx.stroke();
+      		};
+    	};
+  		for (let i = 0; i < x; i ++) {
+      		for (let j = 0; j < y; j ++) {
+      			ctx.beginPath();
+        		ctx.rect(canvasWidth / rows * i, canvasHeight / columns * j,
+                 canvasWidth / rows, canvasHeight / columns
+	        	); // ctx.rect(x, y, width, height);
+	        	ctx.lineWidth = 1;
+	        	ctx.stroke();
+	        	ctx.fillStyle = "grey";
+	        	ctx.fill();
+	        	
+      		};
+    	};
+  	}) (9, 9, activeEquation.x, activeEquation.y)
+  	containerElement.appendChild(canvas);
+  	containerElement.appendChild(tableSquareContainer);
+  	return containerElement;
+}
 
 const insertPhoto = function(activeEquation) {
 	const containerElement = createElement( "DIV", "photo");
@@ -271,8 +261,8 @@ const insertPhoto = function(activeEquation) {
 	const canvas = document.createElement('CANVAS');
 	let [canvasWidth, canvasHeight] = [9*48, 9*48];
  	canvas.setAttribute('width', canvasWidth);
-  canvas.setAttribute('height', canvasHeight);
-  const ctx = canvas.getContext("2d");
+  	canvas.setAttribute('height', canvasHeight);
+  	const ctx = canvas.getContext("2d");
 
   const drawGrid = function(lineWidth, rows, columns) {
   	console.log("draw")
@@ -399,7 +389,7 @@ const controller = function() {
 		(function() {return getActiveArray() }),
 		(function() {return getActiveEquation() }),
 		(function() {return getActiveEquation() }),
-		(function() {return model.array.getShuffled()}),
+		(function() {return getActiveEquation() }),
 	];
 	function getActiveArgument() { return args[i] () };
 
@@ -407,7 +397,7 @@ const controller = function() {
 		(function(arg) {return insertTable(arg) }),
 		(function(arg) {return insertEquationParagraph(arg) }),
 		(function(arg) {return insertPhoto(arg) }),
-		(function(arg) {return test()   }),
+		(function(arg) {return insertArea(arg) }),
 	];
 	function getActivePage() {return pageOptions[i] (getActiveArgument())};	
 	function getIndex() {return model.currentIndexes[i]};
