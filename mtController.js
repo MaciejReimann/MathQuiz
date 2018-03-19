@@ -9,25 +9,30 @@ const controller = function() {
 	const array = model.array;
 	const pages = model.pages
 	const activePageIndex = model.activePageIndex;
-	const index = function() {return activePageIndex.get() } ;
-	console.log( index() )
-
-
-	function getActiveEquation() {return array[ pages[ index() ] [0][1] ] };
-	function getArrayIndex() {console.log( pages[ index()[1]]) }
-	function setArrayIndex(n) {pages[ index() ][1] = n};
-	function incrementArrayIndex() {pages[ index() ][1]++};
+	const index = function() {
+		if (activePageIndex.get() === undefined) {
+			return 0;
+		} else {
+			return activePageIndex.get();		
+		}
+	};
+	const getActiveData = function() {return pages[index()] }
+	const getSequence = function() {return getActiveData()[0]}
+	const getSequenceIndex = function() {return getActiveData() [1] }	
+	const getArrayIndex = function() {return getSequence()[getSequenceIndex()]}
+	const getActiveEquation = function() {return array[ getArrayIndex() ] };
+	const setArrayIndex = function(n) {pages[index()][1] = n};
+	const incrementArrayIndex = function() { pages[index()][1]++ };
 
 	const getMainContent = function(n) {
 		let options = [insertTable, insertEquationParagraph, insertPhoto, insertArea];
-		return options[n]()
+		return options[n]();
 	};
 
 	function informed() {
 		function whenViewUpdated(v) {
-			// console.log(getArrayIndex())
-			if (activePageIndex.get() === v) { incrementArrayIndex() };
-
+			// if (activePageIndex.get() === v) { incrementArrayIndex() };
+			incrementArrayIndex()
 			activePageIndex.set(v);			
 		}
 		return {
@@ -66,7 +71,8 @@ const controller = function() {
 		})
 		return containerElement;
 	};
-	function insertEquationParagraph () {
+	function insertEquationParagraph (activeEquation) {
+		console.log(getActiveEquation())
 		const containerElement = createElement( "DIV", "equationParagraph")
 		getActiveEquation().createLeftSide(4).map(function(item) {
 			containerElement.appendChild(item)
@@ -74,7 +80,7 @@ const controller = function() {
 	return containerElement;
 	};
 
-	function insertArea () {
+	function insertArea (activeEquation) {
 		const containerElement = createElement( "DIV", "photo");
 		let tableSquare = getActiveEquation().elementZ.isActive();
 		const tableSquareContainer = createElement( "DIV", "equationParagraph");
@@ -117,7 +123,7 @@ const controller = function() {
 	  	return containerElement;
 	}
 
-const insertPhoto = function() {
+const insertPhoto = function(activeEquation) {
 	const containerElement = createElement( "DIV", "photo");
 
 	const canvas = document.createElement('CANVAS');
@@ -161,6 +167,7 @@ const insertPhoto = function() {
 		informed: informed,
 		
 		setArrayIndex: setArrayIndex,
+		getArrayIndex: getArrayIndex,
 	};
 }
 
