@@ -28,11 +28,17 @@ const controller = function() {
 		let options = [insertTable, insertEquationParagraph, insertPhoto, insertArea];
 		return options[n]();
 	};
-
+	const getActiveElement = function() {
+		const firstActive = document.getElementsByClassName("active")[0]
+		if (firstActive!==undefined) {return firstActive.value} else { return false }
+	};		
+	const lastEquationAnswered = function() {
+		if( getActiveElement() !== "" ) {return true} else { return false}
+	};
 	function informed() {
 		function whenViewUpdated(v) {
-			// if (activePageIndex.get() === v) { incrementArrayIndex() };
-			incrementArrayIndex()
+			console.log( getActiveEquation() )
+			if (lastEquationAnswered()) { incrementArrayIndex() };
 			activePageIndex.set(v);			
 		}
 		return {
@@ -72,7 +78,6 @@ const controller = function() {
 		return containerElement;
 	};
 	function insertEquationParagraph (activeEquation) {
-		console.log(getActiveEquation())
 		const containerElement = createElement( "DIV", "equationParagraph")
 		getActiveEquation().createLeftSide(4).map(function(item) {
 			containerElement.appendChild(item)
@@ -82,7 +87,7 @@ const controller = function() {
 
 	function insertArea (activeEquation) {
 		const containerElement = createElement( "DIV", "photo");
-		let tableSquare = getActiveEquation().elementZ.isActive();
+		let tableSquare = getActiveEquation().elementZ.isActive("active");
 		const tableSquareContainer = createElement( "DIV", "equationParagraph");
 		tableSquareContainer.appendChild(tableSquare)
 
