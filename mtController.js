@@ -25,7 +25,7 @@ const controller = function() {
 	const incrementArrayIndex = function() { pages[index()][1]++ };
 
 	const getMainContent = function(n) {
-		let options = [insertTable, insertEquationParagraph, insertPhoto, insertArea];
+		let options = [insertTable, insertEquationParagraph, insertPhoto, insertArea, getResults];
 		return options[n]();
 	};
 	const getActiveElement = function() {
@@ -46,16 +46,22 @@ const controller = function() {
 		}
 	}
 
-	function getResults(array) {
-		function getResults (array) {
-			array.map(function(equation) {
-			// console.log(equation.answeredCorrectly)
-			})
-		}
-		// return {
-		// 	get: getResults(n.array.getOrdered()),
-		// }
-	}
+	function getResults() {
+		const containerElement = createElement( "DIV", "table");
+		let id = 0;
+		array.map(function(equation) {
+			let tableSquare = equation.elementZ;
+			containerElement.appendChild(tableSquare.getElement());		
+			if (equation.answeredCorrectly.length > 0) {
+				tableSquare.isExcellent();	
+	 		} else {
+	 			tableSquare.isNotAnswered();	
+	 		}
+
+	 			tableSquare.element.id = id; id++;
+		})
+		return containerElement;
+	};
 
 	function insertTable () {
 		const containerElement = createElement( "DIV", "table");
@@ -171,6 +177,7 @@ const insertPhoto = function(activeEquation) {
 		getMainIndex: index,
 		informed: informed,
 		
+		getActiveEquation: getActiveEquation,
 		setArrayIndex: setArrayIndex,
 		getArrayIndex: getArrayIndex,
 	};
