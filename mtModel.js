@@ -1,6 +1,7 @@
 
 const setArrayIndex = function(n) {controller().setArrayIndex(n)}
 const mainIndex = function() {return controller().getMainIndex()}
+const getActiveEquation = function() {return controller().getActiveEquation()}
 
 
 function createElement (tag, className, textContent) {
@@ -20,7 +21,7 @@ function enterPressed() {
 function isNotEmpty() { 
 	if(event.target.value!=="") {return true} else {return false} 
 };
-function proceedWhen(input) {
+function proceedWhen(input, index) {
 	const score = controller().score;
 	const isInvalid = function() {
 		console.log("invalid")
@@ -33,16 +34,15 @@ function proceedWhen(input) {
 	};
 	const isIncorrect = function() {
 		console.log("incorrect")
+		getActiveEquation().answeredCorrectly.push(false)
 		score.strikeReset();
-		// controller().getActiveEquation().answeredCorrectly.push(false)
 		viewModule().update( mainIndex() )
 	};
 	const isCorrect = function() {
 		console.log("correct")
+		getActiveEquation().answeredCorrectly.push(true)
 		score.strikeIncrement();
 		score.increment();
-		// console.log(  )
-		// controller().getActiveEquation().answeredCorrectly.push(true)
 		viewModule().update( mainIndex() )
 	};	 
 	return {
@@ -59,7 +59,6 @@ const InputField = function(value, index) {
 	this.index = index;
 	this.value = value;
 	this.element = document.createElement("INPUT");	
-	this.userAnswer = "";
 	this.answers = []
 	this.hasListeners = false;
 };
@@ -85,9 +84,9 @@ InputField.prototype.checkIfCorrect = function(answer) {
 	this.element.value = "";
 	this.saveAnswer(answer);
 	if(this.showAnswer() === this.value) {
-		proceedWhen(this.element).isCorrect()
+		proceedWhen(this.element, this.index).isCorrect()
 	} else {
-		proceedWhen(this.element).isIncorrect()
+		proceedWhen(this.element, this.index).isIncorrect()
 	}
 };
 InputField.prototype.checkKeyPressed = function() { //  reads the ID of input elements
@@ -123,8 +122,9 @@ InputField.prototype.checkKeyPressed = function() { //  reads the ID of input el
 		}
 	}
 };
-InputField.prototype.isActive = function() {
+InputField.prototype.isActive = function(className) {
 	this.element.disabled = false;
+	this.element.className = className;
 	this.element.value = "";
 	if (this.hasListeners===false) { this.addListeners() };
 	return this.element;
@@ -136,18 +136,30 @@ InputField.prototype.isInactive = function(className) {
 	return this.element;
 };
 InputField.prototype.isDone = function(className) {
-	console.log("saodfn")
 	this.element.value = this.showAnswer();
 	this.element.className = className;
 	this.element.disabled = true;
 	this.element.setAttribute("done", true)
 	return this.element;
 };
+InputField.prototype.isExcellent = function() {
+	this.element.value = this.value;
+	// this.element.className = className;
+	this.element.disabled = true;
+	this.element.setAttribute("excellent", true)
+	return this.element;
+};
+InputField.prototype.isNotAnswered = function() {
+	this.element.value = "";
+	this.element.disabled = true;
+	// this.element.className = className;
+	return this.element;
+};
 InputField.prototype.addListeners = function() {
 	this.inputHandler = this.checkIfValid.bind(this);
 	this.keydownHandler = this.checkKeyPressed.bind(this);
 	this.element.addEventListener("input", this.inputHandler)
-	this.element.addEventListener("keydown",this.keydownHandler)
+	this.element.addEventListener("keydown",this.keydownHandler)	
 	this.hasListeners = true;
 };
 InputField.prototype.removeListeners = function() {
@@ -229,7 +241,7 @@ const StoredValue = function() {
   	this.value;
 };
 StoredValue.prototype.set = function(n) {this.value = n};
-StoredValue.prototype.get = function(n) {return this.value};
+StoredValue.prototype.get = function() {return this.value};
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 const Score = function(initialValue) {
@@ -254,10 +266,11 @@ const model = {
 	score: new Score(),
 	array: new ArrayOfEquations().get(),
 	pages: [
-		[new Sequence(80).getOrdered(), 0, "Fill the table",  ],
+		[new Sequence(80).getOrdered(), 0, "Fill the table" ],
 		[new Sequence(80).getShuffled(), 0, "Fill the gaps" ],
 		[new Sequence(80).getShuffled(), 0, "Reveal the photo" ],
 		[new Sequence(80).getShuffled(), 0, "Fast counting" ],
+		[new Sequence(80).getOrdered(), 0, "Results"  ],
 	],
 	activePageIndex: new StoredValue(),
 };
