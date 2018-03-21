@@ -103,10 +103,7 @@ input {
   grid-template-rows: repeat(9, 46px);
   grid-gap: 3px;  
 }
-input:disabled {
-  background-color: white;
-  font-weight: 600;
-}
+
 .table div {
   position: relative;
 }
@@ -154,27 +151,35 @@ input:focus {
   background-color: pink;
 }
 
-[done] {
+.inactive {
+  background-color: white;
+  font-weight: 600;
+}
+
+.done {
   background-color: grey;
 }
 
+.not-answered {
+  background-color: white;
+}
 /* ---     results    ---- */
 
-[excellent] {
+.excellent {
   border: solid 2.5px black;
   font-weight: 600;
 }
-[very_good] {
+.very_good {
   border: solid 2px black;
   font-weight: 500;
 }
-[good] {
+.good {
   border: solid 1.5px black;
   font-weight: 400;
 }
 
 /* ---    links    ---- */
 
-[active] {
+[active = true] {
  font-weight: 600;
 }
