@@ -37,7 +37,6 @@ const controller = function() {
 	};
 	function informed() {
 		function whenViewUpdated(v) {
-			console.log( getActiveEquation() )
 			if (lastEquationAnswered()) { incrementArrayIndex() };
 			activePageIndex.set(v);			
 		}
@@ -46,19 +45,30 @@ const controller = function() {
 		}
 	}
 
+	// function checkTimesAnsweredCorrectly(element) {
+	// 	const result = element.answeredCorrectly.filter(correct => correct === true);
+	// 	return result
+	// }
+
 	function getResults() {
 		const containerElement = createElement( "DIV", "table");
-		let id = 0;
+		// halfArray = []
+		// array.map(function(equation) {
+		// 	equation.checkHowManyTimesAnsweredCorrectly()
+		// })
+
 		array.map(function(equation) {
 			let tableSquare = equation.elementZ;
-			containerElement.appendChild(tableSquare.getElement());		
-			if (equation.answeredCorrectly.length > 0) {
-				tableSquare.isExcellent();	
-	 		} else {
-	 			tableSquare.isNotAnswered();	
+			containerElement.appendChild(tableSquare.getElement());	
+			if (equation.checkHowManyTimesAnsweredCorrectly() > 3) {
+				tableSquare.isExcellent();
+	 		} else if (equation.checkHowManyTimesAnsweredCorrectly() > 1) {
+	 			tableSquare.isVeryGood();
+	 		} else if (equation.checkHowManyTimesAnsweredCorrectly() > 0) {
+	 			tableSquare.isGood();
+	 		} else { 
+	 			tableSquare.isNotAnswered();
 	 		}
-
-	 			tableSquare.element.id = id; id++;
 		})
 		return containerElement;
 	};
@@ -181,7 +191,4 @@ const insertPhoto = function(activeEquation) {
 		setArrayIndex: setArrayIndex,
 		getArrayIndex: getArrayIndex,
 	};
-}
-
-
-
+}a
