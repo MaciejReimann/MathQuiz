@@ -122,37 +122,48 @@ InputField.prototype.checkKeyPressed = function() { //  reads the ID of input el
 		}
 	}
 };
-InputField.prototype.isActive = function(className) {
-	this.element.disabled = false;
-	this.element.className = className;
+InputField.prototype.isActive = function() {
 	this.element.value = "";
+	this.element.className = "active";	
+	this.element.disabled = false;	
 	if (this.hasListeners===false) { this.addListeners() };
 	return this.element;
 };
 InputField.prototype.isInactive = function(className) {
 	this.element.value = this.value;
+	this.element.className = "inactive";
 	this.element.disabled = true;
-	this.element.className = className;
 	return this.element;
 };
 InputField.prototype.isDone = function(className) {
 	this.element.value = this.showAnswer();
-	this.element.className = className;
+	this.element.className = "done";
 	this.element.disabled = true;
-	this.element.setAttribute("done", true)
+	// this.element.setAttribute("done", true)
 	return this.element;
 };
 InputField.prototype.isExcellent = function() {
 	this.element.value = this.value;
-	// this.element.className = className;
+	this.element.className = "excellent";
 	this.element.disabled = true;
-	this.element.setAttribute("excellent", true)
+	// this.element.setAttribute("excellent", true)
 	return this.element;
 };
-InputField.prototype.isNotAnswered = function() {
-	this.element.value = "";
+InputField.prototype.isVeryGood = function(first_argument) {
+	this.element.value = this.value;
+	this.element.className = "very-good";
 	this.element.disabled = true;
-	// this.element.className = className;
+};
+InputField.prototype.isGood = function(first_argument) {
+	this.element.value = this.value;
+	this.element.className = "good";
+	this.element.disabled = true;
+};
+
+InputField.prototype.isNotAnswered = function() {
+	this.element.value = this.value;
+	this.element.disabled = true;
+	this.element.className = "not-answered";
 	return this.element;
 };
 InputField.prototype.addListeners = function() {
@@ -180,6 +191,13 @@ const EquationParagraph = function(x,y,index) {
   this.elementMultiplication = new InputField("*")
   this.elementEqual = new InputField("=")
 };
+EquationParagraph.prototype.findMirrorEquation = function() {
+	
+}
+EquationParagraph.prototype.checkHowManyTimesAnsweredCorrectly = function() {
+	return this.answeredCorrectly.filter(correct => correct === true).length;
+}
+
 EquationParagraph.prototype.createLeftSide = function(n) {
 	let equationElements = [
 		this.elementX, this.elementMultiplication, this.elementY, this.elementEqual, this.elementZ
