@@ -3,9 +3,8 @@
 ///////////////////////////////// *** V I E W *** //////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
-
 function viewModule() {
-	const scoreContent = function() {return controller().score.get()}
+	const scoreContent = function() {return controller().getScore()}
 	const resultsContent = function() {return controller().getResults()}	
 	const mainIndex = function() {return controller().getMainIndex()} 
 	const mainContent = function() {return controller().getMainContent(mainIndex())}  
