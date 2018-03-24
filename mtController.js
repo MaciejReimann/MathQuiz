@@ -1,3 +1,14 @@
+function appendAllTo(elementType, array) {
+	const parent = document.createElementement(elementType)
+	array.map(function(item) {parent.appendChild(item)})		
+	return parent;
+};
+function createElement (tag, className, textContent) {
+    const newElement = document.createElement(tag);
+    newElement.className = className;
+    newElement.textContent = textContent;
+    return newElement;
+};
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// *** C O N T R O L L E R *** ////////////////////////////////
@@ -10,9 +21,7 @@ const controller = function() {
 	const pages = model.pages
 	const activePageIndex = model.activePageIndex;
 	const index = function() {
-		if (activePageIndex.get() === undefined) {
-			return 0;
-		} else {
+		if (activePageIndex.get() === undefined) { return 0 } else {
 			return activePageIndex.get();		
 		}
 	};
@@ -24,8 +33,9 @@ const controller = function() {
 	const setArrayIndex = function(n) {pages[index()][1] = n};
 	const incrementArrayIndex = function() { pages[index()][1]++ };
 
+	const getScore = function() {return score.get()}
 	const getMainContent = function(n) {
-		let options = [insertTable, insertEquationParagraph, insertPhoto, insertArea, getResults];
+		let options = [insertTable, insertEquationParagraph, insertPhoto, insertArea, insertResults];
 		return options[n]();
 	};
 	const getActiveElement = function() {
@@ -45,12 +55,7 @@ const controller = function() {
 		}
 	}
 
-	// function checkTimesAnsweredCorrectly(element) {
-	// 	const result = element.answeredCorrectly.filter(correct => correct === true);
-	// 	return result
-	// }
-
-	function getResults() {
+	function insertResults() {
 		const containerElement = createElement( "DIV", "table");
 		// halfArray = []
 		// array.map(function(equation) {
@@ -61,13 +66,13 @@ const controller = function() {
 			let tableSquare = equation.elementZ;
 			containerElement.appendChild(tableSquare.getElement());	
 			if (equation.checkHowManyTimesAnsweredCorrectly() > 3) {
-				tableSquare.isExcellent();
+				tableSquare.setAs("excellent");
 	 		} else if (equation.checkHowManyTimesAnsweredCorrectly() > 1) {
-	 			tableSquare.isVeryGood();
+	 			tableSquare.setAs("very-good");
 	 		} else if (equation.checkHowManyTimesAnsweredCorrectly() > 0) {
-	 			tableSquare.isGood();
+	 			tableSquare.setAs("good");
 	 		} else { 
-	 			tableSquare.isNotAnswered();
+	 			tableSquare.setAs("not-answered");
 	 		}
 		})
 		return containerElement;
@@ -80,13 +85,13 @@ const controller = function() {
 			let tableSquare = equation.elementZ;
 			containerElement.appendChild(tableSquare.getElement());		
 			if (equation.x === 1 || equation.y === 1 ) {
-				tableSquare.isInactive(("inactive"));	
+				tableSquare.setAs("inactive");
 	 		} else {
 	 			if (tableSquare.showAnswer()!==undefined) {
-	 				tableSquare.isDone();
-					tableSquare.removeListeners()
+	 				tableSquare.setAs("done");
+					// tableSquare.removeListeners()
 	 			} else { 
-	 				tableSquare.isActive() 
+	 				tableSquare.setAs("active");
 	 			}
 	 			tableSquare.element.id = id; id++;
 	 		}
@@ -180,15 +185,47 @@ const insertPhoto = function(activeEquation) {
   return containerElement;
 };
 
+function proceedWhen(input) {
+	let inputElement = input.element;
+	function isInvalid() { inputElement.setAttribute("valid", false) };
+	function isValid() { inputElement.setAttribute("valid", true) };
+	function isIncorrect() {
+		getActiveEquation().answeredCorrectly.push(false);
+		score.updateWhenIncorrect();
+		viewModule().update( mainIndex() )
+	};
+	function isCorrect() {
+		getActiveEquation().answeredCorrectly.push(true);
+		score.updateWhenCorrect();
+		viewModule().update( mainIndex() )
+	};
 	return {
-		score: score,
-		getResults: getResults,
+		isInvalid: isInvalid,
+		isValid: isValid,
+		isIncorrect: isIncorrect,
+		isCorrect: 	isCorrect,
+	};
+};		
+
+	return {
+		getScore: getScore,
 		getMainContent: getMainContent,
+
 		getMainIndex: index,
 		informed: informed,
+		proceedWhen: proceedWhen,
 		
-		getActiveEquation: getActiveEquation,
 		setArrayIndex: setArrayIndex,
 		getArrayIndex: getArrayIndex,
 	};
-}a
+}
+
+
+// DLaczego się blokuje enter kiedy dane równanie było juz raz robione?
+// UI - dodać podświetlanie jedności przy widoku tablicy
+// Dodać funckcję, ktora: a) tworzy nowy Array, b)sprawda, czy mapowany element jest juz  wnowym Array, 
+// jęlsi jest, nadaje mu klasę "invisible", sprawdza ile correct answers i dodaje do jego bliźniaka tę wartość, 
+// jelsi nie, dodaje go do nowego Array 
+
+//Dodać wyskakujące okno na środku : imię, wiek, zakłada profil i zapisuje w local storage
+
