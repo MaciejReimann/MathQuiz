@@ -1,58 +1,14 @@
 
 const setArrayIndex = function(n) {controller().setArrayIndex(n)}
 const mainIndex = function() {return controller().getMainIndex()}
-const getActiveEquation = function() {return controller().getActiveEquation()}
+const proceedWhen = function(input) {return controller().proceedWhen(input)}
 
-
-function createElement (tag, className, textContent) {
-    const newElement = document.createElement(tag);
-    newElement.className = className;
-    newElement.textContent = textContent;
-    return newElement;
-};
-function appendAllTo(elementType, array) {
-	const parent = document.createElementement(elementType)
-	array.map(function(item) {parent.appendChild(item)})		
-	return parent;
-};
 function enterPressed() { 
 	if(event.code==="Enter") {return true} else {return false} 
 };
 function isNotEmpty() { 
 	if(event.target.value!=="") {return true} else {return false} 
 };
-function proceedWhen(input, index) {
-	const score = controller().score;
-	const isInvalid = function() {
-		console.log("invalid")
-		input.setAttribute("valid", false);
-		return
-	};
-	const isValid = function() {
-		console.log("valid")
-		input.setAttribute("valid", true);
-	};
-	const isIncorrect = function() {
-		console.log("incorrect")
-		getActiveEquation().answeredCorrectly.push(false)
-		score.strikeReset();
-		viewModule().update( mainIndex() )
-	};
-	const isCorrect = function() {
-		console.log("correct")
-		getActiveEquation().answeredCorrectly.push(true)
-		score.strikeIncrement();
-		score.increment();
-		viewModule().update( mainIndex() )
-	};	 
-	return {
-		isInvalid: isInvalid,
-		isValid: isValid,
-		isIncorrect: isIncorrect,
-		isCorrect: 	isCorrect,
-	};
-};		
-
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 const InputField = function(value, index) {
@@ -74,16 +30,15 @@ InputField.prototype.showAnswer = function() {
 InputField.prototype.checkIfValid = function() {
 	setArrayIndex(this.index);
 	if(!isNaN(this.element.value) && isNotEmpty()) {
-		proceedWhen(this.element).isValid();
+		proceedWhen(this).isValid();
 		return true;
 	} else {
-		proceedWhen(this.element).isInvalid()}
+		proceedWhen(this).isInvalid()}
 		return false;
 };
 InputField.prototype.checkIfCorrect = function(answer) {
-	this.element.value = "";
 	this.saveAnswer(answer);
-	if(this.showAnswer() === this.value) {
+	if(this.showAnswer() === this.value) {		
 		proceedWhen(this.element, this.index).isCorrect()
 	} else {
 		proceedWhen(this.element, this.index).isIncorrect()
@@ -122,48 +77,19 @@ InputField.prototype.checkKeyPressed = function() { //  reads the ID of input el
 		}
 	}
 };
-InputField.prototype.isActive = function() {
-	this.element.value = "";
-	this.element.className = "active";	
-	this.element.disabled = false;	
-	if (this.hasListeners===false) { this.addListeners() };
-	return this.element;
-};
-InputField.prototype.isInactive = function(className) {
+InputField.prototype.setAs = function(className) {
+	this.element.className = className;
 	this.element.value = this.value;
-	this.element.className = "inactive";
 	this.element.disabled = true;
-	return this.element;
-};
-InputField.prototype.isDone = function(className) {
-	this.element.value = this.showAnswer();
-	this.element.className = "done";
-	this.element.disabled = true;
-	// this.element.setAttribute("done", true)
-	return this.element;
-};
-InputField.prototype.isExcellent = function() {
-	this.element.value = this.value;
-	this.element.className = "excellent";
-	this.element.disabled = true;
-	// this.element.setAttribute("excellent", true)
-	return this.element;
-};
-InputField.prototype.isVeryGood = function(first_argument) {
-	this.element.value = this.value;
-	this.element.className = "very-good";
-	this.element.disabled = true;
-};
-InputField.prototype.isGood = function(first_argument) {
-	this.element.value = this.value;
-	this.element.className = "good";
-	this.element.disabled = true;
-};
 
-InputField.prototype.isNotAnswered = function() {
-	this.element.value = this.value;
-	this.element.disabled = true;
-	this.element.className = "not-answered";
+	if (className === "active") {
+		this.element.value = "";
+		this.element.disabled = false;
+		if (this.hasListeners===false) { this.addListeners() };
+	} else if (className === "done") {
+		this.element.value = this.showAnswer();
+		this.removeListeners();
+	}
 	return this.element;
 };
 InputField.prototype.addListeners = function() {
@@ -176,6 +102,7 @@ InputField.prototype.addListeners = function() {
 InputField.prototype.removeListeners = function() {
 	this.element.removeEventListener("input", this.inputHandler);
 	this.element.removeEventListener("keydown", this.keydownHandler)
+	this.hasListeners = false;
 };
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
@@ -192,7 +119,7 @@ const EquationParagraph = function(x,y,index) {
   this.elementEqual = new InputField("=")
 };
 EquationParagraph.prototype.findMirrorEquation = function() {
-	
+
 }
 EquationParagraph.prototype.checkHowManyTimesAnsweredCorrectly = function() {
 	return this.answeredCorrectly.filter(correct => correct === true).length;
@@ -233,6 +160,7 @@ function showResults (array) {
 	const containerElement = createElement( "DIV", "results");
 	return containerElement;
 }
+
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 const Sequence = function(n) {
@@ -267,10 +195,11 @@ const Score = function(initialValue) {
 		this.globalScore = initialValue;
 	} else { this.globalScore = 0 };  
   this.strike = 0;
-
 };
 Score.prototype.strikeIncrement = function() { this.strike ++ };
 Score.prototype.strikeReset = function() { this.strike = 0 };
+Score.prototype.updateWhenCorrect = function() { this.strikeIncrement(); this.increment() };
+Score.prototype.updateWhenIncorrect = function() { this.strikeReset() };
 Score.prototype.increment = function() { this.globalScore = this.globalScore + 1 + this.strike * 2; return this.globalScore };
 Score.prototype.get = function() { return this.globalScore };
 
