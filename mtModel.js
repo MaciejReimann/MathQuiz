@@ -118,11 +118,11 @@ const EquationParagraph = function(x,y,index) {
   this.elementMultiplication = new InputField("*")
   this.elementEqual = new InputField("=")
 };
-EquationParagraph.prototype.findMirrorEquation = function() {
-
-}
-EquationParagraph.prototype.checkHowManyTimesAnsweredCorrectly = function() {
-	return this.answeredCorrectly.filter(correct => correct === true).length;
+EquationParagraph.prototype.checkTimesAnswered = function() {
+	return {
+		correctly: this.answeredCorrectly.filter(correct => correct === true).length,
+		incorrectly: this.answeredCorrectly.filter(correct => correct === false).length,
+	}
 }
 
 EquationParagraph.prototype.createLeftSide = function(n) {
@@ -131,8 +131,8 @@ EquationParagraph.prototype.createLeftSide = function(n) {
 	];
 	let equationElementsSetUp = []
 	for (i=0; i<equationElements.length; i++) {
-		equationElementsSetUp.push( equationElements[i].isInactive("inactive") )
-		if (i===n) {equationElementsSetUp.push( equationElements[i].isActive("active") )}
+		equationElementsSetUp.push( equationElements[i].setAs("inactive") )
+		if (i===n) {equationElementsSetUp.push( equationElements[i].setAs("active") )}
 	}
 	return equationElementsSetUp;
 }
@@ -149,18 +149,26 @@ const ArrayOfEquations = function(givenArray) {
 		};
 	};	
 };
-ArrayOfEquations.prototype.get = function() { return this.array };
-// ArrayOfEquations.prototype.getElementByIndex = function(i) {
-// 	for (equation in this.array) {
-// 		if (this.array[equation].index === i) {return this.array[equation]}
-// 	}
-// };
-
-function showResults (array) {
-	const containerElement = createElement( "DIV", "results");
-	return containerElement;
+ArrayOfEquations.prototype.get = function() { 
+	return this.array 
+};
+ArrayOfEquations.prototype.getElementByXYValues = function(x,y) {
+	return this.array.find( element => element.x === x &&  element.y === y)
 }
-
+ArrayOfEquations.prototype.getMirrorElement = function(x,y) {
+	return this.array.find( element => element.x === y &&  element.y === x)
+}
+ArrayOfEquations.prototype.getElementByIndexValue = function(n) {
+	return this.array.find( element => element.index === n)
+}
+ArrayOfEquations.prototype.getSumOfAnswersForMirrorElements = function(x,y) {
+	let firstElement = this.array.find( element => element.x === x &&  element.y === y);
+	let mirrorElement = this.array.find( element => element.x === y &&  element.y === x);
+	return {
+		correct: firstElement.checkTimesAnswered().correctly + mirrorElement.checkTimesAnswered().correctly,
+		incorrect: firstElement.checkTimesAnswered().incorrectly + mirrorElement.checkTimesAnswered().incorrectly,
+	}
+}
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 const Sequence = function(n) {
@@ -211,7 +219,7 @@ Score.prototype.get = function() { return this.globalScore };
 
 const model = {
 	score: new Score(),
-	array: new ArrayOfEquations().get(),
+	array: new ArrayOfEquations(),
 	pages: [
 		[new Sequence(80).getOrdered(), 0, "Fill the table" ],
 		[new Sequence(80).getShuffled(), 0, "Fill the gaps" ],
