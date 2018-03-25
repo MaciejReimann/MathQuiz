@@ -17,7 +17,8 @@ function createElement (tag, className, textContent) {
 
 const controller = function() {
 	const score = model.score;
-	const array = model.array;
+	const arr = model.array;
+	const array = model.array.get();
 	const pages = model.pages
 	const activePageIndex = model.activePageIndex;
 	const index = function() {
@@ -57,23 +58,23 @@ const controller = function() {
 
 	function insertResults() {
 		const containerElement = createElement( "DIV", "table");
-		// halfArray = []
-		// array.map(function(equation) {
-		// 	equation.checkHowManyTimesAnsweredCorrectly()
-		// })
-
 		array.map(function(equation) {
 			let tableSquare = equation.elementZ;
+			let sumOfCorrectAnswers = arr.getSumOfAnswersForMirrorElements(equation.x, equation.y).correct
+			let sumOfIncorrectAnswers = arr.getSumOfAnswersForMirrorElements(equation.x, equation.y).incorrect
+			if (equation.x > equation.y) { tableSquare.setAs("invisible") } else {
+				let sum = sumOfCorrectAnswers;
+				if (sum > 2) {
+					tableSquare.setAs("excellent");
+	 			} else if (sum > 1) {
+	 				tableSquare.setAs("very-good");
+	 			} else if (sum > 0) {
+	 				tableSquare.setAs("good");
+	 			} else { 
+	 				tableSquare.setAs("not-answered");
+	 			}
+			}	
 			containerElement.appendChild(tableSquare.getElement());	
-			if (equation.checkHowManyTimesAnsweredCorrectly() > 3) {
-				tableSquare.setAs("excellent");
-	 		} else if (equation.checkHowManyTimesAnsweredCorrectly() > 1) {
-	 			tableSquare.setAs("very-good");
-	 		} else if (equation.checkHowManyTimesAnsweredCorrectly() > 0) {
-	 			tableSquare.setAs("good");
-	 		} else { 
-	 			tableSquare.setAs("not-answered");
-	 		}
 		})
 		return containerElement;
 	};
@@ -108,7 +109,7 @@ const controller = function() {
 
 	function insertArea (activeEquation) {
 		const containerElement = createElement( "DIV", "photo");
-		let tableSquare = getActiveEquation().elementZ.isActive("active");
+		let tableSquare = getActiveEquation().elementZ.setAs("active");
 		const tableSquareContainer = createElement( "DIV", "equationParagraph");
 		tableSquareContainer.appendChild(tableSquare)
 
@@ -219,13 +220,3 @@ function proceedWhen(input) {
 		getArrayIndex: getArrayIndex,
 	};
 }
-
-
-// DLaczego się blokuje enter kiedy dane równanie było juz raz robione?
-// UI - dodać podświetlanie jedności przy widoku tablicy
-// Dodać funckcję, ktora: a) tworzy nowy Array, b)sprawda, czy mapowany element jest juz  wnowym Array, 
-// jęlsi jest, nadaje mu klasę "invisible", sprawdza ile correct answers i dodaje do jego bliźniaka tę wartość, 
-// jelsi nie, dodaje go do nowego Array 
-
-//Dodać wyskakujące okno na środku : imię, wiek, zakłada profil i zapisuje w local storage
-
