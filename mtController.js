@@ -20,22 +20,18 @@ const controller = function() {
 	const arr = model.array;
 	const array = model.array.get();
 	const page = model.page;
-
-	const pages = model.pages
 	const activePageIndex = model.activePageIndex;
 	const index = function() {
 		if (activePageIndex.get() === undefined) { return 0 } else {
 			return activePageIndex.get();		
 		}
 	};
-	const setSequenceForIncorrect = function() {
-		arr.getAllEquationsAnsweredIncorrectly().map(function(equation) {
-			page[1].sequence.push(equation.index)
-		})
+	const produceSequenceForIncorrect = function() {
+		page[1].sequence = arr.getAllEquationsAnsweredIncorrectly().map(equation=>equation.index);
 	}();
 	const getActivePage = function() {return page[index()]}
 	const getArrayIndex = function() {return getActivePage().sequence[getActivePage().index]}
-	const getActiveEquation = function() {return array[getArrayIndex()]}
+	const getActiveEquation = array[getArrayIndex()]
 	const setSequenceIndex = function(n) {getActivePage().index = n}; 
 	const incrementSequenceIndex = function() { return getActivePage().index++};
 
@@ -47,15 +43,15 @@ const controller = function() {
 	const getActiveElement = function() {
 		const firstActive = document.getElementsByClassName("active")[0]
 		if (firstActive!==undefined) {return firstActive.value} else { return false }
-	};		
-
+	};
 	const lastEquationAnswered = function() {
 		if( getActiveElement() !== "" ) {return true} else { return false}
 	};
 	function informed() {
 		function whenViewUpdated(v) {
+			// setSequenceIndex();
 			logActiveEquation('informed')
-			if (lastEquationAnswered()) { incrementSequenceIndex() };
+			if (lastEquationAnswered()) {console.log("incremented"); incrementSequenceIndex() };
 			activePageIndex.set(v);			
 		}
 		return {
@@ -67,15 +63,17 @@ const controller = function() {
 		let id = 0;
 		array.map(function(equation) {
 			let tableSquare = equation.elementZ;
-			containerElement.appendChild(tableSquare.getElement());		
+			containerElement.appendChild(tableSquare.getElement());
 			if (equation.x === 1 || equation.y === 1 ) {
 				tableSquare.setAs("inactive");
 	 		} else {
 	 			if (tableSquare.showAnswer()!==undefined) {
 	 				tableSquare.setAs("done");
 					// tableSquare.removeListeners()
-	 			} else { 
+	 			} else {
+	 				
 	 				tableSquare.setAs("active");
+	 				tableSquare.addFocusListener()
 	 			}
 	 			tableSquare.element.id = id; id++;
 	 		}
@@ -85,7 +83,7 @@ const controller = function() {
 	function insertEquationParagraph () {
 		logActiveEquation('insertEquationParagraph')
 		const containerElement = createElement( "DIV", "equationParagraph");
-		getActiveEquation().createLeftSide(4).map(function(item) {
+		getActiveEquation.createLeftSide(4).map(function(item) {
 			containerElement.appendChild(item)
 		})
 		return containerElement;
@@ -93,7 +91,7 @@ const controller = function() {
 
 	function insertArea (activeEquation) {
 		const containerElement = createElement( "DIV", "photo");
-		let tableSquare = getActiveEquation().elementZ.setAs("active");
+		let tableSquare = getActiveEquation.elementZ.setAs("active");
 		const tableSquareContainer = createElement( "DIV", "equationParagraph");
 		tableSquareContainer.appendChild(tableSquare)
 
@@ -128,7 +126,7 @@ const controller = function() {
 		        	
 	      		};
 	    	};
-	  	}) (9, 9, getActiveEquation().x, getActiveEquation().y)
+	  	}) (9, 9, getActiveEquation.x, getActiveEquation.y)
 	  	containerElement.appendChild(canvas);
 	  	containerElement.appendChild(tableSquareContainer);
 	  	return containerElement;
@@ -193,25 +191,24 @@ function insertResults() {
 };
 function logActiveEquation (text) {
 	console.log( text )
-	console.log("active equation is: ", getActiveEquation() )
+	console.log("active equation is: ", getActiveEquation )
 	// console.log( "SEQUENCE INDEX IS: ", getSequenceIndex() )
 	console.log( "ACTIVE FUNCTION IS: ", getActivePage() )
 	
 	
 }
 function proceedWhen(input) {
-	// logActiveEquation()
+	logActiveEquation('proceedWhen')
 	let inputElement = input.element;
 	function isInvalid() { inputElement.setAttribute("valid", false) };
 	function isValid() { inputElement.setAttribute("valid", true) };
 	function isIncorrect() {
-		getActiveEquation().answeredCorrectly.push(false);
+		getActiveEquation.answeredCorrectly.push(false);
 		score.updateWhenIncorrect();
 		viewModule().update( mainIndex() )
 	};
-	function isCorrect() {
-		
-		getActiveEquation().answeredCorrectly.push(true);
+	function isCorrect() {		
+		getActiveEquation.answeredCorrectly.push(true);
 		score.updateWhenCorrect();
 		viewModule().update( mainIndex() )
 	};
@@ -236,6 +233,8 @@ function proceedWhen(input) {
 
 		logActiveEquation: logActiveEquation,
 		getActivePage: getActivePage,
+
+		getActiveEquation: getActiveEquation,
 
 	};
 }
