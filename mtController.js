@@ -86,15 +86,16 @@ const controller = function() {
 	};
 	function insertEquations () {
 		const containerElement = createElement( "DIV", "equations");
-		let equationParagraphs = []
 		produceSequenceForIncorrect();
 		for (let i=0; i<model.temp; i++) {
-			equationParagraphs.push(insertEquationParagraph(theArray[page[1].sequence[i]]))
-		}
-		for (let i=0; i<equationParagraphs.length; i++) {
-			console.log(equationParagraphs[i])
-			containerElement.appendChild(equationParagraphs[i])
-		}
+			let equation = theArray[page[1].sequence[i]];
+			let activeField = equation.elementZ;
+			let lastElement = insertEquationParagraph(equation);
+			if (activeField.showAnswer()!==undefined) {
+	 			activeField.setAs("done")
+	 		};
+	 		containerElement.appendChild(lastElement)
+		}	
 		model.temp++
 		return containerElement;
 	};
@@ -256,3 +257,14 @@ function proceedWhen(input) {
 
 	};
 }
+
+// 1.dodać createRightSide()
+// 2.sprawić, by fill the gaps wyświetlało więcej niż jedno rownanie. 
+
+// UI - dodać podświetlanie jedności przy widoku tablicy
+
+//Dodać wyskakujące okno na środku : imię, wiek, zakłada profil i zapisuje w local storage
+
+
+// WHEN INPUT IS FILLED AND LOSSES FOCUS, THAT SHOULD FIRE THE SAME EVENT AS ENTER
+
