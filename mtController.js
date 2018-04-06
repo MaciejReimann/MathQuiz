@@ -16,9 +16,11 @@ function createElement (tag, className, textContent) {
 ////////////////////////////////////////////////////////////////////////////////////////
 
 const controller = function() {
+	let incorrectAnswers = model.incorrectAnswers;
+	const tempIncorrect = model.tempIncorrect;
 	const score = model.score;
 	const arr = model.array;
-	const array = model.array.get();
+	const theArray = model.array.get();
 	const page = model.page;
 	const activePageIndex = model.activePageIndex;
 	const index = function() {
@@ -27,17 +29,19 @@ const controller = function() {
 		}
 	};
 	const produceSequenceForIncorrect = function() {
-		page[1].sequence = arr.getAllEquationsAnsweredIncorrectly().map(equation=>equation.index);
-	}();
+		incorrectAnswers = arr.getAllEquationsAnsweredIncorrectly().map(equation=>equation.index);
+		page[1].sequence = incorrectAnswers.concat(tempIncorrect);
+		console.log(page[1].sequence)
+	};
 	const getActivePage = function() {return page[index()]}
 	const getArrayIndex = function() {return getActivePage().sequence[getActivePage().index]}
-	const getActiveEquation = array[getArrayIndex()]
+	const getActiveEquation = theArray[getArrayIndex()]
 	const setSequenceIndex = function(n) {getActivePage().index = n}; 
 	const incrementSequenceIndex = function() { return getActivePage().index++};
 
 	const getScore = function() {return score.get()}
 	const getMainContent = function(n) {
-		let options = [insertTable, insertEquationParagraph, insertPhoto, insertArea, insertResults];
+		let options = [insertTable, insertEquations, insertPhoto, insertArea, insertResults];
 		return options[n]();
 	};
 	const getActiveElement = function() {
@@ -50,8 +54,8 @@ const controller = function() {
 	function informed() {
 		function whenViewUpdated(v) {
 			// setSequenceIndex();
-			logActiveEquation('informed')
-			if (lastEquationAnswered()) {console.log("incremented"); incrementSequenceIndex() };
+			// logActiveEquation('informed')
+			if (lastEquationAnswered()) { incrementSequenceIndex() };
 			activePageIndex.set(v);			
 		}
 		return {
@@ -61,7 +65,7 @@ const controller = function() {
 	function insertTable () {
 		const containerElement = createElement( "DIV", "table");
 		let id = 0;
-		array.map(function(equation) {
+		theArray.map(function(equation) {
 			let tableSquare = equation.elementZ;
 			containerElement.appendChild(tableSquare.getElement());
 			if (equation.x === 1 || equation.y === 1 ) {
@@ -80,10 +84,24 @@ const controller = function() {
 		})
 		return containerElement;
 	};
-	function insertEquationParagraph () {
-		logActiveEquation('insertEquationParagraph')
+	function insertEquations () {
+		const containerElement = createElement( "DIV", "equations");
+		let equationParagraphs = []
+		produceSequenceForIncorrect();
+		for (let i=0; i<model.temp; i++) {
+			equationParagraphs.push(insertEquationParagraph(theArray[page[1].sequence[i]]))
+		}
+		for (let i=0; i<equationParagraphs.length; i++) {
+			console.log(equationParagraphs[i])
+			containerElement.appendChild(equationParagraphs[i])
+		}
+		model.temp++
+		return containerElement;
+	};
+	function insertEquationParagraph (equation) {
+		// logActiveEquation('insertEquationParagraph')
 		const containerElement = createElement( "DIV", "equationParagraph");
-		getActiveEquation.createLeftSide(4).map(function(item) {
+		equation.createLeftSide(4).map(function(item) {
 			containerElement.appendChild(item)
 		})
 		return containerElement;
@@ -163,13 +181,12 @@ const insertPhoto = function(activeEquation) {
 // });
 
   containerElement.appendChild(canvas);
-  containerElement.appendChild(insertEquationParagraph());
-
+  containerElement.appendChild(insertEquationParagraph(getActiveEquation));
   return containerElement;
 };
 function insertResults() {
 	const containerElement = createElement( "DIV", "table");
-	array.map(function(equation) {
+	theArray.map(function(equation) {
 		let tableSquare = equation.elementZ;
 		let sumOfCorrectAnswers = arr.getSumOfAnswersForMirrorElements(equation.x, equation.y).correct
 		let sumOfIncorrectAnswers = arr.getSumOfAnswersForMirrorElements(equation.x, equation.y).incorrect
@@ -198,11 +215,12 @@ function logActiveEquation (text) {
 	
 }
 function proceedWhen(input) {
-	logActiveEquation('proceedWhen')
+	// logActiveEquation('proceedWhen')
 	let inputElement = input.element;
 	function isInvalid() { inputElement.setAttribute("valid", false) };
 	function isValid() { inputElement.setAttribute("valid", true) };
 	function isIncorrect() {
+		if (activePageIndex.get()===1) {tempIncorrect.push(getActiveEquation.index)};
 		getActiveEquation.answeredCorrectly.push(false);
 		score.updateWhenIncorrect();
 		viewModule().update( mainIndex() )
