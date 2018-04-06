@@ -275,6 +275,10 @@ const model = {
 		},
 	],
 	activePageIndex: new StoredValue(),
+	tempIncorrect: [],
+	incorrectAnswers: [],
+	temp: 1,
+
 };
 
 ///////////////////////////////////////////////////////////////////////
