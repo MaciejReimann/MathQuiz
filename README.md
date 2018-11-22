@@ -1,4 +1,4 @@
-# Math Quiz
+# Count Fast
 A quiz-type dynamic web app that helps to practice mental calculations.
 ___
 
