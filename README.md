@@ -18,10 +18,11 @@ In such a way, that the loaded page:
 &nbsp;&nbsp; 2. Learn about OOP in Javascript;\
 &nbsp;&nbsp; 3. Master DOM manipulation;
 
-## See live the Minimum Viable Product:
+## See live v.2.0:
 Go to: https://countfast.herokuapp.com/ and follow the instructions.
 
 ## TODOs:
-&nbsp;&nbsp; * todo;
+&nbsp;&nbsp; * ~~layout the UI;~~\
+&nbsp;&nbsp; * create model equation object;
 
 ## Useful Resources:
