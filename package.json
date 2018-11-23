@@ -1,0 +1,32 @@
+{
+  "name": "expressboilerplate",
+  "version": "1.0.0",
+  "description": "Express Boilerplate",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "jest --watch",
+    "server": "nodemon server.js",
+    "build": "cd public && browserify scripts/index.js -o bundle.js",
+    "dev": "set NODE_ENV=development && npm run build && npm run server",
+    "locally": "npm i && npm run dev",
+    "publish": "git push -u origin master && git push heroku master && heroku open"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MaciejReimann/ExpressBoilerplate.git"
+  },
+  "author": "Maciej Reimann",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/MaciejReimann/ExpressBoilerplate/issues"
+  },
+  "homepage": "https://github.com/MaciejReimann/ExpressBoilerplate#readme",
+  "dependencies": {
+    "express": "^4.16.4"
+  },
+  "devDependencies": {
+    "jest": "^23.6.0",
+    "nodemon": "^1.18.6"
+  }
+}
