@@ -1,0 +1,19 @@
+{
+  "name": "countfast",
+  "version": "1.0.0",
+  "description": "A quiz-type dynamic web app that helps to practice mental calculations.",
+  "main": "index.",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MaciejReimann/CountFast.git"
+  },
+  "author": "Maciej Reimann",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/MaciejReimann/CountFast/issues"
+  },
+  "homepage": "https://github.com/MaciejReimann/CountFast#readme"
+}
