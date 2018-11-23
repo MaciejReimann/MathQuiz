@@ -2,27 +2,32 @@
 
 .page {
   display: grid;
-  grid-template-columns: 50vw 50vw;
-  grid-template-rows: 1fr 6fr 1fr .5fr;
-  grid-template-areas:  "header header"
-                        "left-top right-top"
-                        "left-bottom right-bottom"
+  grid-template-columns: 10vw 90vw;
+  grid-template-rows: .5fr 1fr 6fr .5fr;
+  grid-template-areas:  "sidebar header"
+                        "sidebar options"
+                        "sidebar main"
                         "footer footer";
   height: 100vh;
   max-width: 100vw;
+  align-items: center;
+  justify-items: center;
+
 }
+
+
  /*grid items*/
  
 .header { grid-area: header; }
 
-.left-top { grid-area: left-top; }
+.sidebar { grid-area: sidebar; }
 
-.right-top { grid-area: right-top; }
+.options { grid-area: options; }
 
-.left-bottom { grid-area: left-bottom; }
-
-.right-bottom { grid-area: right-bottom; }
+.main { grid-area: main; }
 
 .footer { grid-area: footer; }
+
+ /*inside grid items*/
 
 

@@ -1,7 +1,7 @@
 {
-  "name": "expressboilerplate",
-  "version": "1.0.0",
-  "description": "Express Boilerplate",
+  "name": "countfast",
+  "version": "2.0.0",
+  "description": "A quiz-type vanilla JS app that helps to practice mental calculations.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -14,14 +14,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MaciejReimann/ExpressBoilerplate.git"
+    "url": "git+https://github.com/MaciejReimann/CountFast.git"
   },
   "author": "Maciej Reimann",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/MaciejReimann/ExpressBoilerplate/issues"
+    "url": "https://github.com/MaciejReimann/CountFast/issues"
   },
-  "homepage": "https://github.com/MaciejReimann/ExpressBoilerplate#readme",
+  "homepage": "https://github.com/MaciejReimann/CountFast#readme",
   "dependencies": {
     "express": "^4.16.4"
   },
