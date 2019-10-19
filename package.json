@@ -1,32 +1,27 @@
 {
-  "name": "countfast",
-  "version": "2.0.0",
-  "description": "A quiz-type vanilla JS app that helps to practice mental calculations.",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js",
-    "test": "jest --watch",
-    "server": "nodemon server.js",
-    "build": "cd public && browserify scripts/index.js -o bundle.js",
-    "dev": "set NODE_ENV=development && npm run build && npm run server",
-    "locally": "npm i && npm run dev",
-    "publish": "git push -u origin master && git push heroku master && heroku open"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/MaciejReimann/CountFast.git"
-  },
-  "author": "Maciej Reimann",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/MaciejReimann/CountFast/issues"
-  },
-  "homepage": "https://github.com/MaciejReimann/CountFast#readme",
-  "dependencies": {
-    "express": "^4.16.4"
-  },
+  "name": "svelte-app",
+  "version": "1.0.0",
   "devDependencies": {
-    "jest": "^23.6.0",
-    "nodemon": "^1.18.6"
+    "npm-run-all": "^4.1.5",
+    "rollup": "^1.12.0",
+    "rollup-plugin-commonjs": "^10.0.0",
+    "rollup-plugin-livereload": "^1.0.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-svelte": "^5.0.3",
+    "rollup-plugin-terser": "^4.0.4",
+    "rollup-plugin-typescript": "^1.0.1",
+    "svelte": "^3.0.0",
+    "tslib": "^1.10.0",
+    "typescript": "^3.6.4"
+  },
+  "dependencies": {
+    "sirv-cli": "^0.4.4"
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "autobuild": "rollup -c -w",
+    "dev": "run-p start:dev autobuild",
+    "start": "sirv public --single",
+    "start:dev": "sirv public --single --dev"
   }
 }

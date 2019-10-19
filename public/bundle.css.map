@@ -1,0 +1,18 @@
+{
+  "version": 3,
+  "file": "bundle.css",
+  "sources": [
+    "../src/Header.svelte",
+    "../src/MultiplicationTable/MultiplicationTable.svelte",
+    "../src/MultiplicationTable/TableCell.svelte",
+    "../src/GenericComponents/QuizQuestion.svelte"
+  ],
+  "sourcesContent": [
+    "<script>\n  let name = \"world\";\n</script>\n\n<style>\n  p {\n    color: purple;\n    font-family: \"Comic Sans MS\";\n    font-size: 2em;\n  }\n</style>\n\n<h1>\n  <p>CountFast!</p>\n</h1>\n",
+    "<script>\n  import Quiz from \"../Quiz.ts\";\n  import QuizQuestion from \"../GenericComponents/QuizQuestion.svelte\";\n  import MultiplicationTable from \"../MultiplicationTable.ts\";\n\n  const multiplicationTable = new MultiplicationTable(10);\n  const results = multiplicationTable\n    .getResults()\n    .map((result, index) => ({ result, index }));\n  const multiplicationTableQuiz = new Quiz();\n\n  function onSubmitAnswer(answer) {\n    console.log(\"testing correctness of answer:\", answer);\n  }\n</script>\n\n<style>\n  .table-wrapper {\n    padding: 2rem;\n    display: grid;\n    grid-template-rows: repeat(10, 4rem);\n    grid-template-columns: repeat(10, 4rem);\n    column-gap: 5px;\n    row-gap: 5px;\n    border: 3px solid blue;\n  }\n  .cell {\n    border: 2px solid black;\n    width: 100%;\n    height: 100%;\n  }\n  .visible {\n    width: 100%;\n    height: 100%;\n    display: flex;\n    justify-content: center;\n    align-items: center;\n  }\n</style>\n\n<div class=\"table-wrapper\">\n  {#each results as cell (cell.index)}\n    <div class={'cell'}>\n      {#if cell.index < 10 || cell.index % 10 == 0}\n        <div class={'visible'}>{cell.result}</div>\n      {:else}\n        <div class={'invisible'}>\n          <QuizQuestion submitAnswerHandler={onSubmitAnswer} />\n        </div>\n      {/if}\n\n    </div>\n  {/each}\n</div>\n",
+    "<script>\n  export let submitAnswerHandler;\n  import QuizQuestion from \"../GenericComponents/QuizQuestion.svelte\";\n</script>\n\n<style>\n  .table-cell {\n    border: 2px solid black;\n    width: 100%;\n    height: 100%;\n  }\n</style>\n\n<div class={'table-cell'}>\n  <QuizQuestion {submitAnswerHandler} />\n</div>\n",
+    "<script>\n  export let submitAnswerHandler;\n  let inputValue = \"\";\n\n  function handleInput(e) {\n    inputValue = e.target.value;\n    console.log(\"validating: \", inputValue);\n  }\n\n  function handleSubmit(e) {\n    submitAnswerHandler(e.target.value);\n  }\n</script>\n\n<style>\n  input {\n    border: none;\n    width: 100%;\n    height: 100%;\n    text-align: center;\n  }\n</style>\n\n<input\n  type=\"text\"\n  value={inputValue}\n  on:input={handleInput}\n  on:change={handleSubmit} />\n"
+  ],
+  "names": [],
+  "mappings": "AAKE,CAAC,eAAC,CAAC,AACD,KAAK,CAAE,MAAM,CACb,WAAW,CAAE,eAAe,CAC5B,SAAS,CAAE,GAAG,AAChB,CAAC;ACQD,cAAc,eAAC,CAAC,AACd,OAAO,CAAE,IAAI,CACb,OAAO,CAAE,IAAI,CACb,kBAAkB,CAAE,OAAO,EAAE,CAAC,CAAC,IAAI,CAAC,CACpC,qBAAqB,CAAE,OAAO,EAAE,CAAC,CAAC,IAAI,CAAC,CACvC,UAAU,CAAE,GAAG,CACf,OAAO,CAAE,GAAG,CACZ,MAAM,CAAE,GAAG,CAAC,KAAK,CAAC,IAAI,AACxB,CAAC,AACD,KAAK,eAAC,CAAC,AACL,MAAM,CAAE,GAAG,CAAC,KAAK,CAAC,KAAK,CACvB,KAAK,CAAE,IAAI,CACX,MAAM,CAAE,IAAI,AACd,CAAC,AACD,QAAQ,eAAC,CAAC,AACR,KAAK,CAAE,IAAI,CACX,MAAM,CAAE,IAAI,CACZ,OAAO,CAAE,IAAI,CACb,eAAe,CAAE,MAAM,CACvB,WAAW,CAAE,MAAM,AACrB,CAAC;AC/BD,WAAW,eAAC,CAAC,AACX,MAAM,CAAE,GAAG,CAAC,KAAK,CAAC,KAAK,CACvB,KAAK,CAAE,IAAI,CACX,MAAM,CAAE,IAAI,AACd,CAAC;ACKD,KAAK,eAAC,CAAC,AACL,MAAM,CAAE,IAAI,CACZ,KAAK,CAAE,IAAI,CACX,MAAM,CAAE,IAAI,CACZ,UAAU,CAAE,MAAM,AACpB,CAAC"
+}
