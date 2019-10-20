@@ -3,14 +3,33 @@
   import QuizQuestion from "../GenericComponents/QuizQuestion.svelte";
   import MultiplicationTable from "../MultiplicationTable.ts";
 
-  const multiplicationTable = new MultiplicationTable(10);
-  const results = multiplicationTable
-    .getResults()
-    .map((result, index) => ({ result, index }));
-  const multiplicationTableQuiz = new Quiz();
+  let correctAnswers = [];
+  let incorrectAnswers = [];
 
-  function onSubmitAnswer(answer) {
-    console.log("testing correctness of answer:", answer);
+  const submitHandlers = {
+    onSubmitCorrectAnswer: id => {
+      correctAnswers = [...correctAnswers, id];
+    },
+    onSubmitIncorrectAnswer: id => {
+      incorrectAnswers = [incorrectAnswers, id];
+    }
+  };
+
+  const multiplicationTableQuiz = new Quiz(
+    new MultiplicationTable(10).formatForQuiz(),
+    "mt",
+    submitHandlers
+  );
+
+  const quizQuestions = multiplicationTableQuiz.getQuestions();
+
+  function onSubmitAnswer(answer, index) {
+    multiplicationTableQuiz.submitAnswer(answer, index);
+  }
+
+  function parseIndex(string) {
+    const numberPattern = /\d+/g;
+    return string.match(numberPattern)[0];
   }
 </script>
 
@@ -36,16 +55,28 @@
     justify-content: center;
     align-items: center;
   }
+
+  .correct {
+    border: 3px solid green;
+  }
+
+  .incorrect {
+    border: 3px solid red;
+  }
 </style>
 
 <div class="table-wrapper">
-  {#each results as cell (cell.index)}
-    <div class={'cell'}>
-      {#if cell.index < 10 || cell.index % 10 == 0}
-        <div class={'visible'}>{cell.result}</div>
+  {#each quizQuestions as question (question.index)}
+    <div
+      class={'cell'}
+      class:correct={correctAnswers.includes(question.index)}
+      class:incorrect={incorrectAnswers.includes(question.index)}>
+      {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}
+        <div class={'visible'}>{question.answers[0]}</div>
       {:else}
-        <div class={'invisible'}>
-          <QuizQuestion submitAnswerHandler={onSubmitAnswer} />
+        <div class={'invalid'}>
+          <QuizQuestion
+            submitAnswerHandler={answer => onSubmitAnswer(answer, question.index)} />
         </div>
       {/if}
 
