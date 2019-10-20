@@ -539,8 +539,8 @@ var app = (function () {
     			input = element("input");
     			attr_dev(input, "type", "text");
     			input.value = ctx.inputValue;
-    			attr_dev(input, "class", "svelte-1xzx97k");
-    			add_location(input, file$1, 23, 0, 350);
+    			attr_dev(input, "class", "svelte-17r78of");
+    			add_location(input, file$1, 24, 0, 365);
 
     			dispose = [
     				listen_dev(input, "input", ctx.handleInput),
@@ -682,9 +682,9 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (76:6) {:else}
+    // (78:6) {:else}
     function create_else_block(ctx) {
-    	var div, current;
+    	var current;
 
     	function func(...args) {
     		return ctx.func(ctx, ...args);
@@ -697,15 +697,11 @@ var app = (function () {
 
     	const block = {
     		c: function create() {
-    			div = element("div");
     			numericinput.$$.fragment.c();
-    			attr_dev(div, "class", 'invalid');
-    			add_location(div, file$2, 76, 8, 1809);
     		},
 
     		m: function mount(target, anchor) {
-    			insert_dev(target, div, anchor);
-    			mount_component(numericinput, div, null);
+    			mount_component(numericinput, target, anchor);
     			current = true;
     		},
 
@@ -726,18 +722,14 @@ var app = (function () {
     		},
 
     		d: function destroy(detaching) {
-    			if (detaching) {
-    				detach_dev(div);
-    			}
-
-    			destroy_component(numericinput);
+    			destroy_component(numericinput, detaching);
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_else_block.name, type: "else", source: "(76:6) {:else}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_else_block.name, type: "else", source: "(78:6) {:else}", ctx });
     	return block;
     }
 
-    // (74:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}
+    // (76:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}
     function create_if_block(ctx) {
     	var div, t_value = ctx.question.correctAnswers[0] + "", t;
 
@@ -745,8 +737,8 @@ var app = (function () {
     		c: function create() {
     			div = element("div");
     			t = text(t_value);
-    			attr_dev(div, "class", "" + 'visible' + " svelte-1f87bgd");
-    			add_location(div, file$2, 74, 8, 1729);
+    			attr_dev(div, "class", "" + 'visible' + " svelte-bzjebj");
+    			add_location(div, file$2, 76, 8, 1783);
     		},
 
     		m: function mount(target, anchor) {
@@ -764,11 +756,11 @@ var app = (function () {
     			}
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_if_block.name, type: "if", source: "(74:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_if_block.name, type: "if", source: "(76:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}", ctx });
     	return block;
     }
 
-    // (69:2) {#each quizQuestions as question (question.index)}
+    // (71:2) {#each quizQuestions as question (question.index)}
     function create_each_block(key_1, ctx) {
     	var div, current_block_type_index, if_block, t, current;
 
@@ -796,10 +788,10 @@ var app = (function () {
     			div = element("div");
     			if_block.c();
     			t = space();
-    			attr_dev(div, "class", "" + 'cell' + " svelte-1f87bgd");
+    			attr_dev(div, "class", "" + 'cell' + " svelte-bzjebj");
     			toggle_class(div, "correct", ctx.correctAnswers.includes(ctx.question.index));
     			toggle_class(div, "incorrect", ctx.incorrectAnswers.includes(ctx.question.index));
-    			add_location(div, file$2, 69, 4, 1482);
+    			add_location(div, file$2, 71, 4, 1536);
     			this.first = div;
     		},
 
@@ -841,7 +833,7 @@ var app = (function () {
     			if_blocks[current_block_type_index].d();
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_each_block.name, type: "each", source: "(69:2) {#each quizQuestions as question (question.index)}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_each_block.name, type: "each", source: "(71:2) {#each quizQuestions as question (question.index)}", ctx });
     	return block;
     }
 
@@ -865,8 +857,8 @@ var app = (function () {
     			for (let i = 0; i < each_blocks.length; i += 1) {
     				each_blocks[i].c();
     			}
-    			attr_dev(div, "class", "table-wrapper svelte-1f87bgd");
-    			add_location(div, file$2, 67, 0, 1397);
+    			attr_dev(div, "class", "table-wrapper svelte-bzjebj");
+    			add_location(div, file$2, 69, 0, 1451);
     		},
 
     		l: function claim(nodes) {
@@ -999,7 +991,8 @@ var app = (function () {
     			header.$$.fragment.c();
     			t = space();
     			multiplicationtable.$$.fragment.c();
-    			add_location(h1, file$3, 5, 0, 146);
+    			attr_dev(h1, "class", "svelte-jlstt9");
+    			add_location(h1, file$3, 13, 0, 233);
     		},
 
     		l: function claim(nodes) {

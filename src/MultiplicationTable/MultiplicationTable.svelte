@@ -57,11 +57,13 @@
   }
 
   .correct {
-    border: 3px solid green;
+    outline: 5px solid green;
+    outline-offset: -7px;
   }
 
   .incorrect {
-    border: 3px solid red;
+    outline: 5px solid red;
+    outline-offset: -7px;
   }
 </style>
 
@@ -74,10 +76,8 @@
       {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}
         <div class={'visible'}>{question.correctAnswers[0]}</div>
       {:else}
-        <div class={'invalid'}>
-          <NumericInput
-            onSubmit={answer => onSubmitAnswer(answer, question.index)} />
-        </div>
+        <NumericInput
+          onSubmit={answer => onSubmitAnswer(answer, question.index)} />
       {/if}
 
     </div>
