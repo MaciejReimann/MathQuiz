@@ -1,3 +1,4 @@
+import QuizQuestionI from "./Quiz"
 export default class MultiplicationTable {
   private equations: MultiplicationEquation[] = null
 
@@ -13,10 +14,10 @@ export default class MultiplicationTable {
 
   getResults = () => this.equations.map(eq => eq.getResult())
 
-  formatForQuiz = () =>
+  getQAPair = () =>
     this.equations.map(eq => ({
       question: eq.formatRHEq(),
-      answers: [eq.getResult().toString()]
+      correctAnswers: [eq.getResult().toString()]
     }))
 }
 

@@ -1,6 +1,6 @@
 <script>
   import Quiz from "../Quiz.ts";
-  import QuizQuestion from "../GenericComponents/QuizQuestion.svelte";
+  import NumericInput from "../GenericComponents/NumericInput.svelte";
   import MultiplicationTable from "../MultiplicationTable.ts";
 
   let correctAnswers = [];
@@ -16,7 +16,7 @@
   };
 
   const multiplicationTableQuiz = new Quiz(
-    new MultiplicationTable(10).formatForQuiz(),
+    new MultiplicationTable(10).getQAPair(),
     "mt",
     submitHandlers
   );
@@ -72,11 +72,11 @@
       class:correct={correctAnswers.includes(question.index)}
       class:incorrect={incorrectAnswers.includes(question.index)}>
       {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}
-        <div class={'visible'}>{question.answers[0]}</div>
+        <div class={'visible'}>{question.correctAnswers[0]}</div>
       {:else}
         <div class={'invalid'}>
-          <QuizQuestion
-            submitAnswerHandler={answer => onSubmitAnswer(answer, question.index)} />
+          <NumericInput
+            onSubmit={answer => onSubmitAnswer(answer, question.index)} />
         </div>
       {/if}
 

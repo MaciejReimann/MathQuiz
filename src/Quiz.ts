@@ -1,35 +1,43 @@
 import isFunction from "lodash"
-export interface AnsweredQuestionI {
+export interface QuizQuestionI {
   index: string
-  question: []
-  answers: []
+  question: any[]
+  correctAnswers: any[]
   submittedAnswers: any[]
   correctAnswerCount: number
 }
 
+export interface QAI {
+  question: any[]
+  correctAnswers: any[]
+}
+
 export default class Quiz {
-  private answeredQuestions: AnsweredQuestionI[] = null
+  private quizQuestions: QuizQuestionI[] = null
   private quizID: string = null
   private handlers: {
     onSubmitCorrectAnswer: (id: string) => void
     onSubmitIncorrectAnswer: (id: string) => void
   }
 
-  constructor(answeredQuestions: AnsweredQuestionI[], quizID, handlers) {
-    this.answeredQuestions = answeredQuestions.map((qa, i) => ({
+  constructor(arrayOfQA: QAI[], quizID, handlers) {
+    this.quizQuestions = arrayOfQA.map((qa, i) => ({
       index: `${quizID}.${i}`,
-      ...qa,
-      submittedAnswers: []
+      question: qa.question,
+      correctAnswers: qa.correctAnswers,
+      submittedAnswers: [],
+      correctAnswerCount: 0
     }))
+    console.log(this.quizQuestions)
     this.quizID = quizID
     this.handlers = handlers
   }
-  getQuestions = () => this.answeredQuestions
+  getQuestions = () => this.quizQuestions
 
   submitAnswer = (submittedAnswer: never, i) => {
-    this.answeredQuestions = this.answeredQuestions.map(quizQuestion => {
+    this.quizQuestions = this.quizQuestions.map(quizQuestion => {
       if (quizQuestion.index == i) {
-        if (quizQuestion.answers.includes(submittedAnswer)) {
+        if (quizQuestion.correctAnswers.includes(submittedAnswer)) {
           this.handlers.onSubmitCorrectAnswer(quizQuestion.index)
 
           return {

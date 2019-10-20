@@ -1,5 +1,5 @@
 <script>
-  export let submitAnswerHandler;
+  export let onSubmit;
   let inputValue = "";
 
   function handleInput(e) {
@@ -8,7 +8,7 @@
   }
 
   function handleSubmit(e) {
-    submitAnswerHandler(e.target.value);
+    onSubmit(e.target.value);
   }
 </script>
 
