@@ -542,7 +542,7 @@ var app = (function () {
     			attr_dev(input, "maxlength", "2");
     			attr_dev(input, "class", "svelte-1yoboy5");
     			toggle_class(input, "invalid", ctx.isInvalid);
-    			add_location(input, file$1, 39, 0, 673);
+    			add_location(input, file$1, 39, 0, 687);
 
     			dispose = [
     				listen_dev(input, "input", ctx.input_input_handler),
@@ -596,7 +596,7 @@ var app = (function () {
       let isInvalid = false;
 
       function handleSubmit(e) {
-        onSubmit(e.target.value);
+        !isInvalid && onSubmit(e.target.value);
       }
 
       function keydownHandler(e) {

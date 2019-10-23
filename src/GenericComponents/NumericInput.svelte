@@ -11,7 +11,7 @@
   $: isInvalid = inputValue && isNaN(parseInt(inputValue));
 
   function handleSubmit(e) {
-    onSubmit(e.target.value);
+    !isInvalid && onSubmit(e.target.value);
   }
 
   function keydownHandler(e) {
