@@ -27,9 +27,28 @@
     multiplicationTableQuiz.submitAnswer(answer, index);
   }
 
+  let focusedInputIndex = 13;
+
+  function handleNavigate(key) {
+    switch (key) {
+      case "ArrowUp":
+        focusedInputIndex = focusedInputIndex - 10;
+        break;
+      case "ArrowLeft":
+        focusedInputIndex = focusedInputIndex - 1;
+        break;
+      case "ArrowRight":
+        focusedInputIndex = focusedInputIndex + 1;
+        break;
+      case "ArrowDown":
+        focusedInputIndex = focusedInputIndex + 10;
+        break;
+    }
+  }
+
   function parseIndex(string) {
     const numberPattern = /\d+/g;
-    return string.match(numberPattern)[0];
+    return parseInt(string.match(numberPattern)[0]);
   }
 </script>
 
@@ -77,7 +96,9 @@
         <div class={'visible'}>{question.correctAnswers[0]}</div>
       {:else}
         <NumericInput
-          onSubmit={answer => onSubmitAnswer(answer, question.index)} />
+          isFocused={parseIndex(question.index) == focusedInputIndex}
+          onSubmit={answer => onSubmitAnswer(answer, question.index)}
+          onNavigate={handleNavigate} />
       {/if}
 
     </div>

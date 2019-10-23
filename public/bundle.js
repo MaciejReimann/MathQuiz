@@ -539,12 +539,13 @@ var app = (function () {
     			input = element("input");
     			attr_dev(input, "type", "text");
     			input.value = ctx.inputValue;
-    			attr_dev(input, "class", "svelte-17r78of");
-    			add_location(input, file$1, 24, 0, 365);
+    			attr_dev(input, "class", "svelte-171n0cz");
+    			add_location(input, file$1, 35, 0, 559);
 
     			dispose = [
     				listen_dev(input, "input", ctx.handleInput),
-    				listen_dev(input, "change", ctx.handleSubmit)
+    				listen_dev(input, "change", ctx.handleSubmit),
+    				listen_dev(input, "keydown", ctx.keydownHandler)
     			];
     		},
 
@@ -554,6 +555,7 @@ var app = (function () {
 
     		m: function mount(target, anchor) {
     			insert_dev(target, input, anchor);
+    			ctx.input_binding(input);
     		},
 
     		p: function update(changed, ctx) {
@@ -570,6 +572,7 @@ var app = (function () {
     				detach_dev(input);
     			}
 
+    			ctx.input_binding(null);
     			run_all(dispose);
     		}
     	};
@@ -578,8 +581,10 @@ var app = (function () {
     }
 
     function instance($$self, $$props, $$invalidate) {
-    	let { onSubmit } = $$props;
+    	let { onSubmit, onNavigate, isFocused } = $$props;
+
       let inputValue = "";
+      let inputNode;
 
       function handleInput(e) {
         $$invalidate('inputValue', inputValue = e.target.value);
@@ -590,42 +595,72 @@ var app = (function () {
         onSubmit(e.target.value);
       }
 
-    	const writable_props = ['onSubmit'];
+      function keydownHandler(e) {
+        onNavigate(e.key);
+      }
+
+    	const writable_props = ['onSubmit', 'onNavigate', 'isFocused'];
     	Object.keys($$props).forEach(key => {
     		if (!writable_props.includes(key) && !key.startsWith('$$')) console_1.warn(`<NumericInput> was created with unknown prop '${key}'`);
     	});
 
+    	function input_binding($$value) {
+    		binding_callbacks[$$value ? 'unshift' : 'push'](() => {
+    			$$invalidate('inputNode', inputNode = $$value);
+    		});
+    	}
+
     	$$self.$set = $$props => {
     		if ('onSubmit' in $$props) $$invalidate('onSubmit', onSubmit = $$props.onSubmit);
+    		if ('onNavigate' in $$props) $$invalidate('onNavigate', onNavigate = $$props.onNavigate);
+    		if ('isFocused' in $$props) $$invalidate('isFocused', isFocused = $$props.isFocused);
     	};
 
     	$$self.$capture_state = () => {
-    		return { onSubmit, inputValue };
+    		return { onSubmit, onNavigate, isFocused, inputValue, inputNode };
     	};
 
     	$$self.$inject_state = $$props => {
     		if ('onSubmit' in $$props) $$invalidate('onSubmit', onSubmit = $$props.onSubmit);
+    		if ('onNavigate' in $$props) $$invalidate('onNavigate', onNavigate = $$props.onNavigate);
+    		if ('isFocused' in $$props) $$invalidate('isFocused', isFocused = $$props.isFocused);
     		if ('inputValue' in $$props) $$invalidate('inputValue', inputValue = $$props.inputValue);
+    		if ('inputNode' in $$props) $$invalidate('inputNode', inputNode = $$props.inputNode);
+    	};
+
+    	$$self.$$.update = ($$dirty = { isFocused: 1, inputNode: 1 }) => {
+    		if ($$dirty.isFocused || $$dirty.inputNode) { isFocused && inputNode && inputNode.focus(); }
     	};
 
     	return {
     		onSubmit,
+    		onNavigate,
+    		isFocused,
     		inputValue,
+    		inputNode,
     		handleInput,
-    		handleSubmit
+    		handleSubmit,
+    		keydownHandler,
+    		input_binding
     	};
     }
 
     class NumericInput extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance, create_fragment$1, safe_not_equal, ["onSubmit"]);
+    		init(this, options, instance, create_fragment$1, safe_not_equal, ["onSubmit", "onNavigate", "isFocused"]);
     		dispatch_dev("SvelteRegisterComponent", { component: this, tagName: "NumericInput", options, id: create_fragment$1.name });
 
     		const { ctx } = this.$$;
     		const props = options.props || {};
     		if (ctx.onSubmit === undefined && !('onSubmit' in props)) {
     			console_1.warn("<NumericInput> was created without expected prop 'onSubmit'");
+    		}
+    		if (ctx.onNavigate === undefined && !('onNavigate' in props)) {
+    			console_1.warn("<NumericInput> was created without expected prop 'onNavigate'");
+    		}
+    		if (ctx.isFocused === undefined && !('isFocused' in props)) {
+    			console_1.warn("<NumericInput> was created without expected prop 'isFocused'");
     		}
     	}
 
@@ -634,6 +669,22 @@ var app = (function () {
     	}
 
     	set onSubmit(value) {
+    		throw new Error("<NumericInput>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get onNavigate() {
+    		throw new Error("<NumericInput>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set onNavigate(value) {
+    		throw new Error("<NumericInput>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get isFocused() {
+    		throw new Error("<NumericInput>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set isFocused(value) {
     		throw new Error("<NumericInput>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
     }
@@ -682,7 +733,7 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (78:6) {:else}
+    // (97:6) {:else}
     function create_else_block(ctx) {
     	var current;
 
@@ -691,7 +742,11 @@ var app = (function () {
     	}
 
     	var numericinput = new NumericInput({
-    		props: { onSubmit: func },
+    		props: {
+    		isFocused: parseIndex(ctx.question.index) == ctx.focusedInputIndex,
+    		onSubmit: func,
+    		onNavigate: ctx.handleNavigate
+    	},
     		$$inline: true
     	});
 
@@ -707,6 +762,9 @@ var app = (function () {
 
     		p: function update(changed, new_ctx) {
     			ctx = new_ctx;
+    			var numericinput_changes = {};
+    			if (changed.focusedInputIndex) numericinput_changes.isFocused = parseIndex(ctx.question.index) == ctx.focusedInputIndex;
+    			numericinput.$set(numericinput_changes);
     		},
 
     		i: function intro(local) {
@@ -725,11 +783,11 @@ var app = (function () {
     			destroy_component(numericinput, detaching);
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_else_block.name, type: "else", source: "(78:6) {:else}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_else_block.name, type: "else", source: "(97:6) {:else}", ctx });
     	return block;
     }
 
-    // (76:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}
+    // (95:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}
     function create_if_block(ctx) {
     	var div, t_value = ctx.question.correctAnswers[0] + "", t;
 
@@ -738,7 +796,7 @@ var app = (function () {
     			div = element("div");
     			t = text(t_value);
     			attr_dev(div, "class", "" + 'visible' + " svelte-bzjebj");
-    			add_location(div, file$2, 76, 8, 1783);
+    			add_location(div, file$2, 95, 8, 2248);
     		},
 
     		m: function mount(target, anchor) {
@@ -756,11 +814,11 @@ var app = (function () {
     			}
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_if_block.name, type: "if", source: "(76:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_if_block.name, type: "if", source: "(95:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}", ctx });
     	return block;
     }
 
-    // (71:2) {#each quizQuestions as question (question.index)}
+    // (90:2) {#each quizQuestions as question (question.index)}
     function create_each_block(key_1, ctx) {
     	var div, current_block_type_index, if_block, t, current;
 
@@ -791,7 +849,7 @@ var app = (function () {
     			attr_dev(div, "class", "" + 'cell' + " svelte-bzjebj");
     			toggle_class(div, "correct", ctx.correctAnswers.includes(ctx.question.index));
     			toggle_class(div, "incorrect", ctx.incorrectAnswers.includes(ctx.question.index));
-    			add_location(div, file$2, 71, 4, 1536);
+    			add_location(div, file$2, 90, 4, 2001);
     			this.first = div;
     		},
 
@@ -833,7 +891,7 @@ var app = (function () {
     			if_blocks[current_block_type_index].d();
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_each_block.name, type: "each", source: "(71:2) {#each quizQuestions as question (question.index)}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_each_block.name, type: "each", source: "(90:2) {#each quizQuestions as question (question.index)}", ctx });
     	return block;
     }
 
@@ -858,7 +916,7 @@ var app = (function () {
     				each_blocks[i].c();
     			}
     			attr_dev(div, "class", "table-wrapper svelte-bzjebj");
-    			add_location(div, file$2, 69, 0, 1451);
+    			add_location(div, file$2, 88, 0, 1916);
     		},
 
     		l: function claim(nodes) {
@@ -916,7 +974,7 @@ var app = (function () {
 
     function parseIndex(string) {
       const numberPattern = /\d+/g;
-      return string.match(numberPattern)[0];
+      return parseInt(string.match(numberPattern)[0]);
     }
 
     function instance$1($$self, $$props, $$invalidate) {
@@ -946,6 +1004,25 @@ var app = (function () {
         multiplicationTableQuiz.submitAnswer(answer, index);
       }
 
+      let focusedInputIndex = 13;
+
+      function handleNavigate(key) {
+        switch (key) {
+          case "ArrowUp":
+            $$invalidate('focusedInputIndex', focusedInputIndex = focusedInputIndex - 10);
+            break;
+          case "ArrowLeft":
+            $$invalidate('focusedInputIndex', focusedInputIndex = focusedInputIndex - 1);
+            break;
+          case "ArrowRight":
+            $$invalidate('focusedInputIndex', focusedInputIndex = focusedInputIndex + 1);
+            break;
+          case "ArrowDown":
+            $$invalidate('focusedInputIndex', focusedInputIndex = focusedInputIndex + 10);
+            break;
+        }
+      }
+
     	const func = ({ question }, answer) => onSubmitAnswer(answer, question.index);
 
     	$$self.$capture_state = () => {
@@ -955,6 +1032,7 @@ var app = (function () {
     	$$self.$inject_state = $$props => {
     		if ('correctAnswers' in $$props) $$invalidate('correctAnswers', correctAnswers = $$props.correctAnswers);
     		if ('incorrectAnswers' in $$props) $$invalidate('incorrectAnswers', incorrectAnswers = $$props.incorrectAnswers);
+    		if ('focusedInputIndex' in $$props) $$invalidate('focusedInputIndex', focusedInputIndex = $$props.focusedInputIndex);
     	};
 
     	return {
@@ -962,6 +1040,8 @@ var app = (function () {
     		incorrectAnswers,
     		quizQuestions,
     		onSubmitAnswer,
+    		focusedInputIndex,
+    		handleNavigate,
     		func
     	};
     }
