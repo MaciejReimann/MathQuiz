@@ -56,6 +56,11 @@ var app = (function () {
     function children(element) {
         return Array.from(element.childNodes);
     }
+    function set_input_value(input, value) {
+        if (value != null || input.value) {
+            input.value = value;
+        }
+    }
     function toggle_class(element, name, toggle) {
         element.classList[toggle ? 'add' : 'remove'](name);
     }
@@ -387,10 +392,6 @@ var app = (function () {
         else
             dispatch_dev("SvelteDOMSetAttribute", { node, attribute, value });
     }
-    function prop_dev(node, property, value) {
-        node[property] = value;
-        dispatch_dev("SvelteDOMSetProperty", { node, property, value });
-    }
     class SvelteComponentDev extends SvelteComponent {
         constructor(options) {
             if (!options || (!options.target && !options.$$inline)) {
@@ -538,11 +539,13 @@ var app = (function () {
     		c: function create() {
     			input = element("input");
     			attr_dev(input, "type", "text");
-    			input.value = ctx.inputValue;
-    			attr_dev(input, "class", "svelte-171n0cz");
-    			add_location(input, file$1, 35, 0, 559);
+    			attr_dev(input, "maxlength", "2");
+    			attr_dev(input, "class", "svelte-1yoboy5");
+    			toggle_class(input, "invalid", ctx.isInvalid);
+    			add_location(input, file$1, 39, 0, 659);
 
     			dispose = [
+    				listen_dev(input, "input", ctx.input_input_handler),
     				listen_dev(input, "input", ctx.handleInput),
     				listen_dev(input, "change", ctx.handleSubmit),
     				listen_dev(input, "keydown", ctx.keydownHandler)
@@ -555,12 +558,17 @@ var app = (function () {
 
     		m: function mount(target, anchor) {
     			insert_dev(target, input, anchor);
+
+    			set_input_value(input, ctx.inputValue);
+
     			ctx.input_binding(input);
     		},
 
     		p: function update(changed, ctx) {
-    			if (changed.inputValue) {
-    				prop_dev(input, "value", ctx.inputValue);
+    			if (changed.inputValue && (input.value !== ctx.inputValue)) set_input_value(input, ctx.inputValue);
+
+    			if (changed.isInvalid) {
+    				toggle_class(input, "invalid", ctx.isInvalid);
     			}
     		},
 
@@ -583,13 +591,9 @@ var app = (function () {
     function instance($$self, $$props, $$invalidate) {
     	let { onSubmit, onNavigate, isFocused } = $$props;
 
-      let inputValue = "";
       let inputNode;
-
-      function handleInput(e) {
-        $$invalidate('inputValue', inputValue = e.target.value);
-        console.log("validating: ", inputValue);
-      }
+      let inputValue = "";
+      let isInvalid = false;
 
       function handleSubmit(e) {
         onSubmit(e.target.value);
@@ -599,10 +603,19 @@ var app = (function () {
         onNavigate(e.key);
       }
 
+      function handleInput() {
+        isInvalid && console.log("It's invalid!!!");
+      }
+
     	const writable_props = ['onSubmit', 'onNavigate', 'isFocused'];
     	Object.keys($$props).forEach(key => {
     		if (!writable_props.includes(key) && !key.startsWith('$$')) console_1.warn(`<NumericInput> was created with unknown prop '${key}'`);
     	});
+
+    	function input_input_handler() {
+    		inputValue = this.value;
+    		$$invalidate('inputValue', inputValue);
+    	}
 
     	function input_binding($$value) {
     		binding_callbacks[$$value ? 'unshift' : 'push'](() => {
@@ -617,30 +630,34 @@ var app = (function () {
     	};
 
     	$$self.$capture_state = () => {
-    		return { onSubmit, onNavigate, isFocused, inputValue, inputNode };
+    		return { onSubmit, onNavigate, isFocused, inputNode, inputValue, isInvalid };
     	};
 
     	$$self.$inject_state = $$props => {
     		if ('onSubmit' in $$props) $$invalidate('onSubmit', onSubmit = $$props.onSubmit);
     		if ('onNavigate' in $$props) $$invalidate('onNavigate', onNavigate = $$props.onNavigate);
     		if ('isFocused' in $$props) $$invalidate('isFocused', isFocused = $$props.isFocused);
-    		if ('inputValue' in $$props) $$invalidate('inputValue', inputValue = $$props.inputValue);
     		if ('inputNode' in $$props) $$invalidate('inputNode', inputNode = $$props.inputNode);
+    		if ('inputValue' in $$props) $$invalidate('inputValue', inputValue = $$props.inputValue);
+    		if ('isInvalid' in $$props) $$invalidate('isInvalid', isInvalid = $$props.isInvalid);
     	};
 
-    	$$self.$$.update = ($$dirty = { isFocused: 1, inputNode: 1 }) => {
+    	$$self.$$.update = ($$dirty = { isFocused: 1, inputNode: 1, inputValue: 1 }) => {
     		if ($$dirty.isFocused || $$dirty.inputNode) { isFocused && inputNode && inputNode.focus(); }
+    		if ($$dirty.inputValue) { $$invalidate('isInvalid', isInvalid = inputValue && isNaN(parseInt(inputValue))); }
     	};
 
     	return {
     		onSubmit,
     		onNavigate,
     		isFocused,
-    		inputValue,
     		inputNode,
-    		handleInput,
+    		inputValue,
+    		isInvalid,
     		handleSubmit,
     		keydownHandler,
+    		handleInput,
+    		input_input_handler,
     		input_binding
     	};
     }

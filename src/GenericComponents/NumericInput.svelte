@@ -3,15 +3,12 @@
   export let onNavigate;
   export let isFocused;
 
-  let inputValue = "";
   let inputNode;
+  let inputValue = "";
+  let isInvalid = false;
 
   $: isFocused && inputNode && inputNode.focus();
-
-  function handleInput(e) {
-    inputValue = e.target.value;
-    console.log("validating: ", inputValue);
-  }
+  $: isInvalid = inputValue && isNaN(parseInt(inputValue));
 
   function handleSubmit(e) {
     onSubmit(e.target.value);
@@ -19,6 +16,10 @@
 
   function keydownHandler(e) {
     onNavigate(e.key);
+  }
+
+  function handleInput() {
+    isInvalid && console.log("It's invalid!!!");
   }
 </script>
 
@@ -31,12 +32,17 @@
     margin: 0;
     color: blue;
   }
+  .invalid {
+    background-color: pink;
+  }
 </style>
 
 <input
   type="text"
+  maxlength="2"
+  class:invalid={isInvalid}
   bind:this={inputNode}
-  value={inputValue}
+  bind:value={inputValue}
   on:input={handleInput}
   on:change={handleSubmit}
   on:keydown={keydownHandler} />
