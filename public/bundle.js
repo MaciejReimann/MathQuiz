@@ -542,7 +542,7 @@ var app = (function () {
     			attr_dev(input, "maxlength", "2");
     			attr_dev(input, "class", "svelte-1yoboy5");
     			toggle_class(input, "invalid", ctx.isInvalid);
-    			add_location(input, file$1, 39, 0, 659);
+    			add_location(input, file$1, 39, 0, 673);
 
     			dispose = [
     				listen_dev(input, "input", ctx.input_input_handler),
@@ -600,7 +600,7 @@ var app = (function () {
       }
 
       function keydownHandler(e) {
-        onNavigate(e.key);
+        !isInvalid && onNavigate(e.key);
       }
 
       function handleInput() {
@@ -750,7 +750,7 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (97:6) {:else}
+    // (156:6) {:else}
     function create_else_block(ctx) {
     	var current;
 
@@ -800,11 +800,11 @@ var app = (function () {
     			destroy_component(numericinput, detaching);
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_else_block.name, type: "else", source: "(97:6) {:else}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_else_block.name, type: "else", source: "(156:6) {:else}", ctx });
     	return block;
     }
 
-    // (95:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}
+    // (154:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}
     function create_if_block(ctx) {
     	var div, t_value = ctx.question.correctAnswers[0] + "", t;
 
@@ -813,7 +813,7 @@ var app = (function () {
     			div = element("div");
     			t = text(t_value);
     			attr_dev(div, "class", "" + 'visible' + " svelte-bzjebj");
-    			add_location(div, file$2, 95, 8, 2248);
+    			add_location(div, file$2, 154, 8, 3738);
     		},
 
     		m: function mount(target, anchor) {
@@ -831,11 +831,11 @@ var app = (function () {
     			}
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_if_block.name, type: "if", source: "(95:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_if_block.name, type: "if", source: "(154:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}", ctx });
     	return block;
     }
 
-    // (90:2) {#each quizQuestions as question (question.index)}
+    // (149:2) {#each quizQuestions as question (question.index)}
     function create_each_block(key_1, ctx) {
     	var div, current_block_type_index, if_block, t, current;
 
@@ -864,9 +864,9 @@ var app = (function () {
     			if_block.c();
     			t = space();
     			attr_dev(div, "class", "" + 'cell' + " svelte-bzjebj");
-    			toggle_class(div, "correct", ctx.correctAnswers.includes(ctx.question.index));
-    			toggle_class(div, "incorrect", ctx.incorrectAnswers.includes(ctx.question.index));
-    			add_location(div, file$2, 90, 4, 2001);
+    			toggle_class(div, "correct", ctx.fieldsAnsweredCorrectly.includes(ctx.question.index));
+    			toggle_class(div, "incorrect", ctx.fieldsAnsweredInorrectly.includes(ctx.question.index));
+    			add_location(div, file$2, 149, 4, 3474);
     			this.first = div;
     		},
 
@@ -880,12 +880,12 @@ var app = (function () {
     		p: function update(changed, ctx) {
     			if_block.p(changed, ctx);
 
-    			if ((changed.correctAnswers || changed.quizQuestions)) {
-    				toggle_class(div, "correct", ctx.correctAnswers.includes(ctx.question.index));
+    			if ((changed.fieldsAnsweredCorrectly || changed.quizQuestions)) {
+    				toggle_class(div, "correct", ctx.fieldsAnsweredCorrectly.includes(ctx.question.index));
     			}
 
-    			if ((changed.incorrectAnswers || changed.quizQuestions)) {
-    				toggle_class(div, "incorrect", ctx.incorrectAnswers.includes(ctx.question.index));
+    			if ((changed.fieldsAnsweredInorrectly || changed.quizQuestions)) {
+    				toggle_class(div, "incorrect", ctx.fieldsAnsweredInorrectly.includes(ctx.question.index));
     			}
     		},
 
@@ -908,7 +908,7 @@ var app = (function () {
     			if_blocks[current_block_type_index].d();
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_each_block.name, type: "each", source: "(90:2) {#each quizQuestions as question (question.index)}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_each_block.name, type: "each", source: "(149:2) {#each quizQuestions as question (question.index)}", ctx });
     	return block;
     }
 
@@ -933,7 +933,7 @@ var app = (function () {
     				each_blocks[i].c();
     			}
     			attr_dev(div, "class", "table-wrapper svelte-bzjebj");
-    			add_location(div, file$2, 88, 0, 1916);
+    			add_location(div, file$2, 147, 0, 3389);
     		},
 
     		l: function claim(nodes) {
@@ -989,6 +989,10 @@ var app = (function () {
     	return block;
     }
 
+    let firstSquareIndex = 11;
+
+    let lastSquareIndex = 100;
+
     function parseIndex(string) {
       const numberPattern = /\d+/g;
       return parseInt(string.match(numberPattern)[0]);
@@ -997,15 +1001,16 @@ var app = (function () {
     function instance$1($$self, $$props, $$invalidate) {
     	
 
-      let correctAnswers = [];
-      let incorrectAnswers = [];
+      let fieldsAnsweredCorrectly = [];
+      let fieldsAnsweredInorrectly = [];
 
       const submitHandlers = {
         onSubmitCorrectAnswer: id => {
-          $$invalidate('correctAnswers', correctAnswers = [...correctAnswers, id]);
+          $$invalidate('fieldsAnsweredCorrectly', fieldsAnsweredCorrectly = [...fieldsAnsweredCorrectly, id]);
+          goRight();
         },
         onSubmitIncorrectAnswer: id => {
-          $$invalidate('incorrectAnswers', incorrectAnswers = [incorrectAnswers, id]);
+          $$invalidate('fieldsAnsweredInorrectly', fieldsAnsweredInorrectly = [...fieldsAnsweredInorrectly, id]);
         }
       };
 
@@ -1021,22 +1026,72 @@ var app = (function () {
         multiplicationTableQuiz.submitAnswer(answer, index);
       }
 
-      let focusedInputIndex = 13;
+      let focusedInputIndex = firstSquareIndex;
 
       function handleNavigate(key) {
         switch (key) {
           case "ArrowUp":
-            $$invalidate('focusedInputIndex', focusedInputIndex = focusedInputIndex - 10);
+            goUp();
             break;
           case "ArrowLeft":
-            $$invalidate('focusedInputIndex', focusedInputIndex = focusedInputIndex - 1);
+            goLeft();
             break;
           case "ArrowRight":
-            $$invalidate('focusedInputIndex', focusedInputIndex = focusedInputIndex + 1);
+            goRight();
             break;
           case "ArrowDown":
-            $$invalidate('focusedInputIndex', focusedInputIndex = focusedInputIndex + 10);
+            goDown();
             break;
+        }
+      }
+
+      function goRight() {
+        if (focusedInputIndex + 1 === lastSquareIndex) {
+          $$invalidate('focusedInputIndex', focusedInputIndex = firstSquareIndex - 1);
+        }
+        if ((focusedInputIndex + 1) % 10 === 0) {
+          $$invalidate('focusedInputIndex', focusedInputIndex = focusedInputIndex + 2);
+        } else {
+          $$invalidate('focusedInputIndex', focusedInputIndex = focusedInputIndex + 1);
+        }
+        if (allAnsweredFieldsIndexes.includes(focusedInputIndex)) {
+          goRight();
+        }
+      }
+
+      function goLeft() {
+        if (focusedInputIndex === firstSquareIndex) {
+          $$invalidate('focusedInputIndex', focusedInputIndex = lastSquareIndex);
+        }
+        if (focusedInputIndex % 10 === 1) {
+          $$invalidate('focusedInputIndex', focusedInputIndex = focusedInputIndex - 2);
+        } else {
+          $$invalidate('focusedInputIndex', focusedInputIndex = focusedInputIndex - 1);
+        }
+        if (allAnsweredFieldsIndexes.includes(focusedInputIndex)) {
+          goLeft();
+        }
+      }
+
+      function goDown() {
+        if (focusedInputIndex + 10 > lastSquareIndex) {
+          $$invalidate('focusedInputIndex', focusedInputIndex = (focusedInputIndex % 10) + 10);
+        } else {
+          $$invalidate('focusedInputIndex', focusedInputIndex = focusedInputIndex + 10);
+        }
+        if (allAnsweredFieldsIndexes.includes(focusedInputIndex)) {
+          goDown();
+        }
+      }
+
+      function goUp() {
+        if (focusedInputIndex - 10 < firstSquareIndex) {
+          $$invalidate('focusedInputIndex', focusedInputIndex = lastSquareIndex + focusedInputIndex - 20);
+        } else {
+          $$invalidate('focusedInputIndex', focusedInputIndex = focusedInputIndex - 10);
+        }
+        if (allAnsweredFieldsIndexes.includes(focusedInputIndex)) {
+          goUp();
         }
       }
 
@@ -1047,14 +1102,26 @@ var app = (function () {
     	};
 
     	$$self.$inject_state = $$props => {
-    		if ('correctAnswers' in $$props) $$invalidate('correctAnswers', correctAnswers = $$props.correctAnswers);
-    		if ('incorrectAnswers' in $$props) $$invalidate('incorrectAnswers', incorrectAnswers = $$props.incorrectAnswers);
+    		if ('fieldsAnsweredCorrectly' in $$props) $$invalidate('fieldsAnsweredCorrectly', fieldsAnsweredCorrectly = $$props.fieldsAnsweredCorrectly);
+    		if ('fieldsAnsweredInorrectly' in $$props) $$invalidate('fieldsAnsweredInorrectly', fieldsAnsweredInorrectly = $$props.fieldsAnsweredInorrectly);
+    		if ('firstSquareIndex' in $$props) firstSquareIndex = $$props.firstSquareIndex;
+    		if ('lastSquareIndex' in $$props) lastSquareIndex = $$props.lastSquareIndex;
     		if ('focusedInputIndex' in $$props) $$invalidate('focusedInputIndex', focusedInputIndex = $$props.focusedInputIndex);
+    		if ('allAnsweredFieldsIndexes' in $$props) allAnsweredFieldsIndexes = $$props.allAnsweredFieldsIndexes;
+    	};
+
+    	let allAnsweredFieldsIndexes;
+
+    	$$self.$$.update = ($$dirty = { fieldsAnsweredCorrectly: 1, fieldsAnsweredInorrectly: 1 }) => {
+    		if ($$dirty.fieldsAnsweredCorrectly || $$dirty.fieldsAnsweredInorrectly) { allAnsweredFieldsIndexes = [
+            ...fieldsAnsweredCorrectly,
+            ...fieldsAnsweredInorrectly
+          ].map(parseIndex); }
     	};
 
     	return {
-    		correctAnswers,
-    		incorrectAnswers,
+    		fieldsAnsweredCorrectly,
+    		fieldsAnsweredInorrectly,
     		quizQuestions,
     		onSubmitAnswer,
     		focusedInputIndex,

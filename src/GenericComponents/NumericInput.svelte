@@ -15,7 +15,7 @@
   }
 
   function keydownHandler(e) {
-    onNavigate(e.key);
+    !isInvalid && onNavigate(e.key);
   }
 
   function handleInput() {

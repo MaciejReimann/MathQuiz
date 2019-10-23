@@ -3,15 +3,24 @@
   import NumericInput from "../GenericComponents/NumericInput.svelte";
   import MultiplicationTable from "../MultiplicationTable.ts";
 
-  let correctAnswers = [];
-  let incorrectAnswers = [];
+  let fieldsAnsweredCorrectly = [];
+  let fieldsAnsweredInorrectly = [];
+
+  $: allAnsweredFieldsIndexes = [
+    ...fieldsAnsweredCorrectly,
+    ...fieldsAnsweredInorrectly
+  ].map(parseIndex);
+
+  let firstSquareIndex = 11;
+  let lastSquareIndex = 100;
 
   const submitHandlers = {
     onSubmitCorrectAnswer: id => {
-      correctAnswers = [...correctAnswers, id];
+      fieldsAnsweredCorrectly = [...fieldsAnsweredCorrectly, id];
+      goRight();
     },
     onSubmitIncorrectAnswer: id => {
-      incorrectAnswers = [incorrectAnswers, id];
+      fieldsAnsweredInorrectly = [...fieldsAnsweredInorrectly, id];
     }
   };
 
@@ -27,22 +36,72 @@
     multiplicationTableQuiz.submitAnswer(answer, index);
   }
 
-  let focusedInputIndex = 13;
+  let focusedInputIndex = firstSquareIndex;
 
   function handleNavigate(key) {
     switch (key) {
       case "ArrowUp":
-        focusedInputIndex = focusedInputIndex - 10;
+        goUp();
         break;
       case "ArrowLeft":
-        focusedInputIndex = focusedInputIndex - 1;
+        goLeft();
         break;
       case "ArrowRight":
-        focusedInputIndex = focusedInputIndex + 1;
+        goRight();
         break;
       case "ArrowDown":
-        focusedInputIndex = focusedInputIndex + 10;
+        goDown();
         break;
+    }
+  }
+
+  function goRight() {
+    if (focusedInputIndex + 1 === lastSquareIndex) {
+      focusedInputIndex = firstSquareIndex - 1;
+    }
+    if ((focusedInputIndex + 1) % 10 === 0) {
+      focusedInputIndex = focusedInputIndex + 2;
+    } else {
+      focusedInputIndex = focusedInputIndex + 1;
+    }
+    if (allAnsweredFieldsIndexes.includes(focusedInputIndex)) {
+      goRight();
+    }
+  }
+
+  function goLeft() {
+    if (focusedInputIndex === firstSquareIndex) {
+      focusedInputIndex = lastSquareIndex;
+    }
+    if (focusedInputIndex % 10 === 1) {
+      focusedInputIndex = focusedInputIndex - 2;
+    } else {
+      focusedInputIndex = focusedInputIndex - 1;
+    }
+    if (allAnsweredFieldsIndexes.includes(focusedInputIndex)) {
+      goLeft();
+    }
+  }
+
+  function goDown() {
+    if (focusedInputIndex + 10 > lastSquareIndex) {
+      focusedInputIndex = (focusedInputIndex % 10) + 10;
+    } else {
+      focusedInputIndex = focusedInputIndex + 10;
+    }
+    if (allAnsweredFieldsIndexes.includes(focusedInputIndex)) {
+      goDown();
+    }
+  }
+
+  function goUp() {
+    if (focusedInputIndex - 10 < firstSquareIndex) {
+      focusedInputIndex = lastSquareIndex + focusedInputIndex - 20;
+    } else {
+      focusedInputIndex = focusedInputIndex - 10;
+    }
+    if (allAnsweredFieldsIndexes.includes(focusedInputIndex)) {
+      goUp();
     }
   }
 
@@ -90,8 +149,8 @@
   {#each quizQuestions as question (question.index)}
     <div
       class={'cell'}
-      class:correct={correctAnswers.includes(question.index)}
-      class:incorrect={incorrectAnswers.includes(question.index)}>
+      class:correct={fieldsAnsweredCorrectly.includes(question.index)}
+      class:incorrect={fieldsAnsweredInorrectly.includes(question.index)}>
       {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}
         <div class={'visible'}>{question.correctAnswers[0]}</div>
       {:else}
