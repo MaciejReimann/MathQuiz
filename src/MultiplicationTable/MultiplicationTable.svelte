@@ -3,7 +3,12 @@
   import NumericInput from "../GenericComponents/NumericInput.svelte";
   import MultiplicationTable from "../MultiplicationTable";
   import { NavigationHandler } from "./NavigationHandler";
-  import { parseIndex, getXCoord, getYCoord } from "./helpers";
+  import {
+    parseIndex,
+    getXCoord,
+    getYCoord,
+    checkIfRowFieldShouldBeHighlighted
+  } from "./helpers";
 
   let currentFieldIndex;
   let firstFieldIndex = 11;
@@ -36,21 +41,12 @@
     }
   });
 
-  // $: console.log("focusedFieldIndex: ", focusedFieldIndex);
-  // // $: console.log("highlightedColumn: ", highlightedColumn * 10);
-  // // $: console.log("highlightedRow: ", highlightedRow);
-
-  // $: console.log("getXCoord :", getXCoord(focusedFieldIndex));
-  // $: console.log("getYCoord :", getYCoord(focusedFieldIndex));
-
   $: allAnsweredFieldsIndexes = [
     ...fieldsAnsweredCorrectly,
     ...fieldsAnsweredInorrectly
   ].map(parseIndex);
 
   $: focusedFieldIndex;
-
-  $: highlightedFieldsRow = Math.floor(focusedFieldIndex / 10);
 </script>
 
 <style>
@@ -103,7 +99,7 @@
       class={'cell'}
       class:correct={fieldsAnsweredCorrectly.includes(question.index)}
       class:incorrect={fieldsAnsweredInorrectly.includes(question.index)}
-      class:highlightedRow={getYCoord(parseIndex(question.index)) === getYCoord(focusedFieldIndex) && getXCoord(parseIndex(question.index)) <= getXCoord(focusedFieldIndex)}>
+      class:highlightedRow={checkIfRowFieldShouldBeHighlighted(question.index, focusedFieldIndex)}>
 
       {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}
         <div class={'visible'}>{question.correctAnswers[0]}</div>
@@ -119,8 +115,3 @@
     </div>
   {/each}
 </div>
-
-<!-- class:highlightedColumn={parseIndex(question.index) === getXCoord(focusedFieldIndex)} -->
-
-<!-- class:highlightedColumn={parseIndex(question.index) % 10 === getXCoord(focusedFieldIndex) && parseIndex(question.index) < highlightedRow * 10} -->
-<!-- class:highlightedRow={Math.floor(parseIndex(question.index) / 10) === highlightedRow && parseIndex(question.index) < highlightedColumn % 10} -->

@@ -9,3 +9,13 @@ export function getXCoord(index) {
 export function getYCoord(index) {
   return Math.floor(index / 10)
 }
+
+export function checkIfRowFieldShouldBeHighlighted(
+  questionIndex,
+  focusedField
+) {
+  return (
+    getYCoord(parseIndex(questionIndex)) === getYCoord(focusedField) &&
+    getXCoord(parseIndex(questionIndex)) <= getXCoord(focusedField)
+  )
+}
