@@ -11,28 +11,16 @@
     checkIfColumnFieldShouldBeHighlighted
   } from "./helpers";
 
-  let currentFieldIndex;
   let firstFieldIndex = 11;
   let lastFieldIndex = 100;
-  let focusedFieldIndex = firstFieldIndex;
   let fieldsAnsweredCorrectly = [];
   let fieldsAnsweredInorrectly = [];
 
-  const multiplicationTableQuiz = new Quiz(
-    new MultiplicationTable(10).getQAPair(),
-    "mt",
-    {
-      onSubmitAnswer: () => {
-        goRight();
-      },
-      onSubmitCorrectAnswer: id => {
-        fieldsAnsweredCorrectly = [...fieldsAnsweredCorrectly, id];
-      },
-      onSubmitIncorrectAnswer: id => {
-        fieldsAnsweredInorrectly = [...fieldsAnsweredInorrectly, id];
-      }
-    }
-  );
+  $: focusedFieldIndex = firstFieldIndex;
+  $: allAnsweredFieldsIndexes = [
+    ...fieldsAnsweredCorrectly,
+    ...fieldsAnsweredInorrectly
+  ].map(parseIndex);
 
   const navigationHandler = new NavigationHandler({
     firstFieldIndex,
@@ -42,45 +30,64 @@
     }
   });
 
-  $: allAnsweredFieldsIndexes = [
-    ...fieldsAnsweredCorrectly,
-    ...fieldsAnsweredInorrectly
-  ].map(parseIndex);
-
-  $: focusedFieldIndex;
+  const multiplicationTableQuiz = new Quiz(
+    new MultiplicationTable(10).getQAPair(),
+    "mt",
+    {
+      onSubmitAnswer: () => {
+        navigationHandler.handleKey(allAnsweredFieldsIndexes)("ArrowRight");
+      },
+      onSubmitCorrectAnswer: id => {
+        fieldsAnsweredCorrectly = [...fieldsAnsweredCorrectly, id];
+      },
+      onSubmitIncorrectAnswer: id => {
+        fieldsAnsweredInorrectly = [...fieldsAnsweredInorrectly, id];
+      }
+    }
+  );
 </script>
 
 <style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
   .table-wrapper {
     padding: 2rem;
     display: grid;
-    grid-template-rows: repeat(10, 4rem);
-    grid-template-columns: repeat(10, 4rem);
+    grid-template-rows: repeat(10, 3rem);
+    grid-template-columns: repeat(10, 3rem);
     column-gap: 8px;
     row-gap: 8px;
     border: 3px solid blue;
   }
   .cell {
-    border: 2px solid black;
+    border: 1px solid black;
+    border-radius: 2px;
     width: 100%;
     height: 100%;
+    font-size: 1.5rem;
   }
-  .visible {
+  .title {
     width: 100%;
     height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
+    border: 2px solid black;
   }
 
-  .highlightedColumn {
-    border-left: 4px solid black;
-    border-right: 4px solid black;
+  .highlighted-column {
+    box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.7);
   }
 
-  .highlightedRow {
-    border-top: 4px solid black;
-    border-bottom: 4px solid black;
+  .highlighted-row {
+    box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, 0.7);
+  }
+
+  .focused-field {
+    transform: scale(1.05);
   }
 
   .correct {
@@ -98,20 +105,20 @@
   {#each multiplicationTableQuiz.getQuestions() as question (question.index)}
     <div
       class={'cell'}
+      class:title={parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}
       class:correct={fieldsAnsweredCorrectly.includes(question.index)}
       class:incorrect={fieldsAnsweredInorrectly.includes(question.index)}
-      class:highlightedColumn={checkIfColumnFieldShouldBeHighlighted(question.index, focusedFieldIndex)}
-      class:highlightedRow={checkIfRowFieldShouldBeHighlighted(question.index, focusedFieldIndex)}>
+      class:highlighted-column={checkIfColumnFieldShouldBeHighlighted(question.index, focusedFieldIndex)}
+      class:highlighted-row={checkIfRowFieldShouldBeHighlighted(question.index, focusedFieldIndex)}
+      class:focused-field={parseIndex(question.index) === focusedFieldIndex}>
 
       {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}
-        <div class={'visible'}>{question.correctAnswers[0]}</div>
+        <div>{question.correctAnswers[0]}</div>
       {:else}
-        <div>
-          <NumericInput
-            isFocused={parseIndex(question.index) == focusedFieldIndex}
-            onSubmit={answer => multiplicationTableQuiz.submitAnswer(answer, question.index)}
-            onNavigate={key => navigationHandler.handleKey(allAnsweredFieldsIndexes)(key)} />
-        </div>
+        <NumericInput
+          isFocused={parseIndex(question.index) == focusedFieldIndex}
+          onSubmit={answer => multiplicationTableQuiz.submitAnswer(answer, question.index)}
+          onNavigate={key => navigationHandler.handleKey(allAnsweredFieldsIndexes)(key)} />
       {/if}
 
     </div>

@@ -35,6 +35,10 @@
   .invalid {
     background-color: pink;
   }
+
+  input:focus {
+    outline: none;
+  }
 </style>
 
 <input

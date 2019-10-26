@@ -29,7 +29,6 @@ export default class Quiz {
       submittedAnswers: [],
       correctAnswerCount: 0
     }))
-    console.log(this.quizQuestions)
     this.quizID = quizID
     this.listeners = listeners
   }
