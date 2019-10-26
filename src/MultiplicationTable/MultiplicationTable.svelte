@@ -1,124 +1,52 @@
 <script>
+  import { writable } from "svelte/store";
   import Quiz from "../Quiz.ts";
   import NumericInput from "../GenericComponents/NumericInput.svelte";
-  import MultiplicationTable from "../MultiplicationTable.ts";
+  import MultiplicationTable from "../MultiplicationTable";
+  import { NavigationHandler } from "./NavigationHandler";
 
+  let firstFieldIndex = 11;
+  let lastFieldIndex = 100;
+  let focusedFieldIndex = firstFieldIndex;
   let fieldsAnsweredCorrectly = [];
   let fieldsAnsweredInorrectly = [];
-
-  $: allAnsweredFieldsIndexes = [
-    ...fieldsAnsweredCorrectly,
-    ...fieldsAnsweredInorrectly
-  ].map(parseIndex);
-
-  let firstSquareIndex = 11;
-  let lastSquareIndex = 100;
-
-  const submitListeners = {
-    onSubmitAnswer: () => {
-      goRight();
-    },
-    onSubmitCorrectAnswer: id => {
-      fieldsAnsweredCorrectly = [...fieldsAnsweredCorrectly, id];
-    },
-    onSubmitIncorrectAnswer: id => {
-      fieldsAnsweredInorrectly = [...fieldsAnsweredInorrectly, id];
-    }
-  };
 
   const multiplicationTableQuiz = new Quiz(
     new MultiplicationTable(10).getQAPair(),
     "mt",
-    submitListeners
+    {
+      onSubmitAnswer: () => {
+        goRight();
+      },
+      onSubmitCorrectAnswer: id => {
+        fieldsAnsweredCorrectly = [...fieldsAnsweredCorrectly, id];
+      },
+      onSubmitIncorrectAnswer: id => {
+        fieldsAnsweredInorrectly = [...fieldsAnsweredInorrectly, id];
+      }
+    }
   );
 
-  const quizQuestions = multiplicationTableQuiz.getQuestions();
+  const currentIndexChangeListener = writable(firstFieldIndex);
+  currentIndexChangeListener.subscribe(val => {
+    focusedFieldIndex = val;
+  });
 
-  function onSubmitAnswer(answer, index) {
-    multiplicationTableQuiz.submitAnswer(answer, index);
-  }
+  const navigationHandler = new NavigationHandler({
+    firstFieldIndex,
+    lastFieldIndex,
+    listener: currentIndexChangeListener
+  });
 
-  $: focusedInputIndex = firstSquareIndex;
-  // $: focusedInputIndexXCoord = focusedInputIndex % 10;
-  // $: highlightedRow = Math.floor(focusedInputIndex / 10);
+  // $: console.log("focusedFieldIndex: ", focusedFieldIndex);
+  // // $: console.log("highlightedColumn: ", highlightedColumn * 10);
+  // // $: console.log("highlightedRow: ", highlightedRow);
 
-  $: console.log("focusedInputIndex: ", focusedInputIndex);
-  // $: console.log("highlightedColumn: ", highlightedColumn * 10);
-  // $: console.log("highlightedRow: ", highlightedRow);
-
-  $: console.log("getXCoord :", getXCoord(focusedInputIndex));
-  $: console.log("getYCoord :", getYCoord(focusedInputIndex));
-
-  function handleNavigate(key) {
-    switch (key) {
-      case "ArrowUp":
-        goUp();
-        break;
-      case "ArrowLeft":
-        goLeft();
-        break;
-      case "ArrowRight":
-        goRight();
-        break;
-      case "ArrowDown":
-        goDown();
-        break;
-    }
-  }
-
-  function goRight() {
-    if (focusedInputIndex + 1 === lastSquareIndex) {
-      focusedInputIndex = firstSquareIndex - 1;
-    }
-    if ((focusedInputIndex + 1) % 10 === 0) {
-      focusedInputIndex = focusedInputIndex + 2;
-    } else {
-      focusedInputIndex = focusedInputIndex + 1;
-    }
-    if (allAnsweredFieldsIndexes.includes(focusedInputIndex)) {
-      goRight();
-    }
-  }
-
-  function goLeft() {
-    if (focusedInputIndex === firstSquareIndex) {
-      focusedInputIndex = lastSquareIndex;
-    }
-    if (focusedInputIndex % 10 === 1) {
-      focusedInputIndex = focusedInputIndex - 2;
-    } else {
-      focusedInputIndex = focusedInputIndex - 1;
-    }
-    if (allAnsweredFieldsIndexes.includes(focusedInputIndex)) {
-      goLeft();
-    }
-  }
-
-  function goDown() {
-    if (focusedInputIndex + 10 > lastSquareIndex) {
-      focusedInputIndex = (focusedInputIndex % 10) + 10;
-    } else {
-      focusedInputIndex = focusedInputIndex + 10;
-    }
-    if (allAnsweredFieldsIndexes.includes(focusedInputIndex)) {
-      goDown();
-    }
-  }
-
-  function goUp() {
-    if (focusedInputIndex - 10 < firstSquareIndex) {
-      focusedInputIndex = lastSquareIndex + focusedInputIndex - 20;
-    } else {
-      focusedInputIndex = focusedInputIndex - 10;
-    }
-    if (allAnsweredFieldsIndexes.includes(focusedInputIndex)) {
-      goUp();
-    }
-  }
+  // $: console.log("getXCoord :", getXCoord(focusedFieldIndex));
+  // $: console.log("getYCoord :", getYCoord(focusedFieldIndex));
 
   function parseIndex(string) {
-    const numberPattern = /\d+/g;
-    return parseInt(string.match(numberPattern)[0]);
+    return parseInt(string.match(/\d+/g)[0]);
   }
 
   function getXCoord(index) {
@@ -128,6 +56,15 @@
   function getYCoord(index) {
     return Math.floor(index / 10);
   }
+
+  $: allAnsweredFieldsIndexes = [
+    ...fieldsAnsweredCorrectly,
+    ...fieldsAnsweredInorrectly
+  ].map(parseIndex);
+
+  $: focusedFieldIndex;
+
+  $: highlightedFields = Math.floor(focusedFieldIndex / 10);
 </script>
 
 <style>
@@ -175,21 +112,21 @@
 </style>
 
 <div class="table-wrapper">
-  {#each quizQuestions as question (question.index)}
+  {#each multiplicationTableQuiz.getQuestions() as question (question.index)}
     <div
       class={'cell'}
       class:correct={fieldsAnsweredCorrectly.includes(question.index)}
       class:incorrect={fieldsAnsweredInorrectly.includes(question.index)}
-      class:highlightedRow={getYCoord(parseIndex(question.index)) === getYCoord(focusedInputIndex) && getXCoord(parseIndex(question.index)) <= getXCoord(focusedInputIndex)}>
+      class:highlightedRow={getYCoord(parseIndex(question.index)) === getYCoord(focusedFieldIndex) && getXCoord(parseIndex(question.index)) <= getXCoord(focusedFieldIndex)}>
 
       {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}
         <div class={'visible'}>{question.correctAnswers[0]}</div>
       {:else}
         <div>
           <NumericInput
-            isFocused={parseIndex(question.index) == focusedInputIndex}
-            onSubmit={answer => onSubmitAnswer(answer, question.index)}
-            onNavigate={handleNavigate} />
+            isFocused={parseIndex(question.index) == focusedFieldIndex}
+            onSubmit={answer => multiplicationTableQuiz.submitAnswer(answer, question.index)}
+            onNavigate={key => navigationHandler.handleKey(allAnsweredFieldsIndexes)(key)} />
         </div>
       {/if}
 
@@ -197,7 +134,7 @@
   {/each}
 </div>
 
-<!-- class:highlightedColumn={parseIndex(question.index) === getXCoord(focusedInputIndex)} -->
+<!-- class:highlightedColumn={parseIndex(question.index) === getXCoord(focusedFieldIndex)} -->
 
-<!-- class:highlightedColumn={parseIndex(question.index) % 10 === getXCoord(focusedInputIndex) && parseIndex(question.index) < highlightedRow * 10} -->
+<!-- class:highlightedColumn={parseIndex(question.index) % 10 === getXCoord(focusedFieldIndex) && parseIndex(question.index) < highlightedRow * 10} -->
 <!-- class:highlightedRow={Math.floor(parseIndex(question.index) / 10) === highlightedRow && parseIndex(question.index) < highlightedColumn % 10} -->

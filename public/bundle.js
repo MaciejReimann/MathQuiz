@@ -455,6 +455,58 @@ var app = (function () {
     	}
     }
 
+    const subscriber_queue = [];
+    /**
+     * Create a `Writable` store that allows both updating and reading by subscription.
+     * @param {*=}value initial value
+     * @param {StartStopNotifier=}start start and stop notifications for subscriptions
+     */
+    function writable(value, start = noop) {
+        let stop;
+        const subscribers = [];
+        function set(new_value) {
+            if (safe_not_equal(value, new_value)) {
+                value = new_value;
+                if (stop) { // store is ready
+                    const run_queue = !subscriber_queue.length;
+                    for (let i = 0; i < subscribers.length; i += 1) {
+                        const s = subscribers[i];
+                        s[1]();
+                        subscriber_queue.push(s, value);
+                    }
+                    if (run_queue) {
+                        for (let i = 0; i < subscriber_queue.length; i += 2) {
+                            subscriber_queue[i][0](subscriber_queue[i + 1]);
+                        }
+                        subscriber_queue.length = 0;
+                    }
+                }
+            }
+        }
+        function update(fn) {
+            set(fn(value));
+        }
+        function subscribe(run, invalidate = noop) {
+            const subscriber = [run, invalidate];
+            subscribers.push(subscriber);
+            if (subscribers.length === 1) {
+                stop = start(set) || noop;
+            }
+            run(value);
+            return () => {
+                const index = subscribers.indexOf(subscriber);
+                if (index !== -1) {
+                    subscribers.splice(index, 1);
+                }
+                if (subscribers.length === 0) {
+                    stop();
+                    stop = null;
+                }
+            };
+        }
+        return { set, update, subscribe };
+    }
+
     /*! *****************************************************************************
     Copyright (c) Microsoft Corporation. All rights reserved.
     Licensed under the Apache License, Version 2.0 (the "License"); you may not use
@@ -741,6 +793,95 @@ var app = (function () {
     }());
     //# sourceMappingURL=MultiplicationTable.js.map
 
+    var NavigationHandler = /** @class */ (function () {
+        function NavigationHandler(config) {
+            this.lastFieldIndex = null;
+            this.firstFieldIndex = null;
+            this.currentFieldIndex = null;
+            this.fieldsToSkip = [];
+            this.firstFieldIndex = config.firstFieldIndex;
+            this.lastFieldIndex = config.lastFieldIndex;
+            this.currentFieldIndex = config.firstFieldIndex;
+            this.listener = config.listener;
+        }
+        NavigationHandler.prototype.goRight = function () {
+            if (this.currentFieldIndex + 1 === this.lastFieldIndex) {
+                this.currentFieldIndex = this.firstFieldIndex - 1;
+            }
+            if ((this.currentFieldIndex + 1) % 10 === 0) {
+                this.currentFieldIndex = this.currentFieldIndex + 2;
+            }
+            else {
+                this.currentFieldIndex = this.currentFieldIndex + 1;
+            }
+            if (this.fieldsToSkip.includes(this.currentFieldIndex)) {
+                this.goRight();
+            }
+        };
+        NavigationHandler.prototype.goLeft = function () {
+            if (this.currentFieldIndex === this.firstFieldIndex) {
+                this.currentFieldIndex = this.lastFieldIndex;
+            }
+            if (this.currentFieldIndex % 10 === 1) {
+                this.currentFieldIndex = this.currentFieldIndex - 2;
+            }
+            else {
+                this.currentFieldIndex = this.currentFieldIndex - 1;
+            }
+            if (this.fieldsToSkip.includes(this.currentFieldIndex)) {
+                this.goLeft();
+            }
+        };
+        NavigationHandler.prototype.goDown = function () {
+            if (this.currentFieldIndex + 10 > this.lastFieldIndex) {
+                this.currentFieldIndex = (this.currentFieldIndex % 10) + 10;
+            }
+            else {
+                this.currentFieldIndex = this.currentFieldIndex + 10;
+            }
+            if (this.fieldsToSkip.includes(this.currentFieldIndex)) {
+                this.goDown();
+            }
+        };
+        NavigationHandler.prototype.goUp = function () {
+            if (this.currentFieldIndex - 10 < this.firstFieldIndex) {
+                this.currentFieldIndex = this.lastFieldIndex + this.currentFieldIndex - 20;
+            }
+            else {
+                this.currentFieldIndex = this.currentFieldIndex - 10;
+            }
+            if (this.fieldsToSkip.includes(this.currentFieldIndex)) {
+                this.goUp();
+            }
+        };
+        NavigationHandler.prototype.handleKey = function (fieldsToSkip) {
+            var _this = this;
+            this.fieldsToSkip = fieldsToSkip;
+            return function (key) {
+                switch (key) {
+                    case "ArrowUp":
+                        _this.goUp();
+                        _this.listener.set(_this.currentFieldIndex);
+                        break;
+                    case "ArrowLeft":
+                        _this.goLeft();
+                        _this.listener.set(_this.currentFieldIndex);
+                        break;
+                    case "ArrowRight":
+                        _this.goRight();
+                        _this.listener.set(_this.currentFieldIndex);
+                        break;
+                    case "ArrowDown":
+                        _this.goDown();
+                        _this.listener.set(_this.currentFieldIndex);
+                        break;
+                }
+            };
+        };
+        return NavigationHandler;
+    }());
+    //# sourceMappingURL=NavigationHandler.js.map
+
     /* src/MultiplicationTable/MultiplicationTable.svelte generated by Svelte v3.12.1 */
 
     const file$2 = "src/MultiplicationTable/MultiplicationTable.svelte";
@@ -751,7 +892,7 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (187:6) {:else}
+    // (124:6) {:else}
     function create_else_block(ctx) {
     	var div, current;
 
@@ -761,9 +902,9 @@ var app = (function () {
 
     	var numericinput = new NumericInput({
     		props: {
-    		isFocused: parseIndex(ctx.question.index) == ctx.focusedInputIndex,
+    		isFocused: parseIndex(ctx.question.index) == ctx.focusedFieldIndex,
     		onSubmit: func,
-    		onNavigate: ctx.handleNavigate
+    		onNavigate: ctx.func_1
     	},
     		$$inline: true
     	});
@@ -772,7 +913,7 @@ var app = (function () {
     		c: function create() {
     			div = element("div");
     			numericinput.$$.fragment.c();
-    			add_location(div, file$2, 187, 8, 4779);
+    			add_location(div, file$2, 124, 8, 3303);
     		},
 
     		m: function mount(target, anchor) {
@@ -784,7 +925,8 @@ var app = (function () {
     		p: function update(changed, new_ctx) {
     			ctx = new_ctx;
     			var numericinput_changes = {};
-    			if (changed.focusedInputIndex) numericinput_changes.isFocused = parseIndex(ctx.question.index) == ctx.focusedInputIndex;
+    			if (changed.focusedFieldIndex) numericinput_changes.isFocused = parseIndex(ctx.question.index) == ctx.focusedFieldIndex;
+    			if (changed.allAnsweredFieldsIndexes) numericinput_changes.onNavigate = ctx.func_1;
     			numericinput.$set(numericinput_changes);
     		},
 
@@ -808,11 +950,11 @@ var app = (function () {
     			destroy_component(numericinput);
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_else_block.name, type: "else", source: "(187:6) {:else}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_else_block.name, type: "else", source: "(124:6) {:else}", ctx });
     	return block;
     }
 
-    // (185:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}
+    // (122:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}
     function create_if_block(ctx) {
     	var div, t_value = ctx.question.correctAnswers[0] + "", t;
 
@@ -821,7 +963,7 @@ var app = (function () {
     			div = element("div");
     			t = text(t_value);
     			attr_dev(div, "class", "" + 'visible' + " svelte-dbr8po");
-    			add_location(div, file$2, 185, 8, 4699);
+    			add_location(div, file$2, 122, 8, 3223);
     		},
 
     		m: function mount(target, anchor) {
@@ -839,11 +981,11 @@ var app = (function () {
     			}
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_if_block.name, type: "if", source: "(185:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_if_block.name, type: "if", source: "(122:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}", ctx });
     	return block;
     }
 
-    // (178:2) {#each quizQuestions as question (question.index)}
+    // (115:2) {#each multiplicationTableQuiz.getQuestions() as question (question.index)}
     function create_each_block(key_1, ctx) {
     	var div, current_block_type_index, if_block, t, current;
 
@@ -874,8 +1016,8 @@ var app = (function () {
     			attr_dev(div, "class", "" + 'cell' + " svelte-dbr8po");
     			toggle_class(div, "correct", ctx.fieldsAnsweredCorrectly.includes(ctx.question.index));
     			toggle_class(div, "incorrect", ctx.fieldsAnsweredInorrectly.includes(ctx.question.index));
-    			toggle_class(div, "highlightedRow", getYCoord(parseIndex(ctx.question.index)) === getYCoord(ctx.focusedInputIndex) && getXCoord(parseIndex(ctx.question.index)) <= getXCoord(ctx.focusedInputIndex));
-    			add_location(div, file$2, 178, 4, 4261);
+    			toggle_class(div, "highlightedRow", getYCoord(parseIndex(ctx.question.index)) === getYCoord(ctx.focusedFieldIndex) && getXCoord(parseIndex(ctx.question.index)) <= getXCoord(ctx.focusedFieldIndex));
+    			add_location(div, file$2, 115, 4, 2785);
     			this.first = div;
     		},
 
@@ -889,16 +1031,16 @@ var app = (function () {
     		p: function update(changed, ctx) {
     			if_block.p(changed, ctx);
 
-    			if ((changed.fieldsAnsweredCorrectly || changed.quizQuestions)) {
+    			if ((changed.fieldsAnsweredCorrectly || changed.multiplicationTableQuiz)) {
     				toggle_class(div, "correct", ctx.fieldsAnsweredCorrectly.includes(ctx.question.index));
     			}
 
-    			if ((changed.fieldsAnsweredInorrectly || changed.quizQuestions)) {
+    			if ((changed.fieldsAnsweredInorrectly || changed.multiplicationTableQuiz)) {
     				toggle_class(div, "incorrect", ctx.fieldsAnsweredInorrectly.includes(ctx.question.index));
     			}
 
-    			if ((changed.getYCoord || changed.parseIndex || changed.quizQuestions || changed.focusedInputIndex || changed.getXCoord)) {
-    				toggle_class(div, "highlightedRow", getYCoord(parseIndex(ctx.question.index)) === getYCoord(ctx.focusedInputIndex) && getXCoord(parseIndex(ctx.question.index)) <= getXCoord(ctx.focusedInputIndex));
+    			if ((changed.getYCoord || changed.parseIndex || changed.multiplicationTableQuiz || changed.focusedFieldIndex || changed.getXCoord)) {
+    				toggle_class(div, "highlightedRow", getYCoord(parseIndex(ctx.question.index)) === getYCoord(ctx.focusedFieldIndex) && getXCoord(parseIndex(ctx.question.index)) <= getXCoord(ctx.focusedFieldIndex));
     			}
     		},
 
@@ -921,14 +1063,14 @@ var app = (function () {
     			if_blocks[current_block_type_index].d();
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_each_block.name, type: "each", source: "(178:2) {#each quizQuestions as question (question.index)}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_each_block.name, type: "each", source: "(115:2) {#each multiplicationTableQuiz.getQuestions() as question (question.index)}", ctx });
     	return block;
     }
 
     function create_fragment$2(ctx) {
     	var div, each_blocks = [], each_1_lookup = new Map(), current;
 
-    	let each_value = ctx.quizQuestions;
+    	let each_value = ctx.multiplicationTableQuiz.getQuestions();
 
     	const get_key = ctx => ctx.question.index;
 
@@ -946,7 +1088,7 @@ var app = (function () {
     				each_blocks[i].c();
     			}
     			attr_dev(div, "class", "table-wrapper svelte-dbr8po");
-    			add_location(div, file$2, 176, 0, 4176);
+    			add_location(div, file$2, 113, 0, 2675);
     		},
 
     		l: function claim(nodes) {
@@ -964,7 +1106,7 @@ var app = (function () {
     		},
 
     		p: function update(changed, ctx) {
-    			const each_value = ctx.quizQuestions;
+    			const each_value = ctx.multiplicationTableQuiz.getQuestions();
 
     			group_outros();
     			each_blocks = update_keyed_each(each_blocks, changed, get_key, 1, ctx, each_value, each_1_lookup, div, outro_and_destroy_block, create_each_block, null, get_each_context);
@@ -1002,13 +1144,12 @@ var app = (function () {
     	return block;
     }
 
-    let firstSquareIndex = 11;
+    let firstFieldIndex = 11;
 
-    let lastSquareIndex = 100;
+    let lastFieldIndex = 100;
 
     function parseIndex(string) {
-      const numberPattern = /\d+/g;
-      return parseInt(string.match(numberPattern)[0]);
+      return parseInt(string.match(/\d+/g)[0]);
     }
 
     function getXCoord(index) {
@@ -1021,137 +1162,75 @@ var app = (function () {
 
     function instance$1($$self, $$props, $$invalidate) {
     	
-
+      let focusedFieldIndex = firstFieldIndex;
       let fieldsAnsweredCorrectly = [];
       let fieldsAnsweredInorrectly = [];
-
-      const submitListeners = {
-        onSubmitAnswer: () => {
-          goRight();
-        },
-        onSubmitCorrectAnswer: id => {
-          $$invalidate('fieldsAnsweredCorrectly', fieldsAnsweredCorrectly = [...fieldsAnsweredCorrectly, id]);
-        },
-        onSubmitIncorrectAnswer: id => {
-          $$invalidate('fieldsAnsweredInorrectly', fieldsAnsweredInorrectly = [...fieldsAnsweredInorrectly, id]);
-        }
-      };
 
       const multiplicationTableQuiz = new Quiz(
         new MultiplicationTable(10).getQAPair(),
         "mt",
-        submitListeners
+        {
+          onSubmitAnswer: () => {
+            goRight();
+          },
+          onSubmitCorrectAnswer: id => {
+            $$invalidate('fieldsAnsweredCorrectly', fieldsAnsweredCorrectly = [...fieldsAnsweredCorrectly, id]);
+          },
+          onSubmitIncorrectAnswer: id => {
+            $$invalidate('fieldsAnsweredInorrectly', fieldsAnsweredInorrectly = [...fieldsAnsweredInorrectly, id]);
+          }
+        }
       );
 
-      const quizQuestions = multiplicationTableQuiz.getQuestions();
+      const currentIndexChangeListener = writable(firstFieldIndex);
+      currentIndexChangeListener.subscribe(val => {
+        $$invalidate('focusedFieldIndex', focusedFieldIndex = val);
+      });
 
-      function onSubmitAnswer(answer, index) {
-        multiplicationTableQuiz.submitAnswer(answer, index);
-      }
+      const navigationHandler = new NavigationHandler({
+        firstFieldIndex,
+        lastFieldIndex,
+        listener: currentIndexChangeListener
+      });
 
-      function handleNavigate(key) {
-        switch (key) {
-          case "ArrowUp":
-            goUp();
-            break;
-          case "ArrowLeft":
-            goLeft();
-            break;
-          case "ArrowRight":
-            goRight();
-            break;
-          case "ArrowDown":
-            goDown();
-            break;
-        }
-      }
+    	const func = ({ question }, answer) => multiplicationTableQuiz.submitAnswer(answer, question.index);
 
-      function goRight() {
-        if (focusedInputIndex + 1 === lastSquareIndex) {
-          $$invalidate('focusedInputIndex', focusedInputIndex = firstSquareIndex - 1);
-        }
-        if ((focusedInputIndex + 1) % 10 === 0) {
-          $$invalidate('focusedInputIndex', focusedInputIndex = focusedInputIndex + 2);
-        } else {
-          $$invalidate('focusedInputIndex', focusedInputIndex = focusedInputIndex + 1);
-        }
-        if (allAnsweredFieldsIndexes.includes(focusedInputIndex)) {
-          goRight();
-        }
-      }
-
-      function goLeft() {
-        if (focusedInputIndex === firstSquareIndex) {
-          $$invalidate('focusedInputIndex', focusedInputIndex = lastSquareIndex);
-        }
-        if (focusedInputIndex % 10 === 1) {
-          $$invalidate('focusedInputIndex', focusedInputIndex = focusedInputIndex - 2);
-        } else {
-          $$invalidate('focusedInputIndex', focusedInputIndex = focusedInputIndex - 1);
-        }
-        if (allAnsweredFieldsIndexes.includes(focusedInputIndex)) {
-          goLeft();
-        }
-      }
-
-      function goDown() {
-        if (focusedInputIndex + 10 > lastSquareIndex) {
-          $$invalidate('focusedInputIndex', focusedInputIndex = (focusedInputIndex % 10) + 10);
-        } else {
-          $$invalidate('focusedInputIndex', focusedInputIndex = focusedInputIndex + 10);
-        }
-        if (allAnsweredFieldsIndexes.includes(focusedInputIndex)) {
-          goDown();
-        }
-      }
-
-      function goUp() {
-        if (focusedInputIndex - 10 < firstSquareIndex) {
-          $$invalidate('focusedInputIndex', focusedInputIndex = lastSquareIndex + focusedInputIndex - 20);
-        } else {
-          $$invalidate('focusedInputIndex', focusedInputIndex = focusedInputIndex - 10);
-        }
-        if (allAnsweredFieldsIndexes.includes(focusedInputIndex)) {
-          goUp();
-        }
-      }
-
-    	const func = ({ question }, answer) => onSubmitAnswer(answer, question.index);
+    	const func_1 = (key) => navigationHandler.handleKey(allAnsweredFieldsIndexes)(key);
 
     	$$self.$capture_state = () => {
     		return {};
     	};
 
     	$$self.$inject_state = $$props => {
+    		if ('firstFieldIndex' in $$props) firstFieldIndex = $$props.firstFieldIndex;
+    		if ('lastFieldIndex' in $$props) lastFieldIndex = $$props.lastFieldIndex;
+    		if ('focusedFieldIndex' in $$props) $$invalidate('focusedFieldIndex', focusedFieldIndex = $$props.focusedFieldIndex);
     		if ('fieldsAnsweredCorrectly' in $$props) $$invalidate('fieldsAnsweredCorrectly', fieldsAnsweredCorrectly = $$props.fieldsAnsweredCorrectly);
     		if ('fieldsAnsweredInorrectly' in $$props) $$invalidate('fieldsAnsweredInorrectly', fieldsAnsweredInorrectly = $$props.fieldsAnsweredInorrectly);
-    		if ('firstSquareIndex' in $$props) $$invalidate('firstSquareIndex', firstSquareIndex = $$props.firstSquareIndex);
-    		if ('lastSquareIndex' in $$props) lastSquareIndex = $$props.lastSquareIndex;
-    		if ('allAnsweredFieldsIndexes' in $$props) allAnsweredFieldsIndexes = $$props.allAnsweredFieldsIndexes;
-    		if ('focusedInputIndex' in $$props) $$invalidate('focusedInputIndex', focusedInputIndex = $$props.focusedInputIndex);
+    		if ('allAnsweredFieldsIndexes' in $$props) $$invalidate('allAnsweredFieldsIndexes', allAnsweredFieldsIndexes = $$props.allAnsweredFieldsIndexes);
+    		if ('highlightedFields' in $$props) highlightedFields = $$props.highlightedFields;
     	};
 
-    	let allAnsweredFieldsIndexes, focusedInputIndex;
+    	let allAnsweredFieldsIndexes, highlightedFields;
 
-    	$$self.$$.update = ($$dirty = { fieldsAnsweredCorrectly: 1, fieldsAnsweredInorrectly: 1, firstSquareIndex: 1, focusedInputIndex: 1 }) => {
-    		if ($$dirty.fieldsAnsweredCorrectly || $$dirty.fieldsAnsweredInorrectly) { allAnsweredFieldsIndexes = [
+    	$$self.$$.update = ($$dirty = { fieldsAnsweredCorrectly: 1, fieldsAnsweredInorrectly: 1, focusedFieldIndex: 1 }) => {
+    		if ($$dirty.fieldsAnsweredCorrectly || $$dirty.fieldsAnsweredInorrectly) { $$invalidate('allAnsweredFieldsIndexes', allAnsweredFieldsIndexes = [
             ...fieldsAnsweredCorrectly,
             ...fieldsAnsweredInorrectly
-          ].map(parseIndex); }
-    		if ($$dirty.firstSquareIndex) { $$invalidate('focusedInputIndex', focusedInputIndex = firstSquareIndex); }
-    		if ($$dirty.focusedInputIndex) { console.log("focusedInputIndex: ", focusedInputIndex); }
-    		if ($$dirty.focusedInputIndex) { console.log("getXCoord :", getXCoord(focusedInputIndex)); }
-    		if ($$dirty.focusedInputIndex) { console.log("getYCoord :", getYCoord(focusedInputIndex)); }
+          ].map(parseIndex)); }
+    		if ($$dirty.focusedFieldIndex) ;
+    		if ($$dirty.focusedFieldIndex) { highlightedFields = Math.floor(focusedFieldIndex / 10); }
     	};
 
     	return {
+    		focusedFieldIndex,
     		fieldsAnsweredCorrectly,
     		fieldsAnsweredInorrectly,
-    		quizQuestions,
-    		onSubmitAnswer,
-    		handleNavigate,
-    		focusedInputIndex,
-    		func
+    		multiplicationTableQuiz,
+    		navigationHandler,
+    		allAnsweredFieldsIndexes,
+    		func,
+    		func_1
     	};
     }
 
