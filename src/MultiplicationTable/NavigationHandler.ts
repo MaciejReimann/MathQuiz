@@ -68,21 +68,18 @@ export class NavigationHandler {
       switch (key) {
         case "ArrowUp":
           this.goUp()
-          this.listener.set(this.currentFieldIndex)
           break
         case "ArrowLeft":
           this.goLeft()
-          this.listener.set(this.currentFieldIndex)
           break
         case "ArrowRight":
           this.goRight()
-          this.listener.set(this.currentFieldIndex)
           break
         case "ArrowDown":
           this.goDown()
-          this.listener.set(this.currentFieldIndex)
           break
       }
+      this.listener(this.currentFieldIndex)
     }
   }
 }

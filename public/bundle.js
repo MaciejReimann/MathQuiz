@@ -455,58 +455,6 @@ var app = (function () {
     	}
     }
 
-    const subscriber_queue = [];
-    /**
-     * Create a `Writable` store that allows both updating and reading by subscription.
-     * @param {*=}value initial value
-     * @param {StartStopNotifier=}start start and stop notifications for subscriptions
-     */
-    function writable(value, start = noop) {
-        let stop;
-        const subscribers = [];
-        function set(new_value) {
-            if (safe_not_equal(value, new_value)) {
-                value = new_value;
-                if (stop) { // store is ready
-                    const run_queue = !subscriber_queue.length;
-                    for (let i = 0; i < subscribers.length; i += 1) {
-                        const s = subscribers[i];
-                        s[1]();
-                        subscriber_queue.push(s, value);
-                    }
-                    if (run_queue) {
-                        for (let i = 0; i < subscriber_queue.length; i += 2) {
-                            subscriber_queue[i][0](subscriber_queue[i + 1]);
-                        }
-                        subscriber_queue.length = 0;
-                    }
-                }
-            }
-        }
-        function update(fn) {
-            set(fn(value));
-        }
-        function subscribe(run, invalidate = noop) {
-            const subscriber = [run, invalidate];
-            subscribers.push(subscriber);
-            if (subscribers.length === 1) {
-                stop = start(set) || noop;
-            }
-            run(value);
-            return () => {
-                const index = subscribers.indexOf(subscriber);
-                if (index !== -1) {
-                    subscribers.splice(index, 1);
-                }
-                if (subscribers.length === 0) {
-                    stop();
-                    stop = null;
-                }
-            };
-        }
-        return { set, update, subscribe };
-    }
-
     /*! *****************************************************************************
     Copyright (c) Microsoft Corporation. All rights reserved.
     Licensed under the Apache License, Version 2.0 (the "License"); you may not use
@@ -861,21 +809,18 @@ var app = (function () {
                 switch (key) {
                     case "ArrowUp":
                         _this.goUp();
-                        _this.listener.set(_this.currentFieldIndex);
                         break;
                     case "ArrowLeft":
                         _this.goLeft();
-                        _this.listener.set(_this.currentFieldIndex);
                         break;
                     case "ArrowRight":
                         _this.goRight();
-                        _this.listener.set(_this.currentFieldIndex);
                         break;
                     case "ArrowDown":
                         _this.goDown();
-                        _this.listener.set(_this.currentFieldIndex);
                         break;
                 }
+                _this.listener(_this.currentFieldIndex);
             };
         };
         return NavigationHandler;
@@ -892,7 +837,7 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (124:6) {:else}
+    // (120:6) {:else}
     function create_else_block(ctx) {
     	var div, current;
 
@@ -913,7 +858,7 @@ var app = (function () {
     		c: function create() {
     			div = element("div");
     			numericinput.$$.fragment.c();
-    			add_location(div, file$2, 124, 8, 3303);
+    			add_location(div, file$2, 120, 8, 3131);
     		},
 
     		m: function mount(target, anchor) {
@@ -950,11 +895,11 @@ var app = (function () {
     			destroy_component(numericinput);
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_else_block.name, type: "else", source: "(124:6) {:else}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_else_block.name, type: "else", source: "(120:6) {:else}", ctx });
     	return block;
     }
 
-    // (122:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}
+    // (118:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}
     function create_if_block(ctx) {
     	var div, t_value = ctx.question.correctAnswers[0] + "", t;
 
@@ -963,7 +908,7 @@ var app = (function () {
     			div = element("div");
     			t = text(t_value);
     			attr_dev(div, "class", "" + 'visible' + " svelte-dbr8po");
-    			add_location(div, file$2, 122, 8, 3223);
+    			add_location(div, file$2, 118, 8, 3051);
     		},
 
     		m: function mount(target, anchor) {
@@ -981,11 +926,11 @@ var app = (function () {
     			}
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_if_block.name, type: "if", source: "(122:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_if_block.name, type: "if", source: "(118:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}", ctx });
     	return block;
     }
 
-    // (115:2) {#each multiplicationTableQuiz.getQuestions() as question (question.index)}
+    // (111:2) {#each multiplicationTableQuiz.getQuestions() as question (question.index)}
     function create_each_block(key_1, ctx) {
     	var div, current_block_type_index, if_block, t, current;
 
@@ -1017,7 +962,7 @@ var app = (function () {
     			toggle_class(div, "correct", ctx.fieldsAnsweredCorrectly.includes(ctx.question.index));
     			toggle_class(div, "incorrect", ctx.fieldsAnsweredInorrectly.includes(ctx.question.index));
     			toggle_class(div, "highlightedRow", getYCoord(parseIndex(ctx.question.index)) === getYCoord(ctx.focusedFieldIndex) && getXCoord(parseIndex(ctx.question.index)) <= getXCoord(ctx.focusedFieldIndex));
-    			add_location(div, file$2, 115, 4, 2785);
+    			add_location(div, file$2, 111, 4, 2613);
     			this.first = div;
     		},
 
@@ -1063,7 +1008,7 @@ var app = (function () {
     			if_blocks[current_block_type_index].d();
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_each_block.name, type: "each", source: "(115:2) {#each multiplicationTableQuiz.getQuestions() as question (question.index)}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_each_block.name, type: "each", source: "(111:2) {#each multiplicationTableQuiz.getQuestions() as question (question.index)}", ctx });
     	return block;
     }
 
@@ -1088,7 +1033,7 @@ var app = (function () {
     				each_blocks[i].c();
     			}
     			attr_dev(div, "class", "table-wrapper svelte-dbr8po");
-    			add_location(div, file$2, 113, 0, 2675);
+    			add_location(div, file$2, 109, 0, 2503);
     		},
 
     		l: function claim(nodes) {
@@ -1182,15 +1127,12 @@ var app = (function () {
         }
       );
 
-      const currentIndexChangeListener = writable(firstFieldIndex);
-      currentIndexChangeListener.subscribe(val => {
-        $$invalidate('focusedFieldIndex', focusedFieldIndex = val);
-      });
-
       const navigationHandler = new NavigationHandler({
         firstFieldIndex,
         lastFieldIndex,
-        listener: currentIndexChangeListener
+        listener: val => {
+          $$invalidate('focusedFieldIndex', focusedFieldIndex = val);
+        }
       });
 
     	const func = ({ question }, answer) => multiplicationTableQuiz.submitAnswer(answer, question.index);

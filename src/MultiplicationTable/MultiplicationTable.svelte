@@ -1,5 +1,4 @@
 <script>
-  import { writable } from "svelte/store";
   import Quiz from "../Quiz.ts";
   import NumericInput from "../GenericComponents/NumericInput.svelte";
   import MultiplicationTable from "../MultiplicationTable";
@@ -27,15 +26,12 @@
     }
   );
 
-  const currentIndexChangeListener = writable(firstFieldIndex);
-  currentIndexChangeListener.subscribe(val => {
-    focusedFieldIndex = val;
-  });
-
   const navigationHandler = new NavigationHandler({
     firstFieldIndex,
     lastFieldIndex,
-    listener: currentIndexChangeListener
+    listener: val => {
+      focusedFieldIndex = val;
+    }
   });
 
   // $: console.log("focusedFieldIndex: ", focusedFieldIndex);
