@@ -3,7 +3,9 @@
   import NumericInput from "../GenericComponents/NumericInput.svelte";
   import MultiplicationTable from "../MultiplicationTable";
   import { NavigationHandler } from "./NavigationHandler";
+  import { parseIndex, getXCoord, getYCoord } from "./helpers";
 
+  let currentFieldIndex;
   let firstFieldIndex = 11;
   let lastFieldIndex = 100;
   let focusedFieldIndex = firstFieldIndex;
@@ -41,18 +43,6 @@
   // $: console.log("getXCoord :", getXCoord(focusedFieldIndex));
   // $: console.log("getYCoord :", getYCoord(focusedFieldIndex));
 
-  function parseIndex(string) {
-    return parseInt(string.match(/\d+/g)[0]);
-  }
-
-  function getXCoord(index) {
-    return index % 10;
-  }
-
-  function getYCoord(index) {
-    return Math.floor(index / 10);
-  }
-
   $: allAnsweredFieldsIndexes = [
     ...fieldsAnsweredCorrectly,
     ...fieldsAnsweredInorrectly
@@ -60,7 +50,7 @@
 
   $: focusedFieldIndex;
 
-  $: highlightedFields = Math.floor(focusedFieldIndex / 10);
+  $: highlightedFieldsRow = Math.floor(focusedFieldIndex / 10);
 </script>
 
 <style>
