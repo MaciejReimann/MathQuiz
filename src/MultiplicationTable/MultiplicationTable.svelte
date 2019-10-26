@@ -7,7 +7,8 @@
     parseIndex,
     getXCoord,
     getYCoord,
-    checkIfRowFieldShouldBeHighlighted
+    checkIfRowFieldShouldBeHighlighted,
+    checkIfColumnFieldShouldBeHighlighted
   } from "./helpers";
 
   let currentFieldIndex;
@@ -99,6 +100,7 @@
       class={'cell'}
       class:correct={fieldsAnsweredCorrectly.includes(question.index)}
       class:incorrect={fieldsAnsweredInorrectly.includes(question.index)}
+      class:highlightedColumn={checkIfColumnFieldShouldBeHighlighted(question.index, focusedFieldIndex)}
       class:highlightedRow={checkIfRowFieldShouldBeHighlighted(question.index, focusedFieldIndex)}>
 
       {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}

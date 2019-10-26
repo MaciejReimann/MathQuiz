@@ -19,3 +19,13 @@ export function checkIfRowFieldShouldBeHighlighted(
     getXCoord(parseIndex(questionIndex)) <= getXCoord(focusedField)
   )
 }
+
+export function checkIfColumnFieldShouldBeHighlighted(
+  questionIndex,
+  focusedField
+) {
+  return (
+    getXCoord(parseIndex(questionIndex)) === getXCoord(focusedField) &&
+    getYCoord(parseIndex(questionIndex)) <= getYCoord(focusedField)
+  )
+}
