@@ -490,20 +490,21 @@ var app = (function () {
     }
 
     var Quiz = /** @class */ (function () {
-        function Quiz(arrayOfQA, quizID, handlers) {
+        function Quiz(arrayOfQA, quizID, listeners) {
             var _this = this;
             this.quizQuestions = null;
             this.quizID = null;
             this.getQuestions = function () { return _this.quizQuestions; };
             this.submitAnswer = function (submittedAnswer, i) {
+                _this.listeners.onSubmitAnswer();
                 _this.quizQuestions = _this.quizQuestions.map(function (quizQuestion) {
                     if (quizQuestion.index == i) {
                         if (quizQuestion.correctAnswers.includes(submittedAnswer)) {
-                            _this.handlers.onSubmitCorrectAnswer(quizQuestion.index);
+                            _this.listeners.onSubmitCorrectAnswer(quizQuestion.index);
                             return __assign(__assign({}, quizQuestion), { correctAnswerCount: quizQuestion.correctAnswerCount + 1 });
                         }
                         else {
-                            _this.handlers.onSubmitIncorrectAnswer(quizQuestion.index);
+                            _this.listeners.onSubmitIncorrectAnswer(quizQuestion.index);
                             return __assign(__assign({}, quizQuestion), { submittedAnswers: __spreadArrays(quizQuestion.submittedAnswers, [
                                     submittedAnswer
                                 ]) });
@@ -521,7 +522,7 @@ var app = (function () {
             }); });
             console.log(this.quizQuestions);
             this.quizID = quizID;
-            this.handlers = handlers;
+            this.listeners = listeners;
         }
         return Quiz;
     }());
@@ -750,9 +751,9 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (156:6) {:else}
+    // (187:6) {:else}
     function create_else_block(ctx) {
-    	var current;
+    	var div, current;
 
     	function func(...args) {
     		return ctx.func(ctx, ...args);
@@ -769,11 +770,14 @@ var app = (function () {
 
     	const block = {
     		c: function create() {
+    			div = element("div");
     			numericinput.$$.fragment.c();
+    			add_location(div, file$2, 187, 8, 4779);
     		},
 
     		m: function mount(target, anchor) {
-    			mount_component(numericinput, target, anchor);
+    			insert_dev(target, div, anchor);
+    			mount_component(numericinput, div, null);
     			current = true;
     		},
 
@@ -797,14 +801,18 @@ var app = (function () {
     		},
 
     		d: function destroy(detaching) {
-    			destroy_component(numericinput, detaching);
+    			if (detaching) {
+    				detach_dev(div);
+    			}
+
+    			destroy_component(numericinput);
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_else_block.name, type: "else", source: "(156:6) {:else}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_else_block.name, type: "else", source: "(187:6) {:else}", ctx });
     	return block;
     }
 
-    // (154:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}
+    // (185:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}
     function create_if_block(ctx) {
     	var div, t_value = ctx.question.correctAnswers[0] + "", t;
 
@@ -812,8 +820,8 @@ var app = (function () {
     		c: function create() {
     			div = element("div");
     			t = text(t_value);
-    			attr_dev(div, "class", "" + 'visible' + " svelte-bzjebj");
-    			add_location(div, file$2, 154, 8, 3738);
+    			attr_dev(div, "class", "" + 'visible' + " svelte-dbr8po");
+    			add_location(div, file$2, 185, 8, 4699);
     		},
 
     		m: function mount(target, anchor) {
@@ -831,11 +839,11 @@ var app = (function () {
     			}
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_if_block.name, type: "if", source: "(154:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_if_block.name, type: "if", source: "(185:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}", ctx });
     	return block;
     }
 
-    // (149:2) {#each quizQuestions as question (question.index)}
+    // (178:2) {#each quizQuestions as question (question.index)}
     function create_each_block(key_1, ctx) {
     	var div, current_block_type_index, if_block, t, current;
 
@@ -863,10 +871,11 @@ var app = (function () {
     			div = element("div");
     			if_block.c();
     			t = space();
-    			attr_dev(div, "class", "" + 'cell' + " svelte-bzjebj");
+    			attr_dev(div, "class", "" + 'cell' + " svelte-dbr8po");
     			toggle_class(div, "correct", ctx.fieldsAnsweredCorrectly.includes(ctx.question.index));
     			toggle_class(div, "incorrect", ctx.fieldsAnsweredInorrectly.includes(ctx.question.index));
-    			add_location(div, file$2, 149, 4, 3474);
+    			toggle_class(div, "highlightedRow", getYCoord(parseIndex(ctx.question.index)) === getYCoord(ctx.focusedInputIndex) && getXCoord(parseIndex(ctx.question.index)) <= getXCoord(ctx.focusedInputIndex));
+    			add_location(div, file$2, 178, 4, 4261);
     			this.first = div;
     		},
 
@@ -886,6 +895,10 @@ var app = (function () {
 
     			if ((changed.fieldsAnsweredInorrectly || changed.quizQuestions)) {
     				toggle_class(div, "incorrect", ctx.fieldsAnsweredInorrectly.includes(ctx.question.index));
+    			}
+
+    			if ((changed.getYCoord || changed.parseIndex || changed.quizQuestions || changed.focusedInputIndex || changed.getXCoord)) {
+    				toggle_class(div, "highlightedRow", getYCoord(parseIndex(ctx.question.index)) === getYCoord(ctx.focusedInputIndex) && getXCoord(parseIndex(ctx.question.index)) <= getXCoord(ctx.focusedInputIndex));
     			}
     		},
 
@@ -908,7 +921,7 @@ var app = (function () {
     			if_blocks[current_block_type_index].d();
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_each_block.name, type: "each", source: "(149:2) {#each quizQuestions as question (question.index)}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_each_block.name, type: "each", source: "(178:2) {#each quizQuestions as question (question.index)}", ctx });
     	return block;
     }
 
@@ -932,8 +945,8 @@ var app = (function () {
     			for (let i = 0; i < each_blocks.length; i += 1) {
     				each_blocks[i].c();
     			}
-    			attr_dev(div, "class", "table-wrapper svelte-bzjebj");
-    			add_location(div, file$2, 147, 0, 3389);
+    			attr_dev(div, "class", "table-wrapper svelte-dbr8po");
+    			add_location(div, file$2, 176, 0, 4176);
     		},
 
     		l: function claim(nodes) {
@@ -998,16 +1011,26 @@ var app = (function () {
       return parseInt(string.match(numberPattern)[0]);
     }
 
+    function getXCoord(index) {
+      return index % 10;
+    }
+
+    function getYCoord(index) {
+      return Math.floor(index / 10);
+    }
+
     function instance$1($$self, $$props, $$invalidate) {
     	
 
       let fieldsAnsweredCorrectly = [];
       let fieldsAnsweredInorrectly = [];
 
-      const submitHandlers = {
+      const submitListeners = {
+        onSubmitAnswer: () => {
+          goRight();
+        },
         onSubmitCorrectAnswer: id => {
           $$invalidate('fieldsAnsweredCorrectly', fieldsAnsweredCorrectly = [...fieldsAnsweredCorrectly, id]);
-          goRight();
         },
         onSubmitIncorrectAnswer: id => {
           $$invalidate('fieldsAnsweredInorrectly', fieldsAnsweredInorrectly = [...fieldsAnsweredInorrectly, id]);
@@ -1017,7 +1040,7 @@ var app = (function () {
       const multiplicationTableQuiz = new Quiz(
         new MultiplicationTable(10).getQAPair(),
         "mt",
-        submitHandlers
+        submitListeners
       );
 
       const quizQuestions = multiplicationTableQuiz.getQuestions();
@@ -1025,8 +1048,6 @@ var app = (function () {
       function onSubmitAnswer(answer, index) {
         multiplicationTableQuiz.submitAnswer(answer, index);
       }
-
-      let focusedInputIndex = firstSquareIndex;
 
       function handleNavigate(key) {
         switch (key) {
@@ -1104,19 +1125,23 @@ var app = (function () {
     	$$self.$inject_state = $$props => {
     		if ('fieldsAnsweredCorrectly' in $$props) $$invalidate('fieldsAnsweredCorrectly', fieldsAnsweredCorrectly = $$props.fieldsAnsweredCorrectly);
     		if ('fieldsAnsweredInorrectly' in $$props) $$invalidate('fieldsAnsweredInorrectly', fieldsAnsweredInorrectly = $$props.fieldsAnsweredInorrectly);
-    		if ('firstSquareIndex' in $$props) firstSquareIndex = $$props.firstSquareIndex;
+    		if ('firstSquareIndex' in $$props) $$invalidate('firstSquareIndex', firstSquareIndex = $$props.firstSquareIndex);
     		if ('lastSquareIndex' in $$props) lastSquareIndex = $$props.lastSquareIndex;
-    		if ('focusedInputIndex' in $$props) $$invalidate('focusedInputIndex', focusedInputIndex = $$props.focusedInputIndex);
     		if ('allAnsweredFieldsIndexes' in $$props) allAnsweredFieldsIndexes = $$props.allAnsweredFieldsIndexes;
+    		if ('focusedInputIndex' in $$props) $$invalidate('focusedInputIndex', focusedInputIndex = $$props.focusedInputIndex);
     	};
 
-    	let allAnsweredFieldsIndexes;
+    	let allAnsweredFieldsIndexes, focusedInputIndex;
 
-    	$$self.$$.update = ($$dirty = { fieldsAnsweredCorrectly: 1, fieldsAnsweredInorrectly: 1 }) => {
+    	$$self.$$.update = ($$dirty = { fieldsAnsweredCorrectly: 1, fieldsAnsweredInorrectly: 1, firstSquareIndex: 1, focusedInputIndex: 1 }) => {
     		if ($$dirty.fieldsAnsweredCorrectly || $$dirty.fieldsAnsweredInorrectly) { allAnsweredFieldsIndexes = [
             ...fieldsAnsweredCorrectly,
             ...fieldsAnsweredInorrectly
           ].map(parseIndex); }
+    		if ($$dirty.firstSquareIndex) { $$invalidate('focusedInputIndex', focusedInputIndex = firstSquareIndex); }
+    		if ($$dirty.focusedInputIndex) { console.log("focusedInputIndex: ", focusedInputIndex); }
+    		if ($$dirty.focusedInputIndex) { console.log("getXCoord :", getXCoord(focusedInputIndex)); }
+    		if ($$dirty.focusedInputIndex) { console.log("getYCoord :", getYCoord(focusedInputIndex)); }
     	};
 
     	return {
@@ -1124,8 +1149,8 @@ var app = (function () {
     		fieldsAnsweredInorrectly,
     		quizQuestions,
     		onSubmitAnswer,
-    		focusedInputIndex,
     		handleNavigate,
+    		focusedInputIndex,
     		func
     	};
     }

@@ -14,10 +14,12 @@
   let firstSquareIndex = 11;
   let lastSquareIndex = 100;
 
-  const submitHandlers = {
+  const submitListeners = {
+    onSubmitAnswer: () => {
+      goRight();
+    },
     onSubmitCorrectAnswer: id => {
       fieldsAnsweredCorrectly = [...fieldsAnsweredCorrectly, id];
-      goRight();
     },
     onSubmitIncorrectAnswer: id => {
       fieldsAnsweredInorrectly = [...fieldsAnsweredInorrectly, id];
@@ -27,7 +29,7 @@
   const multiplicationTableQuiz = new Quiz(
     new MultiplicationTable(10).getQAPair(),
     "mt",
-    submitHandlers
+    submitListeners
   );
 
   const quizQuestions = multiplicationTableQuiz.getQuestions();
@@ -36,7 +38,16 @@
     multiplicationTableQuiz.submitAnswer(answer, index);
   }
 
-  let focusedInputIndex = firstSquareIndex;
+  $: focusedInputIndex = firstSquareIndex;
+  // $: focusedInputIndexXCoord = focusedInputIndex % 10;
+  // $: highlightedRow = Math.floor(focusedInputIndex / 10);
+
+  $: console.log("focusedInputIndex: ", focusedInputIndex);
+  // $: console.log("highlightedColumn: ", highlightedColumn * 10);
+  // $: console.log("highlightedRow: ", highlightedRow);
+
+  $: console.log("getXCoord :", getXCoord(focusedInputIndex));
+  $: console.log("getYCoord :", getYCoord(focusedInputIndex));
 
   function handleNavigate(key) {
     switch (key) {
@@ -109,6 +120,14 @@
     const numberPattern = /\d+/g;
     return parseInt(string.match(numberPattern)[0]);
   }
+
+  function getXCoord(index) {
+    return index % 10;
+  }
+
+  function getYCoord(index) {
+    return Math.floor(index / 10);
+  }
 </script>
 
 <style>
@@ -117,8 +136,8 @@
     display: grid;
     grid-template-rows: repeat(10, 4rem);
     grid-template-columns: repeat(10, 4rem);
-    column-gap: 5px;
-    row-gap: 5px;
+    column-gap: 8px;
+    row-gap: 8px;
     border: 3px solid blue;
   }
   .cell {
@@ -132,6 +151,16 @@
     display: flex;
     justify-content: center;
     align-items: center;
+  }
+
+  .highlightedColumn {
+    border-left: 4px solid black;
+    border-right: 4px solid black;
+  }
+
+  .highlightedRow {
+    border-top: 4px solid black;
+    border-bottom: 4px solid black;
   }
 
   .correct {
@@ -150,16 +179,25 @@
     <div
       class={'cell'}
       class:correct={fieldsAnsweredCorrectly.includes(question.index)}
-      class:incorrect={fieldsAnsweredInorrectly.includes(question.index)}>
+      class:incorrect={fieldsAnsweredInorrectly.includes(question.index)}
+      class:highlightedRow={getYCoord(parseIndex(question.index)) === getYCoord(focusedInputIndex) && getXCoord(parseIndex(question.index)) <= getXCoord(focusedInputIndex)}>
+
       {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}
         <div class={'visible'}>{question.correctAnswers[0]}</div>
       {:else}
-        <NumericInput
-          isFocused={parseIndex(question.index) == focusedInputIndex}
-          onSubmit={answer => onSubmitAnswer(answer, question.index)}
-          onNavigate={handleNavigate} />
+        <div>
+          <NumericInput
+            isFocused={parseIndex(question.index) == focusedInputIndex}
+            onSubmit={answer => onSubmitAnswer(answer, question.index)}
+            onNavigate={handleNavigate} />
+        </div>
       {/if}
 
     </div>
   {/each}
 </div>
+
+<!-- class:highlightedColumn={parseIndex(question.index) === getXCoord(focusedInputIndex)} -->
+
+<!-- class:highlightedColumn={parseIndex(question.index) % 10 === getXCoord(focusedInputIndex) && parseIndex(question.index) < highlightedRow * 10} -->
+<!-- class:highlightedRow={Math.floor(parseIndex(question.index) / 10) === highlightedRow && parseIndex(question.index) < highlightedColumn % 10} -->

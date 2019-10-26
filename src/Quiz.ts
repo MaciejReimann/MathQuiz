@@ -15,12 +15,13 @@ export interface QAI {
 export default class Quiz {
   private quizQuestions: QuizQuestionI[] = null
   private quizID: string = null
-  private handlers: {
+  private listeners: {
+    onSubmitAnswer: () => void
     onSubmitCorrectAnswer: (id: string) => void
     onSubmitIncorrectAnswer: (id: string) => void
   }
 
-  constructor(arrayOfQA: QAI[], quizID, handlers) {
+  constructor(arrayOfQA: QAI[], quizID, listeners) {
     this.quizQuestions = arrayOfQA.map((qa, i) => ({
       index: `${quizID}.${i}`,
       question: qa.question,
@@ -30,22 +31,24 @@ export default class Quiz {
     }))
     console.log(this.quizQuestions)
     this.quizID = quizID
-    this.handlers = handlers
+    this.listeners = listeners
   }
   getQuestions = () => this.quizQuestions
 
   submitAnswer = (submittedAnswer: never, i) => {
+    this.listeners.onSubmitAnswer()
+
     this.quizQuestions = this.quizQuestions.map(quizQuestion => {
       if (quizQuestion.index == i) {
         if (quizQuestion.correctAnswers.includes(submittedAnswer)) {
-          this.handlers.onSubmitCorrectAnswer(quizQuestion.index)
+          this.listeners.onSubmitCorrectAnswer(quizQuestion.index)
 
           return {
             ...quizQuestion,
             correctAnswerCount: quizQuestion.correctAnswerCount + 1
           }
         } else {
-          this.handlers.onSubmitIncorrectAnswer(quizQuestion.index)
+          this.listeners.onSubmitIncorrectAnswer(quizQuestion.index)
           return {
             ...quizQuestion,
             submittedAnswers: [
