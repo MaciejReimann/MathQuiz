@@ -3,6 +3,9 @@
   export let onNavigate;
   export let onFocus;
   export let isFocused;
+  export let maxLength;
+
+  console.log(maxLength);
 
   let inputNode;
   let inputValue = "";
@@ -48,7 +51,7 @@
 
 <input
   type="text"
-  maxlength="2"
+  maxlength={maxLength}
   class:invalid={isInvalid}
   bind:this={inputNode}
   bind:value={inputValue}

@@ -760,10 +760,10 @@ var app = (function () {
     		c: function create() {
     			input = element("input");
     			attr_dev(input, "type", "text");
-    			attr_dev(input, "maxlength", "2");
+    			attr_dev(input, "maxlength", ctx.maxLength);
     			attr_dev(input, "class", "svelte-1pma0i4");
     			toggle_class(input, "invalid", ctx.isInvalid);
-    			add_location(input, file$2, 48, 0, 795);
+    			add_location(input, file$2, 51, 0, 846);
 
     			dispose = [
     				listen_dev(input, "input", ctx.input_input_handler),
@@ -789,6 +789,10 @@ var app = (function () {
     		p: function update(changed, ctx) {
     			if (changed.inputValue && (input.value !== ctx.inputValue)) set_input_value(input, ctx.inputValue);
 
+    			if (changed.maxLength) {
+    				attr_dev(input, "maxlength", ctx.maxLength);
+    			}
+
     			if (changed.isInvalid) {
     				toggle_class(input, "invalid", ctx.isInvalid);
     			}
@@ -811,7 +815,9 @@ var app = (function () {
     }
 
     function instance$2($$self, $$props, $$invalidate) {
-    	let { onSubmit, onNavigate, onFocus, isFocused } = $$props;
+    	let { onSubmit, onNavigate, onFocus, isFocused, maxLength } = $$props;
+
+      console.log(maxLength);
 
       let inputNode;
       let inputValue = "";
@@ -833,7 +839,7 @@ var app = (function () {
         onFocus();
       }
 
-    	const writable_props = ['onSubmit', 'onNavigate', 'onFocus', 'isFocused'];
+    	const writable_props = ['onSubmit', 'onNavigate', 'onFocus', 'isFocused', 'maxLength'];
     	Object.keys($$props).forEach(key => {
     		if (!writable_props.includes(key) && !key.startsWith('$$')) console_1.warn(`<NumericInput> was created with unknown prop '${key}'`);
     	});
@@ -854,10 +860,11 @@ var app = (function () {
     		if ('onNavigate' in $$props) $$invalidate('onNavigate', onNavigate = $$props.onNavigate);
     		if ('onFocus' in $$props) $$invalidate('onFocus', onFocus = $$props.onFocus);
     		if ('isFocused' in $$props) $$invalidate('isFocused', isFocused = $$props.isFocused);
+    		if ('maxLength' in $$props) $$invalidate('maxLength', maxLength = $$props.maxLength);
     	};
 
     	$$self.$capture_state = () => {
-    		return { onSubmit, onNavigate, onFocus, isFocused, inputNode, inputValue, isInvalid };
+    		return { onSubmit, onNavigate, onFocus, isFocused, maxLength, inputNode, inputValue, isInvalid };
     	};
 
     	$$self.$inject_state = $$props => {
@@ -865,6 +872,7 @@ var app = (function () {
     		if ('onNavigate' in $$props) $$invalidate('onNavigate', onNavigate = $$props.onNavigate);
     		if ('onFocus' in $$props) $$invalidate('onFocus', onFocus = $$props.onFocus);
     		if ('isFocused' in $$props) $$invalidate('isFocused', isFocused = $$props.isFocused);
+    		if ('maxLength' in $$props) $$invalidate('maxLength', maxLength = $$props.maxLength);
     		if ('inputNode' in $$props) $$invalidate('inputNode', inputNode = $$props.inputNode);
     		if ('inputValue' in $$props) $$invalidate('inputValue', inputValue = $$props.inputValue);
     		if ('isInvalid' in $$props) $$invalidate('isInvalid', isInvalid = $$props.isInvalid);
@@ -880,6 +888,7 @@ var app = (function () {
     		onNavigate,
     		onFocus,
     		isFocused,
+    		maxLength,
     		inputNode,
     		inputValue,
     		isInvalid,
@@ -895,7 +904,7 @@ var app = (function () {
     class NumericInput extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$2, create_fragment$2, safe_not_equal, ["onSubmit", "onNavigate", "onFocus", "isFocused"]);
+    		init(this, options, instance$2, create_fragment$2, safe_not_equal, ["onSubmit", "onNavigate", "onFocus", "isFocused", "maxLength"]);
     		dispatch_dev("SvelteRegisterComponent", { component: this, tagName: "NumericInput", options, id: create_fragment$2.name });
 
     		const { ctx } = this.$$;
@@ -911,6 +920,9 @@ var app = (function () {
     		}
     		if (ctx.isFocused === undefined && !('isFocused' in props)) {
     			console_1.warn("<NumericInput> was created without expected prop 'isFocused'");
+    		}
+    		if (ctx.maxLength === undefined && !('maxLength' in props)) {
+    			console_1.warn("<NumericInput> was created without expected prop 'maxLength'");
     		}
     	}
 
@@ -943,6 +955,14 @@ var app = (function () {
     	}
 
     	set isFocused(value) {
+    		throw new Error("<NumericInput>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get maxLength() {
+    		throw new Error("<NumericInput>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set maxLength(value) {
     		throw new Error("<NumericInput>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
     }
@@ -1100,7 +1120,7 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (123:6) {:else}
+    // (135:6) {:else}
     function create_else_block(ctx) {
     	var current;
 
@@ -1115,6 +1135,7 @@ var app = (function () {
     	var numericinput = new NumericInput({
     		props: {
     		index: parseIndex(ctx.question.index),
+    		maxLength: ctx.isCellLast(ctx.question.index) ? 3 : 2,
     		isFocused: parseIndex(ctx.question.index) == ctx.focusedFieldIndex,
     		onFocus: func,
     		onSubmit: func_1,
@@ -1157,11 +1178,11 @@ var app = (function () {
     			destroy_component(numericinput, detaching);
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_else_block.name, type: "else", source: "(123:6) {:else}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_else_block.name, type: "else", source: "(135:6) {:else}", ctx });
     	return block;
     }
 
-    // (121:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}
+    // (133:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}
     function create_if_block(ctx) {
     	var div, t_value = ctx.question.correctAnswers[0] + "", t;
 
@@ -1169,7 +1190,7 @@ var app = (function () {
     		c: function create() {
     			div = element("div");
     			t = text(t_value);
-    			add_location(div, file$3, 121, 8, 3245);
+    			add_location(div, file$3, 133, 8, 3495);
     		},
 
     		m: function mount(target, anchor) {
@@ -1187,11 +1208,11 @@ var app = (function () {
     			}
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_if_block.name, type: "if", source: "(121:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_if_block.name, type: "if", source: "(133:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}", ctx });
     	return block;
     }
 
-    // (111:2) {#each multiplicationTableQuiz.getQuestions() as question (question.index)}
+    // (122:2) {#each multiplicationTableQuiz.getQuestions() as question (question.index)}
     function create_each_block(key_1, ctx) {
     	var div, current_block_type_index, if_block, t, current;
 
@@ -1219,14 +1240,15 @@ var app = (function () {
     			div = element("div");
     			if_block.c();
     			t = space();
-    			attr_dev(div, "class", "" + 'cell' + " svelte-1r3otcv");
+    			attr_dev(div, "class", "" + 'cell' + " svelte-2abusy");
     			toggle_class(div, "title", parseIndex(ctx.question.index) < 10 || parseIndex(ctx.question.index) % 10 == 0);
     			toggle_class(div, "correct", ctx.fieldsAnsweredCorrectly.includes(ctx.question.index));
     			toggle_class(div, "incorrect", ctx.fieldsAnsweredInorrectly.includes(ctx.question.index));
     			toggle_class(div, "highlighted-column", checkIfColumnFieldShouldBeHighlighted(ctx.question.index, ctx.focusedFieldIndex));
     			toggle_class(div, "highlighted-row", checkIfRowFieldShouldBeHighlighted(ctx.question.index, ctx.focusedFieldIndex));
     			toggle_class(div, "focused-field", parseIndex(ctx.question.index) === ctx.focusedFieldIndex);
-    			add_location(div, file$3, 111, 4, 2605);
+    			toggle_class(div, "cell-last", ctx.isCellLast(ctx.question.index));
+    			add_location(div, file$3, 122, 4, 2804);
     			this.first = div;
     		},
 
@@ -1263,6 +1285,10 @@ var app = (function () {
     			if ((changed.parseIndex || changed.multiplicationTableQuiz || changed.focusedFieldIndex)) {
     				toggle_class(div, "focused-field", parseIndex(ctx.question.index) === ctx.focusedFieldIndex);
     			}
+
+    			if ((changed.isCellLast || changed.multiplicationTableQuiz)) {
+    				toggle_class(div, "cell-last", ctx.isCellLast(ctx.question.index));
+    			}
     		},
 
     		i: function intro(local) {
@@ -1284,7 +1310,7 @@ var app = (function () {
     			if_blocks[current_block_type_index].d();
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_each_block.name, type: "each", source: "(111:2) {#each multiplicationTableQuiz.getQuestions() as question (question.index)}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_each_block.name, type: "each", source: "(122:2) {#each multiplicationTableQuiz.getQuestions() as question (question.index)}", ctx });
     	return block;
     }
 
@@ -1308,8 +1334,8 @@ var app = (function () {
     			for (let i = 0; i < each_blocks.length; i += 1) {
     				each_blocks[i].c();
     			}
-    			attr_dev(div, "class", "table-wrapper svelte-1r3otcv");
-    			add_location(div, file$3, 109, 0, 2495);
+    			attr_dev(div, "class", "table-wrapper svelte-2abusy");
+    			add_location(div, file$3, 120, 0, 2694);
     		},
 
     		l: function claim(nodes) {
@@ -1406,6 +1432,13 @@ var app = (function () {
         navigationHandler.set(index);
       }
 
+      function isCellLast(questionIndex) {
+        return (
+          parseIndex(questionIndex) ===
+          multiplicationTableQuiz.getQuestions().length - 1
+        );
+      }
+
     	const func = ({ question }, el) => handleFocus(parseIndex(question.index));
 
     	const func_1 = ({ question }, answer) => multiplicationTableQuiz.submitAnswer(answer, question.index);
@@ -1441,6 +1474,7 @@ var app = (function () {
     		navigationHandler,
     		multiplicationTableQuiz,
     		handleFocus,
+    		isCellLast,
     		focusedFieldIndex,
     		allAnsweredFieldsIndexes,
     		func,
