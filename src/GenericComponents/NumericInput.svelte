@@ -1,6 +1,7 @@
 <script>
   export let onSubmit;
   export let onNavigate;
+  export let onFocus;
   export let isFocused;
 
   let inputNode;
@@ -14,12 +15,16 @@
     !isInvalid && onSubmit(e.target.value);
   }
 
-  function keydownHandler(e) {
+  function handleKeydown(e) {
     !isInvalid && onNavigate(e.key);
   }
 
   function handleInput() {
     isInvalid && console.log("It's invalid!!!");
+  }
+
+  function handleFocus() {
+    onFocus();
   }
 </script>
 
@@ -49,4 +54,5 @@
   bind:value={inputValue}
   on:input={handleInput}
   on:change={handleSubmit}
-  on:keydown={keydownHandler} />
+  on:focus={handleFocus}
+  on:keydown={handleKeydown} />

@@ -763,13 +763,14 @@ var app = (function () {
     			attr_dev(input, "maxlength", "2");
     			attr_dev(input, "class", "svelte-1pma0i4");
     			toggle_class(input, "invalid", ctx.isInvalid);
-    			add_location(input, file$2, 43, 0, 727);
+    			add_location(input, file$2, 48, 0, 795);
 
     			dispose = [
     				listen_dev(input, "input", ctx.input_input_handler),
     				listen_dev(input, "input", ctx.handleInput),
     				listen_dev(input, "change", ctx.handleSubmit),
-    				listen_dev(input, "keydown", ctx.keydownHandler)
+    				listen_dev(input, "focus", ctx.handleFocus),
+    				listen_dev(input, "keydown", ctx.handleKeydown)
     			];
     		},
 
@@ -810,7 +811,7 @@ var app = (function () {
     }
 
     function instance$2($$self, $$props, $$invalidate) {
-    	let { onSubmit, onNavigate, isFocused } = $$props;
+    	let { onSubmit, onNavigate, onFocus, isFocused } = $$props;
 
       let inputNode;
       let inputValue = "";
@@ -820,7 +821,7 @@ var app = (function () {
         !isInvalid && onSubmit(e.target.value);
       }
 
-      function keydownHandler(e) {
+      function handleKeydown(e) {
         !isInvalid && onNavigate(e.key);
       }
 
@@ -828,7 +829,11 @@ var app = (function () {
         isInvalid && console.log("It's invalid!!!");
       }
 
-    	const writable_props = ['onSubmit', 'onNavigate', 'isFocused'];
+      function handleFocus() {
+        onFocus();
+      }
+
+    	const writable_props = ['onSubmit', 'onNavigate', 'onFocus', 'isFocused'];
     	Object.keys($$props).forEach(key => {
     		if (!writable_props.includes(key) && !key.startsWith('$$')) console_1.warn(`<NumericInput> was created with unknown prop '${key}'`);
     	});
@@ -847,16 +852,18 @@ var app = (function () {
     	$$self.$set = $$props => {
     		if ('onSubmit' in $$props) $$invalidate('onSubmit', onSubmit = $$props.onSubmit);
     		if ('onNavigate' in $$props) $$invalidate('onNavigate', onNavigate = $$props.onNavigate);
+    		if ('onFocus' in $$props) $$invalidate('onFocus', onFocus = $$props.onFocus);
     		if ('isFocused' in $$props) $$invalidate('isFocused', isFocused = $$props.isFocused);
     	};
 
     	$$self.$capture_state = () => {
-    		return { onSubmit, onNavigate, isFocused, inputNode, inputValue, isInvalid };
+    		return { onSubmit, onNavigate, onFocus, isFocused, inputNode, inputValue, isInvalid };
     	};
 
     	$$self.$inject_state = $$props => {
     		if ('onSubmit' in $$props) $$invalidate('onSubmit', onSubmit = $$props.onSubmit);
     		if ('onNavigate' in $$props) $$invalidate('onNavigate', onNavigate = $$props.onNavigate);
+    		if ('onFocus' in $$props) $$invalidate('onFocus', onFocus = $$props.onFocus);
     		if ('isFocused' in $$props) $$invalidate('isFocused', isFocused = $$props.isFocused);
     		if ('inputNode' in $$props) $$invalidate('inputNode', inputNode = $$props.inputNode);
     		if ('inputValue' in $$props) $$invalidate('inputValue', inputValue = $$props.inputValue);
@@ -871,13 +878,15 @@ var app = (function () {
     	return {
     		onSubmit,
     		onNavigate,
+    		onFocus,
     		isFocused,
     		inputNode,
     		inputValue,
     		isInvalid,
     		handleSubmit,
-    		keydownHandler,
+    		handleKeydown,
     		handleInput,
+    		handleFocus,
     		input_input_handler,
     		input_binding
     	};
@@ -886,7 +895,7 @@ var app = (function () {
     class NumericInput extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$2, create_fragment$2, safe_not_equal, ["onSubmit", "onNavigate", "isFocused"]);
+    		init(this, options, instance$2, create_fragment$2, safe_not_equal, ["onSubmit", "onNavigate", "onFocus", "isFocused"]);
     		dispatch_dev("SvelteRegisterComponent", { component: this, tagName: "NumericInput", options, id: create_fragment$2.name });
 
     		const { ctx } = this.$$;
@@ -896,6 +905,9 @@ var app = (function () {
     		}
     		if (ctx.onNavigate === undefined && !('onNavigate' in props)) {
     			console_1.warn("<NumericInput> was created without expected prop 'onNavigate'");
+    		}
+    		if (ctx.onFocus === undefined && !('onFocus' in props)) {
+    			console_1.warn("<NumericInput> was created without expected prop 'onFocus'");
     		}
     		if (ctx.isFocused === undefined && !('isFocused' in props)) {
     			console_1.warn("<NumericInput> was created without expected prop 'isFocused'");
@@ -915,6 +927,14 @@ var app = (function () {
     	}
 
     	set onNavigate(value) {
+    		throw new Error("<NumericInput>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get onFocus() {
+    		throw new Error("<NumericInput>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set onFocus(value) {
     		throw new Error("<NumericInput>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
 
@@ -1043,6 +1063,10 @@ var app = (function () {
                 _this.listener(_this.currentFieldIndex);
             };
         };
+        NavigationHandler.prototype.set = function (currentField) {
+            this.currentFieldIndex = currentField;
+            this.listener(this.currentFieldIndex);
+        };
         return NavigationHandler;
     }());
     //# sourceMappingURL=NavigationHandler.js.map
@@ -1076,7 +1100,7 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (119:6) {:else}
+    // (123:6) {:else}
     function create_else_block(ctx) {
     	var current;
 
@@ -1084,11 +1108,17 @@ var app = (function () {
     		return ctx.func(ctx, ...args);
     	}
 
+    	function func_1(...args) {
+    		return ctx.func_1(ctx, ...args);
+    	}
+
     	var numericinput = new NumericInput({
     		props: {
+    		index: parseIndex(ctx.question.index),
     		isFocused: parseIndex(ctx.question.index) == ctx.focusedFieldIndex,
-    		onSubmit: func,
-    		onNavigate: ctx.func_1
+    		onFocus: func,
+    		onSubmit: func_1,
+    		onNavigate: ctx.func_2
     	},
     		$$inline: true
     	});
@@ -1107,7 +1137,7 @@ var app = (function () {
     			ctx = new_ctx;
     			var numericinput_changes = {};
     			if (changed.focusedFieldIndex) numericinput_changes.isFocused = parseIndex(ctx.question.index) == ctx.focusedFieldIndex;
-    			if (changed.allAnsweredFieldsIndexes) numericinput_changes.onNavigate = ctx.func_1;
+    			if (changed.allAnsweredFieldsIndexes) numericinput_changes.onNavigate = ctx.func_2;
     			numericinput.$set(numericinput_changes);
     		},
 
@@ -1127,11 +1157,11 @@ var app = (function () {
     			destroy_component(numericinput, detaching);
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_else_block.name, type: "else", source: "(119:6) {:else}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_else_block.name, type: "else", source: "(123:6) {:else}", ctx });
     	return block;
     }
 
-    // (117:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}
+    // (121:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}
     function create_if_block(ctx) {
     	var div, t_value = ctx.question.correctAnswers[0] + "", t;
 
@@ -1139,7 +1169,7 @@ var app = (function () {
     		c: function create() {
     			div = element("div");
     			t = text(t_value);
-    			add_location(div, file$3, 117, 8, 3174);
+    			add_location(div, file$3, 121, 8, 3245);
     		},
 
     		m: function mount(target, anchor) {
@@ -1157,11 +1187,11 @@ var app = (function () {
     			}
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_if_block.name, type: "if", source: "(117:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_if_block.name, type: "if", source: "(121:6) {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}", ctx });
     	return block;
     }
 
-    // (107:2) {#each multiplicationTableQuiz.getQuestions() as question (question.index)}
+    // (111:2) {#each multiplicationTableQuiz.getQuestions() as question (question.index)}
     function create_each_block(key_1, ctx) {
     	var div, current_block_type_index, if_block, t, current;
 
@@ -1196,7 +1226,7 @@ var app = (function () {
     			toggle_class(div, "highlighted-column", checkIfColumnFieldShouldBeHighlighted(ctx.question.index, ctx.focusedFieldIndex));
     			toggle_class(div, "highlighted-row", checkIfRowFieldShouldBeHighlighted(ctx.question.index, ctx.focusedFieldIndex));
     			toggle_class(div, "focused-field", parseIndex(ctx.question.index) === ctx.focusedFieldIndex);
-    			add_location(div, file$3, 107, 4, 2534);
+    			add_location(div, file$3, 111, 4, 2605);
     			this.first = div;
     		},
 
@@ -1254,7 +1284,7 @@ var app = (function () {
     			if_blocks[current_block_type_index].d();
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_each_block.name, type: "each", source: "(107:2) {#each multiplicationTableQuiz.getQuestions() as question (question.index)}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_each_block.name, type: "each", source: "(111:2) {#each multiplicationTableQuiz.getQuestions() as question (question.index)}", ctx });
     	return block;
     }
 
@@ -1279,7 +1309,7 @@ var app = (function () {
     				each_blocks[i].c();
     			}
     			attr_dev(div, "class", "table-wrapper svelte-1r3otcv");
-    			add_location(div, file$3, 105, 0, 2424);
+    			add_location(div, file$3, 109, 0, 2495);
     		},
 
     		l: function claim(nodes) {
@@ -1372,9 +1402,15 @@ var app = (function () {
         }
       );
 
-    	const func = ({ question }, answer) => multiplicationTableQuiz.submitAnswer(answer, question.index);
+      function handleFocus(index) {
+        navigationHandler.set(index);
+      }
 
-    	const func_1 = (key) => navigationHandler.handleKey(allAnsweredFieldsIndexes)(key);
+    	const func = ({ question }, el) => handleFocus(parseIndex(question.index));
+
+    	const func_1 = ({ question }, answer) => multiplicationTableQuiz.submitAnswer(answer, question.index);
+
+    	const func_2 = (key) => navigationHandler.handleKey(allAnsweredFieldsIndexes)(key);
 
     	$$self.$capture_state = () => {
     		return {};
@@ -1404,10 +1440,12 @@ var app = (function () {
     		fieldsAnsweredInorrectly,
     		navigationHandler,
     		multiplicationTableQuiz,
+    		handleFocus,
     		focusedFieldIndex,
     		allAnsweredFieldsIndexes,
     		func,
-    		func_1
+    		func_1,
+    		func_2
     	};
     }
 

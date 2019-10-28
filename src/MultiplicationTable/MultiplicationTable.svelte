@@ -50,6 +50,10 @@
       }
     }
   );
+
+  function handleFocus(index) {
+    navigationHandler.set(index);
+  }
 </script>
 
 <style>
@@ -118,7 +122,9 @@
         <div>{question.correctAnswers[0]}</div>
       {:else}
         <NumericInput
+          index={parseIndex(question.index)}
           isFocused={parseIndex(question.index) == focusedFieldIndex}
+          onFocus={el => handleFocus(parseIndex(question.index), el)}
           onSubmit={answer => multiplicationTableQuiz.submitAnswer(answer, question.index)}
           onNavigate={key => navigationHandler.handleKey(allAnsweredFieldsIndexes)(key)} />
       {/if}

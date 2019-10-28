@@ -82,4 +82,8 @@ export class NavigationHandler {
       this.listener(this.currentFieldIndex)
     }
   }
+  set(currentField) {
+    this.currentFieldIndex = currentField
+    this.listener(this.currentFieldIndex)
+  }
 }
