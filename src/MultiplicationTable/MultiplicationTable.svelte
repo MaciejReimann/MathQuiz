@@ -48,19 +48,16 @@
 </script>
 
 <style>
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
   .table-wrapper {
-    padding: 2rem;
     display: grid;
     grid-template-rows: repeat(10, 3rem);
     grid-template-columns: repeat(10, 3rem);
     column-gap: 8px;
     row-gap: 8px;
-    border: 3px solid blue;
+    padding: 15px;
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 10px 10px 10px 5px #8e9b9c;
   }
   .cell {
     border: 1px solid black;
