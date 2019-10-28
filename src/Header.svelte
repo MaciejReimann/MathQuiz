@@ -1,8 +1,13 @@
 <script>
   import NumericDisplay from "./GenericComponents/NumericDisplay.svelte";
+  import ScoreService from "./Score.service.ts";
 
   let timer = "00:00";
-  let score = 1000;
+  $: score = 0;
+
+  window.addEventListener("score change", e => {
+    score = e.detail.score;
+  });
 </script>
 
 <style>
