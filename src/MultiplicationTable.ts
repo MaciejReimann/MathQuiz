@@ -1,4 +1,5 @@
 import QuizQuestionI from "./Quiz"
+import MultiplicationEquation from "./MultiplicationEquation"
 export default class MultiplicationTable {
   private equations: MultiplicationEquation[] = null
 
@@ -19,18 +20,4 @@ export default class MultiplicationTable {
       question: eq.formatRHEq(),
       correctAnswers: [eq.getResult().toString()]
     }))
-}
-
-class MultiplicationEquation {
-  private value1: number = null
-  private value2: number = null
-  private result: number = null
-
-  constructor(value1, value2) {
-    this.value1 = value1
-    this.value2 = value2
-    this.result = value1 * value2
-  }
-  formatRHEq = () => [this.value1, "x", this.value2, "=", this.result]
-  getResult = () => this.value1 * this.value2
 }
