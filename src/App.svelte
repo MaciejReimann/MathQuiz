@@ -1,6 +1,7 @@
 <script>
   import Header from "./Header.svelte";
   import MultiplicationTable from "./MultiplicationTable/MultiplicationTable.svelte";
+  import EquationsDisplay from "./MultiplicationEquations/EquationsDisplay.svelte";
 </script>
 
 <style>
@@ -36,7 +37,8 @@
   </div>
 
   <main class="main">
-    <MultiplicationTable />
+    <EquationsDisplay />
+
   </main>
 
 </div>

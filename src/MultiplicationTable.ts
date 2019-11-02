@@ -1,4 +1,3 @@
-import QuizQuestionI from "./Quiz"
 import MultiplicationEquation from "./MultiplicationEquation"
 export default class MultiplicationTable {
   private equations: MultiplicationEquation[] = null

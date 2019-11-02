@@ -32,6 +32,7 @@ export default class Quiz {
     this.quizID = quizID
     this.listeners = listeners
   }
+
   getQuestions = () => this.quizQuestions
 
   submitAnswer = (submittedAnswer: never, i) => {
