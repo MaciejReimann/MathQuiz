@@ -1919,12 +1919,13 @@ var app = (function () {
     			attr_dev(input, "class", "svelte-tjp536");
     			toggle_class(input, "focused", ctx.isFocused);
     			toggle_class(input, "blurred", !ctx.isFocused);
-    			add_location(input, file$2, 60, 0, 1038);
+    			add_location(input, file$2, 60, 0, 1044);
 
     			dispose = [
     				listen_dev(input, "input", ctx.input_input_handler),
     				listen_dev(input, "focus", ctx.handleFocus),
     				listen_dev(input, "blur", ctx.handleBlur),
+    				listen_dev(input, "input", ctx.handleInput),
     				listen_dev(input, "change", ctx.handleSubmit),
     				listen_dev(input, "keydown", ctx.handleKeydown)
     			];
@@ -1979,7 +1980,7 @@ var app = (function () {
     	let { submittedValue, onSubmit, onNavigate, onFocus, maxLength } = $$props;
 
       let inputNode;
-      let inputValue = submittedValue;
+      let inputValue = submittedValue || "";
       let isFocused;
 
       const handleFocus = () => {
@@ -1988,6 +1989,12 @@ var app = (function () {
 
       const handleBlur = () => {
         $$invalidate('isFocused', isFocused = false);
+      };
+
+      const handleInput = e => {
+        if (isNaN(parseInt(e.data))) {
+          $$invalidate('inputValue', inputValue = inputValue.slice(0, inputValue.length - 1));
+        }
       };
 
       const handleSubmit = () => {
@@ -2053,6 +2060,7 @@ var app = (function () {
     		isFocused,
     		handleFocus,
     		handleBlur,
+    		handleInput,
     		handleSubmit,
     		handleKeydown,
     		input_input_handler,

@@ -6,7 +6,7 @@
   export let maxLength;
 
   let inputNode;
-  let inputValue = submittedValue;
+  let inputValue = submittedValue || "";
   let isFocused;
 
   $: inputNode && !submittedValue && inputNode.focus();
@@ -63,9 +63,10 @@
   class:blurred={!isFocused}
   on:focus={handleFocus}
   on:blur={handleBlur}
+  on:input={handleInput}
+  bind:value={inputValue}
   on:change={handleSubmit}
   on:keydown={handleKeydown}
-  bind:value={inputValue}
   bind:this={inputNode}
   maxlength={maxLength}
   disabled={submittedValue}
