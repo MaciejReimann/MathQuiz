@@ -1,4 +1,7 @@
+import shuffle from "lodash/shuffle"
 import QuizQuestion from "./QuizQuestion"
+
+import { optionalCallExpression } from "@babel/types"
 
 // export interface QuizQuestionI {
 //   index: string
@@ -11,9 +14,14 @@ import QuizQuestion from "./QuizQuestion"
 export default class Quiz {
   constructor(
     private quizQuestions: QuizQuestion[],
-    private currentIndex: number = 0
+    private currentIndex: number = 0,
+    options?: any
   ) {
-    this.quizQuestions = quizQuestions
+    if (options.shuffled) {
+      this.quizQuestions = shuffle(quizQuestions)
+    } else {
+      this.quizQuestions = quizQuestions
+    }
   }
 
   getAnsweredQuestions() {

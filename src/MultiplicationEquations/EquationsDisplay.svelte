@@ -1,4 +1,6 @@
 <script>
+  import { createEventDispatcher } from "svelte";
+
   import Quiz from "../Quiz.v2";
   import { generateEquationsForARange } from "../MultiplicationEquation";
   import { equationQuizAdapter } from "../equationQuizAdapter";
@@ -6,15 +8,17 @@
 
   $: currentEquation = quiz.getCurrentQuestion();
 
+  const dispatch = createEventDispatcher();
+
   const onSubmitAnswer = i => {
     quiz.incrementIndex();
     currentEquation = quiz.getCurrentQuestion();
   };
   const onSubmitCorrectAnswer = i => {
-    console.log("correct:  ", i);
+    dispatch("answerSubmitted", { correct: true, index: `${i}` });
   };
   const onSubmitIncorrectAnswer = i => {
-    console.log("incorrect!  ", i);
+    dispatch("answerSubmitted", { correct: false, index: `${i}` });
   };
 
   const equations = generateEquationsForARange({ x: 10, y: 10 }).map(eq =>
@@ -22,15 +26,14 @@
   );
 
   const quizQuestions = equations.map((eq, i) =>
-    equationQuizAdapter(`_*y=z[${i}]`, eq, 0, {
+    equationQuizAdapter(`[["_*y=z"], [${i}]]`, eq, 0, {
       onSubmitAnswer,
       onSubmitCorrectAnswer,
       onSubmitIncorrectAnswer
     })
   );
 
-  const quiz = new Quiz(quizQuestions, 9);
-  console.log(quiz.getCurrentQuestion());
+  const quiz = new Quiz(quizQuestions, 9, { shuffled: true });
 </script>
 
 <div class="wrapper">

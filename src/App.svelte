@@ -1,7 +1,20 @@
 <script>
+  import { setContext } from "svelte";
   import Header from "./Header.svelte";
   import MultiplicationTable from "./MultiplicationTable/MultiplicationTable.svelte";
   import EquationsDisplay from "./MultiplicationEquations/EquationsDisplay.svelte";
+  import ScoreService from "./Score.service";
+
+  const scoreService = new ScoreService();
+  setContext("scoreService", scoreService);
+
+  const handleAnswerSubmitted = e => {
+    if (e.detail.correct) {
+      scoreService.incrementScore();
+    } else {
+      scoreService.resetStrike();
+    }
+  };
 </script>
 
 <style>
@@ -37,7 +50,7 @@
   </div>
 
   <main class="main">
-    <EquationsDisplay />
+    <EquationsDisplay on:answerSubmitted={handleAnswerSubmitted} />
 
   </main>
 

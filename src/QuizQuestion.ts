@@ -1,7 +1,7 @@
 export interface QuizQuestionListeners {
   onSubmitAnswer: () => void
-  onSubmitCorrectAnswer: () => void
-  onSubmitIncorrectAnswer: () => void
+  onSubmitCorrectAnswer: (id: string) => void
+  onSubmitIncorrectAnswer: (id: string) => void
 }
 
 export default class QuizQuestion {
@@ -30,14 +30,13 @@ export default class QuizQuestion {
   }
 
   submitAnswer(submittedAnswer: string) {
-    console.log("QuizQuestion", submittedAnswer)
     if (this.correctAnswers.includes(submittedAnswer)) {
-      this.correctAnswerCount = this.correctAnswerCount + 1
-      this.listeners.onSubmitCorrectAnswer()
+      ++this.correctAnswerCount
+      this.listeners.onSubmitCorrectAnswer(this.ID)
     } else {
-      this.listeners.onSubmitIncorrectAnswer()
+      this.listeners.onSubmitIncorrectAnswer(this.ID)
     }
-    this.submittedAnswers = [...this.submittedAnswers, submittedAnswer]
+    this.submittedAnswers.push(submittedAnswer)
     this.listeners.onSubmitAnswer()
   }
 }

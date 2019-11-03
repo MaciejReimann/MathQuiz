@@ -2,13 +2,18 @@ export default class ScoreService {
   private score: number = 0
   private incrementBy: number = 1
   private strikeLength: number = 0
-  private strikeThreshhold: number
+  private strikeThreshhold: number = 5
+  private incrementCallbacks = []
 
   constructor(config?) {
-    this.strikeThreshhold = config.strikeThreshhold
+    if (config && config.strikeThreshhold) {
+      this.strikeThreshhold = config.strikeThreshhold
+    }
   }
 
-  increment = () => {
+  getScore = () => this.score
+
+  incrementScore = () => {
     if (this.score === 0) this.score = 1
 
     this.score = this.score + this.incrementBy
@@ -18,7 +23,7 @@ export default class ScoreService {
     }
     ++this.strikeLength
 
-    this.onIncrement()
+    this.incrementCallbacks.map(cb => cb())
   }
 
   resetStrike = () => {
@@ -26,11 +31,11 @@ export default class ScoreService {
     this.strikeLength = 0
   }
 
-  onIncrement = () => {
-    window.dispatchEvent(
-      new CustomEvent("score change", {
-        detail: { score: this.score, strikeLength: this.strikeLength }
-      })
-    )
+  setCallbacksForIncrement = cb => {
+    if (typeof cb === "function") this.incrementCallbacks.push(cb)
+    else
+      throw new Error(
+        "Callback provided to Score.service.ts is not a function!"
+      )
   }
 }

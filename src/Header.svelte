@@ -1,13 +1,17 @@
 <script>
+  import { getContext } from "svelte";
   import NumericDisplay from "./GenericComponents/NumericDisplay.svelte";
   import ScoreService from "./Score.service.ts";
 
-  let timer = "00:00";
-  $: score = 0;
+  const scoreService = getContext("scoreService");
 
-  window.addEventListener("score change", e => {
-    score = e.detail.score;
+  $: score = scoreService.getScore();
+
+  scoreService.setCallbacksForIncrement(() => {
+    score = scoreService.getScore();
   });
+
+  let timer = "00:00";
 </script>
 
 <style>
