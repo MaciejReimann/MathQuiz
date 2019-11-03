@@ -1,13 +1,14 @@
 <script>
   import { writable } from "svelte/store";
   import { setContext } from "svelte";
-
   import ScoreService from "./Score.service";
 
   import Header from "./Header.svelte";
   import ControlBar from "./ControlBar/ControlBar.svelte";
-  import MultiplicationTable from "./MultiplicationTable/MultiplicationTable.svelte";
-  import EquationsDisplay from "./MultiplicationEquations/EquationsDisplay.svelte";
+  import AppletWindow from "./AppletWindow/AppletWindow.svelte";
+
+  const scoreService = new ScoreService();
+  setContext("scoreService", scoreService);
 
   const appletsID = ["x * y = _", "_ * y = z", "x * _ = z", "table"];
   let currentAppletID;
@@ -21,17 +22,6 @@
   appStore.subscribe(value => {
     currentAppletID = value;
   });
-
-  const scoreService = new ScoreService();
-  setContext("scoreService", scoreService);
-
-  const handleAnswerSubmitted = e => {
-    if (e.detail.correct) {
-      scoreService.incrementScore();
-    } else {
-      scoreService.resetStrike();
-    }
-  };
 </script>
 
 <style>
@@ -67,12 +57,15 @@
 </style>
 
 <div class="app">
-  <div class="header">
+
+  <header class="header">
     <Header />
-  </div>
+  </header>
 
   <main class="main">
-    <EquationsDisplay on:answerSubmitted={handleAnswerSubmitted} />
+
+    <AppletWindow />
+
   </main>
 
   <footer class="footer">

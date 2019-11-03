@@ -21,7 +21,7 @@
   .title {
     font-size: 2em;
   }
-  .header {
+  .wrapper {
     position: relative;
     display: flex;
     justify-content: space-between;
@@ -52,7 +52,7 @@
   }
 </style>
 
-<header class="header">
+<div class="wrapper">
 
   <NumericDisplay text="timer" numbers={timer} />
 
@@ -65,4 +65,4 @@
     </div>
   </NumericDisplay>
 
-</header>
+</div>
