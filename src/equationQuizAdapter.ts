@@ -4,6 +4,7 @@ import QuizQuestion, { QuizQuestionListeners } from "./QuizQuestion"
 export type InputSymbol = "|_|"
 
 export function equationQuizAdapter(
+  ID: string,
   equation: any[],
   position: number,
   listeners: QuizQuestionListeners
@@ -14,5 +15,5 @@ export function equationQuizAdapter(
     ...equation.slice(position + 1, equation.length)
   ]
   const correctAnswers = equation[position].toString()
-  return new QuizQuestion(question, [correctAnswers], listeners)
+  return new QuizQuestion(ID, question, [correctAnswers], listeners)
 }

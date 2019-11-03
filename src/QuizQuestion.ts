@@ -5,18 +5,17 @@ export interface QuizQuestionListeners {
 }
 
 export default class QuizQuestion {
-  private index: number
-  private question: any[]
-  private correctAnswers: string[] = []
   private submittedAnswers: string[] = []
   private correctAnswerCount: number = 0
-  private listeners: QuizQuestionListeners
+  listeners: QuizQuestionListeners
 
   constructor(
-    question: any[],
-    correctAnswers: any[],
+    private ID: string,
+    private question: any[],
+    private correctAnswers: string[] = [],
     listeners: QuizQuestionListeners
   ) {
+    this.ID = ID
     this.question = question
     this.correctAnswers = correctAnswers
     this.listeners = listeners
@@ -24,6 +23,10 @@ export default class QuizQuestion {
 
   getInArray() {
     return this.question
+  }
+
+  getLastSubmittedAnswer() {
+    return this.submittedAnswers[this.submittedAnswers.length - 1]
   }
 
   submitAnswer(submittedAnswer: string) {

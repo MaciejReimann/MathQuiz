@@ -1,12 +1,7 @@
 <script>
-  import NumericInputv2 from "../GenericComponents/NumericInputv2.svelte";
   export let equation;
-  export let onSubmit;
-  export let elements;
 
-  function handleSubmitAnswer(answer) {
-    equation.submitAnswer(answer);
-  }
+  import NumericInputv2 from "../GenericComponents/NumericInputv2.svelte";
 </script>
 
 <style>
@@ -39,7 +34,10 @@
     <div class="cell">
       {#if element === '|_|'}
         <div class="input">
-          <NumericInputv2 maxLength={3} onSubmit={handleSubmitAnswer} />
+          <NumericInputv2
+            maxLength={3}
+            onSubmit={answer => equation.submitAnswer(answer)}
+            submittedValue={equation.getLastSubmittedAnswer()} />
         </div>
       {:else}
         <div class="symbol">{element}</div>
