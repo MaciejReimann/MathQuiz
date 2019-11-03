@@ -18,11 +18,18 @@
     margin-left: 20px;
     font-size: 1.5rem;
   }
+
+  .relative {
+    top: 60px;
+  }
 </style>
 
 <div class="timer-wrapper">
 
   <span class="text">{text}</span>
   <span class="numbers">{numbers}</span>
+  <div class="relative">
+    <slot />
+  </div>
 
 </div>

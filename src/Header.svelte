@@ -1,14 +1,17 @@
 <script>
   import { getContext } from "svelte";
   import NumericDisplay from "./GenericComponents/NumericDisplay.svelte";
-  import ScoreService from "./Score.service.ts";
 
   const scoreService = getContext("scoreService");
 
   $: score = scoreService.getScore();
+  $: strikeLength = "";
+  $: strikeText = "";
 
   scoreService.setCallbacksForIncrement(() => {
     score = scoreService.getScore();
+    strikeLength = scoreService.getStrikeLength();
+    strikeText = "strike";
   });
 
   let timer = "00:00";
@@ -19,6 +22,7 @@
     font-size: 2em;
   }
   .header {
+    position: relative;
     display: flex;
     justify-content: space-between;
     padding: 0 2rem;
@@ -26,6 +30,25 @@
     box-shadow: 0px 10px 10px 5px #8e9b9c;
     border-radius: 0 0 5px 5px;
     z-index: 10;
+  }
+
+  .strike {
+    position: absolute;
+    top: 8px;
+    right: 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .text {
+    font-size: 0.5rem;
+    text-decoration: underline;
+  }
+
+  .number {
+    font-size: 1rem;
+    margin-left: 0.5rem;
   }
 </style>
 
@@ -35,6 +58,11 @@
 
   <h1 class="title">Count Fast!</h1>
 
-  <NumericDisplay text="score" numbers={score} />
+  <NumericDisplay text="score" numbers={score}>
+    <div class="strike">
+      <div class="text">{strikeText}</div>
+      <div class="number">{strikeLength}</div>
+    </div>
+  </NumericDisplay>
 
 </header>

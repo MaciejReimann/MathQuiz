@@ -13,6 +13,8 @@ export default class ScoreService {
 
   getScore = () => this.score
 
+  getStrikeLength = () => this.strikeLength
+
   incrementScore = () => {
     if (this.score === 0) this.score = 1
 

@@ -4,6 +4,12 @@ var app = (function () {
     'use strict';
 
     function noop() { }
+    function assign(tar, src) {
+        // @ts-ignore
+        for (const k in src)
+            tar[k] = src[k];
+        return tar;
+    }
     function add_location(element, file, line, column, char) {
         element.__svelte_meta = {
             loc: { file, line, column, char }
@@ -23,6 +29,22 @@ var app = (function () {
     }
     function safe_not_equal(a, b) {
         return a != a ? b == b : a !== b || ((a && typeof a === 'object') || typeof a === 'function');
+    }
+    function create_slot(definition, ctx, fn) {
+        if (definition) {
+            const slot_ctx = get_slot_context(definition, ctx, fn);
+            return definition[0](slot_ctx);
+        }
+    }
+    function get_slot_context(definition, ctx, fn) {
+        return definition[1]
+            ? assign({}, assign(ctx.$$scope.ctx, definition[1](fn ? fn(ctx) : {})))
+            : ctx.$$scope.ctx;
+    }
+    function get_slot_changes(definition, ctx, changed, fn) {
+        return definition[1]
+            ? assign({}, assign(ctx.$$scope.changed || {}, definition[1](fn ? fn(changed) : {})))
+            : ctx.$$scope.changed || {};
     }
 
     function append(target, node) {
@@ -455,54 +477,90 @@ var app = (function () {
     const file = "src/GenericComponents/NumericDisplay.svelte";
 
     function create_fragment(ctx) {
-    	var div, span0, t0, t1, span1, t2;
+    	var div1, span0, t0, t1, span1, t2, t3, div0, current;
+
+    	const default_slot_template = ctx.$$slots.default;
+    	const default_slot = create_slot(default_slot_template, ctx, null);
 
     	const block = {
     		c: function create() {
-    			div = element("div");
+    			div1 = element("div");
     			span0 = element("span");
     			t0 = text(ctx.text);
     			t1 = space();
     			span1 = element("span");
     			t2 = text(ctx.numbers);
-    			attr_dev(span0, "class", "text svelte-y9hym3");
-    			add_location(span0, file, 24, 2, 360);
-    			attr_dev(span1, "class", "numbers svelte-y9hym3");
-    			add_location(span1, file, 25, 2, 395);
-    			attr_dev(div, "class", "timer-wrapper svelte-y9hym3");
-    			add_location(div, file, 22, 0, 329);
+    			t3 = space();
+    			div0 = element("div");
+
+    			if (default_slot) default_slot.c();
+    			attr_dev(span0, "class", "text svelte-ymf6jt");
+    			add_location(span0, file, 28, 2, 394);
+    			attr_dev(span1, "class", "numbers svelte-ymf6jt");
+    			add_location(span1, file, 29, 2, 429);
+
+    			attr_dev(div0, "class", "relative svelte-ymf6jt");
+    			add_location(div0, file, 30, 2, 470);
+    			attr_dev(div1, "class", "timer-wrapper svelte-ymf6jt");
+    			add_location(div1, file, 26, 0, 363);
     		},
 
     		l: function claim(nodes) {
+    			if (default_slot) default_slot.l(div0_nodes);
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
     		},
 
     		m: function mount(target, anchor) {
-    			insert_dev(target, div, anchor);
-    			append_dev(div, span0);
+    			insert_dev(target, div1, anchor);
+    			append_dev(div1, span0);
     			append_dev(span0, t0);
-    			append_dev(div, t1);
-    			append_dev(div, span1);
+    			append_dev(div1, t1);
+    			append_dev(div1, span1);
     			append_dev(span1, t2);
+    			append_dev(div1, t3);
+    			append_dev(div1, div0);
+
+    			if (default_slot) {
+    				default_slot.m(div0, null);
+    			}
+
+    			current = true;
     		},
 
     		p: function update(changed, ctx) {
-    			if (changed.text) {
+    			if (!current || changed.text) {
     				set_data_dev(t0, ctx.text);
     			}
 
-    			if (changed.numbers) {
+    			if (!current || changed.numbers) {
     				set_data_dev(t2, ctx.numbers);
+    			}
+
+    			if (default_slot && default_slot.p && changed.$$scope) {
+    				default_slot.p(
+    					get_slot_changes(default_slot_template, ctx, changed, null),
+    					get_slot_context(default_slot_template, ctx, null)
+    				);
     			}
     		},
 
-    		i: noop,
-    		o: noop,
+    		i: function intro(local) {
+    			if (current) return;
+    			transition_in(default_slot, local);
+    			current = true;
+    		},
+
+    		o: function outro(local) {
+    			transition_out(default_slot, local);
+    			current = false;
+    		},
 
     		d: function destroy(detaching) {
     			if (detaching) {
-    				detach_dev(div);
+    				detach_dev(div1);
     			}
+
+    			if (default_slot) default_slot.d(detaching);
     		}
     	};
     	dispatch_dev("SvelteRegisterBlock", { block, id: create_fragment.name, type: "component", source: "", ctx });
@@ -517,9 +575,12 @@ var app = (function () {
     		if (!writable_props.includes(key) && !key.startsWith('$$')) console.warn(`<NumericDisplay> was created with unknown prop '${key}'`);
     	});
 
+    	let { $$slots = {}, $$scope } = $$props;
+
     	$$self.$set = $$props => {
     		if ('text' in $$props) $$invalidate('text', text = $$props.text);
     		if ('numbers' in $$props) $$invalidate('numbers', numbers = $$props.numbers);
+    		if ('$$scope' in $$props) $$invalidate('$$scope', $$scope = $$props.$$scope);
     	};
 
     	$$self.$capture_state = () => {
@@ -531,7 +592,7 @@ var app = (function () {
     		if ('numbers' in $$props) $$invalidate('numbers', numbers = $$props.numbers);
     	};
 
-    	return { text, numbers };
+    	return { text, numbers, $$slots, $$scope };
     }
 
     class NumericDisplay extends SvelteComponentDev {
@@ -567,46 +628,58 @@ var app = (function () {
     	}
     }
 
-    var ScoreService = /** @class */ (function () {
-        function ScoreService(config) {
-            var _this = this;
-            this.score = 0;
-            this.incrementBy = 1;
-            this.strikeLength = 0;
-            this.strikeThreshhold = 5;
-            this.incrementCallbacks = [];
-            this.getScore = function () { return _this.score; };
-            this.incrementScore = function () {
-                if (_this.score === 0)
-                    _this.score = 1;
-                _this.score = _this.score + _this.incrementBy;
-                if (_this.strikeLength % _this.strikeThreshhold === 0) {
-                    ++_this.incrementBy;
-                }
-                ++_this.strikeLength;
-                _this.incrementCallbacks.map(function (cb) { return cb(); });
-            };
-            this.resetStrike = function () {
-                _this.incrementBy = 1;
-                _this.strikeLength = 0;
-            };
-            this.setCallbacksForIncrement = function (cb) {
-                if (typeof cb === "function")
-                    _this.incrementCallbacks.push(cb);
-                else
-                    throw new Error("Callback provided to Score.service.ts is not a function!");
-            };
-            if (config && config.strikeThreshhold) {
-                this.strikeThreshhold = config.strikeThreshhold;
-            }
-        }
-        return ScoreService;
-    }());
-    //# sourceMappingURL=Score.service.js.map
-
     /* src/Header.svelte generated by Svelte v3.12.1 */
 
     const file$1 = "src/Header.svelte";
+
+    // (61:2) <NumericDisplay text="score" numbers={score}>
+    function create_default_slot(ctx) {
+    	var div2, div0, t0, t1, div1, t2;
+
+    	const block = {
+    		c: function create() {
+    			div2 = element("div");
+    			div0 = element("div");
+    			t0 = text(ctx.strikeText);
+    			t1 = space();
+    			div1 = element("div");
+    			t2 = text(ctx.strikeLength);
+    			attr_dev(div0, "class", "text svelte-1595u16");
+    			add_location(div0, file$1, 62, 6, 1225);
+    			attr_dev(div1, "class", "number svelte-1595u16");
+    			add_location(div1, file$1, 63, 6, 1268);
+    			attr_dev(div2, "class", "strike svelte-1595u16");
+    			add_location(div2, file$1, 61, 4, 1198);
+    		},
+
+    		m: function mount(target, anchor) {
+    			insert_dev(target, div2, anchor);
+    			append_dev(div2, div0);
+    			append_dev(div0, t0);
+    			append_dev(div2, t1);
+    			append_dev(div2, div1);
+    			append_dev(div1, t2);
+    		},
+
+    		p: function update(changed, ctx) {
+    			if (changed.strikeText) {
+    				set_data_dev(t0, ctx.strikeText);
+    			}
+
+    			if (changed.strikeLength) {
+    				set_data_dev(t2, ctx.strikeLength);
+    			}
+    		},
+
+    		d: function destroy(detaching) {
+    			if (detaching) {
+    				detach_dev(div2);
+    			}
+    		}
+    	};
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_default_slot.name, type: "slot", source: "(61:2) <NumericDisplay text=\"score\" numbers={score}>", ctx });
+    	return block;
+    }
 
     function create_fragment$1(ctx) {
     	var header, t0, h1, t2, current;
@@ -617,7 +690,12 @@ var app = (function () {
     	});
 
     	var numericdisplay1 = new NumericDisplay({
-    		props: { text: "score", numbers: ctx.score },
+    		props: {
+    		text: "score",
+    		numbers: ctx.score,
+    		$$slots: { default: [create_default_slot] },
+    		$$scope: { ctx }
+    	},
     		$$inline: true
     	});
 
@@ -630,10 +708,10 @@ var app = (function () {
     			h1.textContent = "Count Fast!";
     			t2 = space();
     			numericdisplay1.$$.fragment.c();
-    			attr_dev(h1, "class", "title svelte-19t0g86");
-    			add_location(h1, file$1, 35, 2, 733);
-    			attr_dev(header, "class", "header svelte-19t0g86");
-    			add_location(header, file$1, 31, 0, 655);
+    			attr_dev(h1, "class", "title svelte-1595u16");
+    			add_location(h1, file$1, 58, 2, 1110);
+    			attr_dev(header, "class", "header svelte-1595u16");
+    			add_location(header, file$1, 54, 0, 1032);
     		},
 
     		l: function claim(nodes) {
@@ -653,6 +731,7 @@ var app = (function () {
     		p: function update(changed, ctx) {
     			var numericdisplay1_changes = {};
     			if (changed.score) numericdisplay1_changes.numbers = ctx.score;
+    			if (changed.$$scope || changed.strikeLength || changed.strikeText) numericdisplay1_changes.$$scope = { changed, ctx };
     			numericdisplay1.$set(numericdisplay1_changes);
     		},
 
@@ -694,6 +773,8 @@ var app = (function () {
 
       scoreService.setCallbacksForIncrement(() => {
         $$invalidate('score', score = scoreService.getScore());
+        $$invalidate('strikeLength', strikeLength = scoreService.getStrikeLength());
+        $$invalidate('strikeText', strikeText = "strike");
       });
 
     	$$self.$capture_state = () => {
@@ -703,13 +784,17 @@ var app = (function () {
     	$$self.$inject_state = $$props => {
     		if ('timer' in $$props) $$invalidate('timer', timer = $$props.timer);
     		if ('score' in $$props) $$invalidate('score', score = $$props.score);
+    		if ('strikeLength' in $$props) $$invalidate('strikeLength', strikeLength = $$props.strikeLength);
+    		if ('strikeText' in $$props) $$invalidate('strikeText', strikeText = $$props.strikeText);
     	};
 
-    	let score;
+    	let score, strikeLength, strikeText;
 
     	$$invalidate('score', score = scoreService.getScore());
+    	$$invalidate('strikeLength', strikeLength = "");
+    	$$invalidate('strikeText', strikeText = "");
 
-    	return { score };
+    	return { score, strikeLength, strikeText };
     }
 
     class Header extends SvelteComponentDev {
@@ -742,6 +827,44 @@ var app = (function () {
                 r[k] = a[j];
         return r;
     }
+
+    var ScoreService = /** @class */ (function () {
+        function ScoreService(config) {
+            var _this = this;
+            this.score = 0;
+            this.incrementBy = 1;
+            this.strikeLength = 0;
+            this.strikeThreshhold = 5;
+            this.incrementCallbacks = [];
+            this.getScore = function () { return _this.score; };
+            this.getStrikeLength = function () { return _this.strikeLength; };
+            this.incrementScore = function () {
+                if (_this.score === 0)
+                    _this.score = 1;
+                _this.score = _this.score + _this.incrementBy;
+                if (_this.strikeLength % _this.strikeThreshhold === 0) {
+                    ++_this.incrementBy;
+                }
+                ++_this.strikeLength;
+                _this.incrementCallbacks.map(function (cb) { return cb(); });
+            };
+            this.resetStrike = function () {
+                _this.incrementBy = 1;
+                _this.strikeLength = 0;
+            };
+            this.setCallbacksForIncrement = function (cb) {
+                if (typeof cb === "function")
+                    _this.incrementCallbacks.push(cb);
+                else
+                    throw new Error("Callback provided to Score.service.ts is not a function!");
+            };
+            if (config && config.strikeThreshhold) {
+                this.strikeThreshhold = config.strikeThreshhold;
+            }
+        }
+        return ScoreService;
+    }());
+    //# sourceMappingURL=Score.service.js.map
 
     var Signs;
     (function (Signs) {
