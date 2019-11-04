@@ -1,6 +1,5 @@
 <script>
   export let equation;
-
   import NumericInputv2 from "../GenericComponents/NumericInputv2.svelte";
 </script>
 

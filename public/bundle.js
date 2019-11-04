@@ -948,6 +948,7 @@ var app = (function () {
 
     function instance$2($$self, $$props, $$invalidate) {
     	let { name } = $$props;
+
       const appStore = getContext("appStore");
 
       let selectedAppletID;
@@ -2180,13 +2181,6 @@ var app = (function () {
 
     var shuffle_1 = shuffle;
 
-    // export interface QuizQuestionI {
-    //   index: string
-    //   question: any[]
-    //   correctAnswers: any[]
-    //   submittedAnswers: any[]
-    //   correctAnswerCount: number
-    // }
     var Quiz = /** @class */ (function () {
         function Quiz(quizQuestions, currentIndex, options) {
             if (currentIndex === void 0) { currentIndex = 0; }
@@ -2236,7 +2230,7 @@ var app = (function () {
         };
         QuizQuestion.prototype.submitAnswer = function (submittedAnswer) {
             if (this.correctAnswers.includes(submittedAnswer)) {
-                ++this.correctAnswerCount;
+                this.correctAnswerCount = this.correctAnswerCount + 1;
                 this.listeners.onSubmitCorrectAnswer(this.ID);
             }
             else {
@@ -2247,7 +2241,6 @@ var app = (function () {
         };
         return QuizQuestion;
     }());
-    //# sourceMappingURL=QuizQuestion.js.map
 
     function equationQuizAdapter(ID, equation, position, listeners) {
         var question = __spreadArrays(equation.slice(0, position), [
@@ -2499,7 +2492,7 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (42:6) {:else}
+    // (41:6) {:else}
     function create_else_block(ctx) {
     	var div, t_value = ctx.element + "", t;
 
@@ -2508,7 +2501,7 @@ var app = (function () {
     			div = element("div");
     			t = text(t_value);
     			attr_dev(div, "class", "symbol svelte-1n1izmm");
-    			add_location(div, file$5, 42, 8, 826);
+    			add_location(div, file$5, 41, 8, 825);
     		},
 
     		m: function mount(target, anchor) {
@@ -2531,11 +2524,11 @@ var app = (function () {
     			}
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_else_block.name, type: "else", source: "(42:6) {:else}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_else_block.name, type: "else", source: "(41:6) {:else}", ctx });
     	return block;
     }
 
-    // (35:6) {#if element === '|_|'}
+    // (34:6) {#if element === '|_|'}
     function create_if_block(ctx) {
     	var div, current;
 
@@ -2553,7 +2546,7 @@ var app = (function () {
     			div = element("div");
     			numericinputv2.$$.fragment.c();
     			attr_dev(div, "class", "input svelte-1n1izmm");
-    			add_location(div, file$5, 35, 8, 588);
+    			add_location(div, file$5, 34, 8, 587);
     		},
 
     		m: function mount(target, anchor) {
@@ -2589,11 +2582,11 @@ var app = (function () {
     			destroy_component(numericinputv2);
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_if_block.name, type: "if", source: "(35:6) {#if element === '|_|'}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_if_block.name, type: "if", source: "(34:6) {#if element === '|_|'}", ctx });
     	return block;
     }
 
-    // (33:2) {#each equation.getInArray() as element}
+    // (32:2) {#each equation.getInArray() as element}
     function create_each_block$1(ctx) {
     	var div, current_block_type_index, if_block, t, current;
 
@@ -2618,7 +2611,7 @@ var app = (function () {
     			if_block.c();
     			t = space();
     			attr_dev(div, "class", "cell svelte-1n1izmm");
-    			add_location(div, file$5, 33, 4, 531);
+    			add_location(div, file$5, 32, 4, 530);
     		},
 
     		m: function mount(target, anchor) {
@@ -2669,7 +2662,7 @@ var app = (function () {
     			if_blocks[current_block_type_index].d();
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_each_block$1.name, type: "each", source: "(33:2) {#each equation.getInArray() as element}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_each_block$1.name, type: "each", source: "(32:2) {#each equation.getInArray() as element}", ctx });
     	return block;
     }
 
@@ -2696,7 +2689,7 @@ var app = (function () {
     				each_blocks[i].c();
     			}
     			attr_dev(div, "class", "wrapper svelte-1n1izmm");
-    			add_location(div, file$5, 31, 0, 462);
+    			add_location(div, file$5, 30, 0, 461);
     		},
 
     		l: function claim(nodes) {
@@ -3048,7 +3041,7 @@ var app = (function () {
     			t1 = space();
     			equationsdisplay.$$.fragment.c();
     			attr_dev(div, "class", "wrapper svelte-1nfds69");
-    			add_location(div, file$7, 30, 0, 669);
+    			add_location(div, file$7, 32, 0, 705);
     		},
 
     		l: function claim(nodes) {
@@ -3118,6 +3111,10 @@ var app = (function () {
 
     	$$self.$inject_state = $$props => {
     		if ('currentAppletID' in $$props) $$invalidate('currentAppletID', currentAppletID = $$props.currentAppletID);
+    	};
+
+    	$$self.$$.update = ($$dirty = { currentAppletID: 1 }) => {
+    		if ($$dirty.currentAppletID) { console.log(currentAppletID); }
     	};
 
     	return { currentAppletID, handleAnswerSubmitted };

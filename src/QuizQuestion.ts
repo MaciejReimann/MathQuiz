@@ -31,7 +31,7 @@ export default class QuizQuestion {
 
   submitAnswer(submittedAnswer: string) {
     if (this.correctAnswers.includes(submittedAnswer)) {
-      ++this.correctAnswerCount
+      this.correctAnswerCount = this.correctAnswerCount + 1
       this.listeners.onSubmitCorrectAnswer(this.ID)
     } else {
       this.listeners.onSubmitIncorrectAnswer(this.ID)

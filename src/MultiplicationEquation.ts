@@ -41,17 +41,36 @@ export default class MultiplicationEquation implements MultiplicationEquationI {
   getResult = () => this.value1 * this.value2
 }
 
-interface XY {
-  x: number
-  y: number
+interface XYRangeI {
+  xMin?: number
+  xMax: number
+  yMin?: number
+  yMax: number
 }
 
-export function generateEquationsForARange(range: XY) {
-  return [...new Array(range.x)]
-    .map((_, i) =>
-      [...new Array(range.y)].map(
-        (_, j) => new MultiplicationEquation(i + 1, j + 1)
+export class MultiplicationEquationBuilder {
+  static getFromRange = (range: XYRangeI) =>
+    [...new Array(range.xMax)]
+      .slice(range.xMin, range.xMax)
+      .map((_, i) => (range.xMin ? i + range.xMin : i))
+      .map(i =>
+        [...new Array(range.yMax)]
+          .slice(range.yMin, range.yMax)
+          .map((_, j) => (range.yMin ? j + range.yMin : j))
+          .map(j => new MultiplicationEquation(i + 1, j + 1))
       )
+
+      .flat()
+
+  // x * y = z
+  static getFromRangeRHS = (range: XYRangeI) =>
+    MultiplicationEquationBuilder.getFromRange(range).map(eq =>
+      eq.formatEqResultRHS()
     )
-    .flat()
+
+  // z = x * y
+  static getFromRangeLHS = (range: XYRangeI) =>
+    MultiplicationEquationBuilder.getFromRange(range).map(eq =>
+      eq.formatEqResultLHS()
+    )
 }

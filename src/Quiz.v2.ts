@@ -2,15 +2,6 @@ import shuffle from "lodash/shuffle"
 import QuizQuestion from "./QuizQuestion"
 
 import { optionalCallExpression } from "@babel/types"
-
-// export interface QuizQuestionI {
-//   index: string
-//   question: any[]
-//   correctAnswers: any[]
-//   submittedAnswers: any[]
-//   correctAnswerCount: number
-// }
-
 export default class Quiz {
   constructor(
     private quizQuestions: QuizQuestion[],

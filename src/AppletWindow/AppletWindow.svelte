@@ -7,6 +7,8 @@
   const scoreService = getContext("scoreService");
   let currentAppletID;
 
+  $: console.log(currentAppletID);
+
   appStore.subscribe(value => {
     currentAppletID = value;
   });

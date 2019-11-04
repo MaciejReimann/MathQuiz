@@ -1,7 +1,7 @@
 <script>
   export let name;
-
   import { getContext } from "svelte";
+
   const appStore = getContext("appStore");
 
   let selectedAppletID;
