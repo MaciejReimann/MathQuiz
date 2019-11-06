@@ -2,7 +2,7 @@
   import { createEventDispatcher } from "svelte";
 
   import Quiz from "../Quiz.v2";
-  import { generateEquationsForARange } from "../MultiplicationEquation";
+  import { MultiplicationEquationBuilder } from "../MultiplicationEquation";
   import { equationQuizAdapter } from "../equationQuizAdapter";
   import SingleEquation from "../MultiplicationEquations/SingleEquation.svelte";
 
@@ -21,9 +21,10 @@
     dispatch("answerSubmitted", { correct: false, index: `${i}` });
   };
 
-  const equations = generateEquationsForARange({ x: 10, y: 10 }).map(eq =>
-    eq.formatEqResultRHS()
-  );
+  const equations = MultiplicationEquationBuilder.getFromRangeRHS({
+    xMax: 10,
+    yMax: 10
+  });
 
   const quizQuestions = equations.map((eq, i) =>
     equationQuizAdapter(`[["_*y=z"], [${i}]]`, eq, 0, {
