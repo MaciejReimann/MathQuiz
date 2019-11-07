@@ -1,27 +1,15 @@
 <script>
   import { writable } from "svelte/store";
   import { setContext } from "svelte";
-  import ScoreService from "./Score.service";
+  import { appStore } from "./stores/appStore";
+  import { scoreStore } from "./stores/scoreStore";
 
   import Header from "./Header.svelte";
   import ControlBar from "./ControlBar/ControlBar.svelte";
   import AppletWindow from "./AppletWindow/AppletWindow.svelte";
 
-  const scoreService = new ScoreService();
-  setContext("scoreService", scoreService);
-
-  const appletsID = ["x * y = _", "_ * y = z", "x * _ = z", "table"];
-  let currentAppletID;
-
-  const appStore = writable(appletsID[0]);
   setContext("appStore", appStore);
-
-  $: currentAppletID = appStore;
-  // $: console.log(currentAppletID);
-
-  appStore.subscribe(value => {
-    currentAppletID = value;
-  });
+  setContext("scoreStore", scoreStore);
 </script>
 
 <style>
@@ -69,7 +57,7 @@
   </main>
 
   <footer class="footer">
-    <ControlBar options={appletsID} />
+    <ControlBar options={appStore.getAllIDs()} />
   </footer>
 
 </div>

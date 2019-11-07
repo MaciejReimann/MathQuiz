@@ -12,7 +12,7 @@
   });
 
   const handleClick = () => {
-    appStore.set(name);
+    appStore.goTo(name);
   };
 </script>
 

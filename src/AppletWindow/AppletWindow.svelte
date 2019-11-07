@@ -4,10 +4,8 @@
   import EquationsDisplay from "../MultiplicationEquations/EquationsDisplay.svelte";
 
   const appStore = getContext("appStore");
-  const scoreService = getContext("scoreService");
+  const scoreStore = getContext("scoreStore");
   let currentAppletID;
-
-  $: console.log(currentAppletID);
 
   appStore.subscribe(value => {
     currentAppletID = value;
@@ -15,9 +13,9 @@
 
   const handleAnswerSubmitted = e => {
     if (e.detail.correct) {
-      scoreService.incrementScore();
+      scoreStore.increment();
     } else {
-      scoreService.resetStrike();
+      scoreStore.resetStrike();
     }
   };
 </script>

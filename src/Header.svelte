@@ -2,15 +2,18 @@
   import { getContext } from "svelte";
   import NumericDisplay from "./GenericComponents/NumericDisplay.svelte";
 
-  const scoreService = getContext("scoreService");
+  let score;
+  let strikeLength;
+  let strikeText;
 
-  $: score = scoreService.getScore();
-  $: strikeLength = "";
-  $: strikeText = "";
+  const scoreStore = getContext("scoreStore");
 
-  scoreService.setCallbacksForIncrement(() => {
-    score = scoreService.getScore();
-    strikeLength = scoreService.getStrikeLength();
+  scoreStore.subscribe(val => {
+    score = val;
+  });
+
+  scoreStore.subscribeToStrike(val => {
+    strikeLength = val;
     strikeText = "strike";
   });
 
