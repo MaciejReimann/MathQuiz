@@ -10,7 +10,7 @@ function createStrikeStore() {
   }
 }
 
-function createScoreStore(config) {
+function createScoreStore(config?) {
   const { subscribe, set, update } = writable(0)
   const strikeStore = createStrikeStore()
   const strikeThreshhold = 5 // config
@@ -29,6 +29,4 @@ function createScoreStore(config) {
   }
 }
 
-const scoreStore = createScoreStore()
-
-export const scoreStore
+export const scoreStore = createScoreStore()

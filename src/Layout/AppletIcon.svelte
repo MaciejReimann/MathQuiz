@@ -2,17 +2,17 @@
   export let name;
   import { getContext } from "svelte";
 
-  const appStore = getContext("appStore");
+  const quizStore = getContext("quizStore");
 
   let selectedAppletID;
   $: isSelected = selectedAppletID === name;
 
-  appStore.subscribe(value => {
+  quizStore.subscribe(value => {
     selectedAppletID = value;
   });
 
   const handleClick = () => {
-    appStore.goTo(name);
+    quizStore.goTo(name);
   };
 </script>
 

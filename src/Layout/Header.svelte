@@ -1,6 +1,6 @@
 <script>
   import { getContext } from "svelte";
-  import NumericDisplay from "./GenericComponents/NumericDisplay.svelte";
+  import NumericDisplay from "../GenericComponents/NumericDisplay.svelte";
 
   let score;
   let strikeLength;

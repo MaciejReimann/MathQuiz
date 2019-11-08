@@ -1,11 +1,12 @@
 import Quiz from "./Quiz"
+import MultiplicationEquationBuilder, {
+  XYRangeI
+} from "../equations/MultiplicationEquationBuilder"
 import {
-  MultiplicationEquationBuilder,
   Signs,
   ResultRHS,
-  ResultLHS,
-  XYRangeI
-} from "../MultiplicationEquation"
+  ResultLHS
+} from "../equations/MultiplicationEquation"
 import { adaptEquationToQuizQuestion } from "./adaptEquationToQuizQuestion"
 import QuizQuestion, { QuizQuestionListeners } from "./QuizQuestion"
 
@@ -20,7 +21,7 @@ export function createEquationQuizzesFromConfig(
       ? MultiplicationEquationBuilder.getFromRangeLHS(range)
       : MultiplicationEquationBuilder.getFromRangeRHS(range)
 
-    const quizQuestions = equations.map((eq, i) =>
+    const quizQuestions: QuizQuestion[] = equations.map((eq, i) =>
       adaptEquationToQuizQuestion(eq, `${id}-${i}`, listeners)
     )
     return new Quiz(id, quizQuestions, 9, { shuffled: true })
@@ -28,7 +29,7 @@ export function createEquationQuizzesFromConfig(
 }
 
 export interface QuizConfig {
-  id: string
+  id: string // specify one of enum
   range: XYRangeI
 }
 

@@ -1,4 +1,4 @@
-import MultiplicationEquation from "../MultiplicationEquation"
+import MultiplicationEquation from "./MultiplicationEquation"
 
 describe("MultiplicationEquation", () => {
   const x = 2

@@ -510,21 +510,6 @@ var app = (function () {
         return { set, update, subscribe };
     }
 
-    function createAppStore(IDs) {
-        var _a = writable(IDs[0]), subscribe = _a.subscribe, set = _a.set, update = _a.update;
-        var quizzes = IDs.map(function (id) { return id; });
-        return {
-            subscribe: subscribe,
-            next: function () { return update(function (n) { return IDs[IDs.indexOf(n) + 1]; }); },
-            previous: function () { return update(function (n) { return IDs[IDs.indexOf(n) - 1]; }); },
-            goTo: function (n) { return set(n); },
-            getAllIDs: function () { return IDs; },
-            getCurrentQuiz: function () { return quizzes; }
-        };
-    }
-    var quizzesIDs = ["x*y=_", "_*y=z", "x*_=z", "table"];
-    var appStore = createAppStore(quizzesIDs);
-
     function createStrikeStore() {
         var _a = writable(0), subscribe = _a.subscribe, set = _a.set, update = _a.update;
         return {
@@ -553,129 +538,6 @@ var app = (function () {
         };
     }
     var scoreStore = createScoreStore();
-    var scoreStore;
-
-    /*! *****************************************************************************
-    Copyright (c) Microsoft Corporation. All rights reserved.
-    Licensed under the Apache License, Version 2.0 (the "License"); you may not use
-    this file except in compliance with the License. You may obtain a copy of the
-    License at http://www.apache.org/licenses/LICENSE-2.0
-
-    THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-    KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
-    WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
-    MERCHANTABLITY OR NON-INFRINGEMENT.
-
-    See the Apache Version 2.0 License for specific language governing permissions
-    and limitations under the License.
-    ***************************************************************************** */
-
-    function __spreadArrays() {
-        for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
-        for (var r = Array(s), k = 0, i = 0; i < il; i++)
-            for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
-                r[k] = a[j];
-        return r;
-    }
-
-    var Signs;
-    (function (Signs) {
-        Signs["Mult"] = "x";
-        Signs["Equal"] = "=";
-    })(Signs || (Signs = {}));
-    var MultiplicationEquation = /** @class */ (function () {
-        function MultiplicationEquation(value1, value2) {
-            var _this = this;
-            this.formatEqResultRHS = function () { return [
-                _this.value1,
-                Signs.Mult,
-                _this.value2,
-                Signs.Equal,
-                _this.result
-            ]; };
-            this.formatEqResultLHS = function () { return [
-                _this.result,
-                Signs.Equal,
-                _this.value1,
-                Signs.Mult,
-                _this.value2
-            ]; };
-            this.formatRHEq = function () { return [_this.value1, "x", _this.value2, "=", _this.result]; };
-            this.getResult = function () { return _this.value1 * _this.value2; };
-            this.value1 = value1;
-            this.value2 = value2;
-            this.result = value1 * value2;
-        }
-        return MultiplicationEquation;
-    }());
-    var MultiplicationEquationBuilder = /** @class */ (function () {
-        function MultiplicationEquationBuilder() {
-        }
-        MultiplicationEquationBuilder.getFromRange = function (range) {
-            return __spreadArrays(new Array(range.xMax)).slice(range.xMin, range.xMax)
-                .map(function (_, i) { return (range.xMin ? i + range.xMin : i); })
-                .map(function (i) {
-                return __spreadArrays(new Array(range.yMax)).slice(range.yMin, range.yMax)
-                    .map(function (_, j) { return (range.yMin ? j + range.yMin : j); })
-                    .map(function (j) { return new MultiplicationEquation(i + 1, j + 1); });
-            })
-                .flat();
-        };
-        // x * y = z
-        MultiplicationEquationBuilder.getFromRangeRHS = function (range) {
-            return MultiplicationEquationBuilder.getFromRange(range).map(function (eq) {
-                return eq.formatEqResultRHS();
-            });
-        };
-        // z = x * y
-        MultiplicationEquationBuilder.getFromRangeLHS = function (range) {
-            return MultiplicationEquationBuilder.getFromRange(range).map(function (eq) {
-                return eq.formatEqResultLHS();
-            });
-        };
-        return MultiplicationEquationBuilder;
-    }());
-
-    var QuizQuestion = /** @class */ (function () {
-        function QuizQuestion(ID, question, correctAnswers, listeners) {
-            if (correctAnswers === void 0) { correctAnswers = []; }
-            this.ID = ID;
-            this.question = question;
-            this.correctAnswers = correctAnswers;
-            this.submittedAnswers = [];
-            this.correctAnswerCount = 0;
-            this.ID = ID;
-            this.question = question;
-            this.correctAnswers = correctAnswers;
-            this.listeners = listeners;
-        }
-        QuizQuestion.prototype.getInArray = function () {
-            return this.question;
-        };
-        QuizQuestion.prototype.getLastSubmittedAnswer = function () {
-            return this.submittedAnswers[this.submittedAnswers.length - 1];
-        };
-        QuizQuestion.prototype.submitAnswer = function (submittedAnswer) {
-            if (this.correctAnswers.includes(submittedAnswer)) {
-                this.correctAnswerCount = this.correctAnswerCount + 1;
-                this.listeners.onSubmitCorrectAnswer(this.ID);
-            }
-            else {
-                this.listeners.onSubmitIncorrectAnswer(this.ID);
-            }
-            this.submittedAnswers.push(submittedAnswer);
-            this.listeners.onSubmitAnswer();
-        };
-        return QuizQuestion;
-    }());
-
-    function equationQuizAdapter(ID, equation, position, listeners) {
-        var question = __spreadArrays(equation.slice(0, position), [
-            "|_|"
-        ], equation.slice(position + 1, equation.length));
-        var correctAnswers = equation[position].toString();
-        return new QuizQuestion(ID, question, [correctAnswers], listeners);
-    }
 
     /**
      * Copies the values of `source` to `array`.
@@ -1599,17 +1461,19 @@ var app = (function () {
     var shuffle_1 = shuffle;
 
     var Quiz = /** @class */ (function () {
-        function Quiz(quizQuestions, currentIndex, options) {
-            if (currentIndex === void 0) { currentIndex = 0; }
-            this.quizQuestions = quizQuestions;
-            this.currentIndex = currentIndex;
+        function Quiz(id, quizQuestions, startIndex, options) {
             if (options.shuffled) {
                 this.quizQuestions = shuffle_1(quizQuestions);
             }
             else {
                 this.quizQuestions = quizQuestions;
             }
+            this.id = id;
+            this.currentIndex = startIndex || 0;
         }
+        Quiz.prototype.getID = function () {
+            return this.id;
+        };
         Quiz.prototype.getAnsweredQuestions = function () {
             return this.quizQuestions.filter(function (q) { return q.getLastSubmittedAnswer() != undefined; });
         };
@@ -1625,65 +1489,211 @@ var app = (function () {
         return Quiz;
     }());
 
-    function createQuizStore() {
-        var _a = writable(0), subscribe = _a.subscribe;
-        var quizzes = quizzesIDs.map(setupQuizzesById);
-        appStore.subscribe(function (val) {
-            // set(val)
+    /*! *****************************************************************************
+    Copyright (c) Microsoft Corporation. All rights reserved.
+    Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+    this file except in compliance with the License. You may obtain a copy of the
+    License at http://www.apache.org/licenses/LICENSE-2.0
+
+    THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
+    WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+    MERCHANTABLITY OR NON-INFRINGEMENT.
+
+    See the Apache Version 2.0 License for specific language governing permissions
+    and limitations under the License.
+    ***************************************************************************** */
+
+    function __spreadArrays() {
+        for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+        for (var r = Array(s), k = 0, i = 0; i < il; i++)
+            for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+                r[k] = a[j];
+        return r;
+    }
+
+    var Signs;
+    (function (Signs) {
+        Signs["Mult"] = "x";
+        Signs["Equal"] = "=";
+    })(Signs || (Signs = {}));
+    var MultiplicationEquation = /** @class */ (function () {
+        function MultiplicationEquation(value1, value2) {
+            var _this = this;
+            this.formatEqResultRHS = function () { return [
+                _this.value1,
+                Signs.Mult,
+                _this.value2,
+                Signs.Equal,
+                _this.result
+            ]; };
+            this.formatEqResultLHS = function () { return [
+                _this.result,
+                Signs.Equal,
+                _this.value1,
+                Signs.Mult,
+                _this.value2
+            ]; };
+            this.formatRHEq = function () { return [_this.value1, "x", _this.value2, "=", _this.result]; };
+            this.getResult = function () { return _this.value1 * _this.value2; };
+            this.value1 = value1;
+            this.value2 = value2;
+            this.result = value1 * value2;
+        }
+        return MultiplicationEquation;
+    }());
+
+    var MultiplicationEquationBuilder = /** @class */ (function () {
+        function MultiplicationEquationBuilder() {
+        }
+        MultiplicationEquationBuilder.getFromRange = function (range) {
+            return __spreadArrays(new Array(range.xMax)).slice(range.xMin, range.xMax)
+                .map(function (_, i) { return (range.xMin ? i + range.xMin : i); })
+                .map(function (i) {
+                return __spreadArrays(new Array(range.yMax)).slice(range.yMin, range.yMax)
+                    .map(function (_, j) { return (range.yMin ? j + range.yMin : j); })
+                    .map(function (j) { return new MultiplicationEquation(i + 1, j + 1); });
+            })
+                .flat();
+        };
+        // x * y = z
+        MultiplicationEquationBuilder.getFromRangeRHS = function (range) {
+            return MultiplicationEquationBuilder.getFromRange(range).map(function (eq) {
+                return eq.formatEqResultRHS();
+            });
+        };
+        // z = x * y
+        MultiplicationEquationBuilder.getFromRangeLHS = function (range) {
+            return MultiplicationEquationBuilder.getFromRange(range).map(function (eq) {
+                return eq.formatEqResultLHS();
+            });
+        };
+        return MultiplicationEquationBuilder;
+    }());
+
+    var QuizQuestion = /** @class */ (function () {
+        function QuizQuestion(ID, question, correctAnswers, listeners) {
+            if (correctAnswers === void 0) { correctAnswers = []; }
+            this.ID = ID;
+            this.question = question;
+            this.correctAnswers = correctAnswers;
+            this.submittedAnswers = [];
+            this.correctAnswerCount = 0;
+            this.ID = ID;
+            this.question = question;
+            this.correctAnswers = correctAnswers;
+            this.listeners = listeners;
+        }
+        QuizQuestion.prototype.getInArray = function () {
+            return this.question;
+        };
+        QuizQuestion.prototype.getLastSubmittedAnswer = function () {
+            return this.submittedAnswers[this.submittedAnswers.length - 1];
+        };
+        QuizQuestion.prototype.submitAnswer = function (submittedAnswer) {
+            if (this.correctAnswers.includes(submittedAnswer)) {
+                this.correctAnswerCount = this.correctAnswerCount + 1;
+                this.listeners.onSubmitCorrectAnswer(this.ID);
+            }
+            else {
+                this.listeners.onSubmitIncorrectAnswer(this.ID);
+            }
+            this.submittedAnswers.push(submittedAnswer);
+            this.listeners.onSubmitAnswer();
+        };
+        return QuizQuestion;
+    }());
+
+    function adaptEquationToQuizQuestion(equation, id, listeners) {
+        var inputPosition = id.indexOf("_") > -1 ? id.indexOf("_") : equation.length - 1;
+        var question = __spreadArrays(equation.slice(0, inputPosition), [
+            "|_|"
+        ], equation.slice(inputPosition + 1, equation.length));
+        var correctAnswers = equation[inputPosition].toString();
+        return new QuizQuestion(id, question, [correctAnswers], listeners);
+    }
+
+    function createEquationQuizzesFromConfig(config, listeners) {
+        return config.map(function (_a) {
+            var id = _a.id, range = _a.range;
+            var isLHS = id.indexOf(Signs.Equal) < id.length - 3;
+            var equations = isLHS
+                ? MultiplicationEquationBuilder.getFromRangeLHS(range)
+                : MultiplicationEquationBuilder.getFromRangeRHS(range);
+            var quizQuestions = equations.map(function (eq, i) {
+                return adaptEquationToQuizQuestion(eq, id + "-" + i, listeners);
+            });
+            return new Quiz(id, quizQuestions, 9, { shuffled: true });
         });
-        var onSubmitAnswer = function () {
-            console.log("answer submitted from store");
+    }
+    var quizConfig = [
+        {
+            id: "x*y=_",
+            range: {
+                xMin: 1,
+                xMax: 10,
+                yMin: 1,
+                yMax: 10
+            }
+        },
+        {
+            id: "_*y=z",
+            range: {
+                xMin: 1,
+                xMax: 10,
+                yMin: 1,
+                yMax: 10
+            }
+        },
+        {
+            id: "z=_*y",
+            range: {
+                xMin: 1,
+                xMax: 10,
+                yMin: 1,
+                yMax: 10
+            }
+        },
+        {
+            id: "table",
+            range: {
+                xMin: 0,
+                xMax: 10,
+                yMin: 0,
+                yMax: 10
+            }
+        }
+    ];
+
+    function createQuizStore(quizzes) {
+        var quizzesID = quizzes.map(function (quiz) { return quiz.getID(); });
+        var _a = writable(quizzesID[0]), subscribe = _a.subscribe, set = _a.set, update = _a.update;
+        var currentId;
+        subscribe(function (val) {
+            currentId = val;
+        });
+        var getCurrentQuiz = function () {
+            var id = quizzesID.indexOf(currentId);
+            return quizzes[id];
         };
-        var getCurrentQuestion = function () {
-            // get current question from qurrent quiz
-        };
-        var getAnsweredQuestions = function () {
-            // return quizzes
-            // get answered questions from current quiz
-        };
-        // const handleAnswerSubmitted = e => {
-        //   if (e.detail.correct) {
-        //     scoreStore.increment()
-        //   } else {
-        //     scoreStore.resetStrike()
-        //   }
-        // }
+        var getCurrentQuestion = function () { return getCurrentQuiz().getCurrentQuestion(); };
         return {
             subscribe: subscribe,
-            onSubmitAnswer: onSubmitAnswer,
-            getCurrentQuestion: getCurrentQuestion,
-            getAnsweredQuestions: getAnsweredQuestions
-            // handleAnswerSubmitted
-            // next: () => update(n => IDs[IDs.indexOf(n) + 1]),
-            // previuos: () => update(n => IDs[IDs.indexOf(n) - 1]),
-            // getCurrentQuizId: () => quizID
+            next: function () { return update(function (n) { return quizzesID[quizzesID.indexOf(n) + 1]; }); },
+            previous: function () { return update(function (n) { return quizzesID[quizzesID.indexOf(n) - 1]; }); },
+            goTo: function (n) { return set(n); },
+            getAllIDs: function () { return quizzesID; },
+            getCurrentQuiz: getCurrentQuiz,
+            getCurrentQuestion: getCurrentQuestion
         };
     }
-    var quizStore = createQuizStore();
-    function setupQuizzesById(id) {
-        var buildEquations = function (range) {
-            return MultiplicationEquationBuilder.getFromRangeRHS(range);
-        };
-        switch (id) {
-            case "x*y=_": {
-                var quizQuestions = buildEquations({
-                    xMin: 1,
-                    xMax: 10,
-                    yMin: 1,
-                    yMax: 10
-                }).map(function (eq, i) {
-                    return equationQuizAdapter("[[" + id + "], [" + i + "]]", eq, 0, {
-                        onSubmitAnswer: onSubmitAnswer,
-                        onSubmitCorrectAnswer: scoreStore.increment(),
-                        onSubmitIncorrectAnswer: scoreStore.resetStrike()
-                    });
-                });
-                return new Quiz(quizQuestions, 9, { shuffled: true });
-            }
-            default:
-                return id;
-        }
-    }
+    var listeners = {
+        onSubmitAnswer: function () { },
+        onSubmitCorrectAnswer: function () { return scoreStore.increment(); },
+        onSubmitIncorrectAnswer: function () { return scoreStore.resetStrike(); }
+    };
+    var quizzes = createEquationQuizzesFromConfig(quizConfig, listeners);
+    var quizStore = createQuizStore(quizzes);
 
     /* src/GenericComponents/NumericDisplay.svelte generated by Svelte v3.12.1 */
 
@@ -1841,9 +1851,9 @@ var app = (function () {
     	}
     }
 
-    /* src/Header.svelte generated by Svelte v3.12.1 */
+    /* src/Layout/Header.svelte generated by Svelte v3.12.1 */
 
-    const file$1 = "src/Header.svelte";
+    const file$1 = "src/Layout/Header.svelte";
 
     // (64:2) <NumericDisplay text="score" numbers={score}>
     function create_default_slot(ctx) {
@@ -1858,11 +1868,11 @@ var app = (function () {
     			div1 = element("div");
     			t2 = text(ctx.strikeLength);
     			attr_dev(div0, "class", "text svelte-1y2uj2o");
-    			add_location(div0, file$1, 65, 6, 1171);
+    			add_location(div0, file$1, 65, 6, 1172);
     			attr_dev(div1, "class", "number svelte-1y2uj2o");
-    			add_location(div1, file$1, 66, 6, 1214);
+    			add_location(div1, file$1, 66, 6, 1215);
     			attr_dev(div2, "class", "strike svelte-1y2uj2o");
-    			add_location(div2, file$1, 64, 4, 1144);
+    			add_location(div2, file$1, 64, 4, 1145);
     		},
 
     		m: function mount(target, anchor) {
@@ -1922,9 +1932,9 @@ var app = (function () {
     			t2 = space();
     			numericdisplay1.$$.fragment.c();
     			attr_dev(h1, "class", "title svelte-1y2uj2o");
-    			add_location(h1, file$1, 61, 2, 1056);
+    			add_location(h1, file$1, 61, 2, 1057);
     			attr_dev(div, "class", "wrapper svelte-1y2uj2o");
-    			add_location(div, file$1, 57, 0, 980);
+    			add_location(div, file$1, 57, 0, 981);
     		},
 
     		l: function claim(nodes) {
@@ -2019,9 +2029,9 @@ var app = (function () {
     	}
     }
 
-    /* src/ControlBar/AppletIcon.svelte generated by Svelte v3.12.1 */
+    /* src/Layout/AppletIcon.svelte generated by Svelte v3.12.1 */
 
-    const file$2 = "src/ControlBar/AppletIcon.svelte";
+    const file$2 = "src/Layout/AppletIcon.svelte";
 
     function create_fragment$2(ctx) {
     	var div, t, dispose;
@@ -2032,7 +2042,7 @@ var app = (function () {
     			t = text(ctx.name);
     			attr_dev(div, "class", "wrapper svelte-1hwm0cr");
     			toggle_class(div, "selected", ctx.isSelected);
-    			add_location(div, file$2, 41, 0, 654);
+    			add_location(div, file$2, 41, 0, 658);
     			dispose = listen_dev(div, "click", ctx.handleClick);
     		},
 
@@ -2073,16 +2083,16 @@ var app = (function () {
     function instance$2($$self, $$props, $$invalidate) {
     	let { name } = $$props;
 
-      const appStore = getContext("appStore");
+      const quizStore = getContext("quizStore");
 
       let selectedAppletID;
 
-      appStore.subscribe(value => {
+      quizStore.subscribe(value => {
         $$invalidate('selectedAppletID', selectedAppletID = value);
       });
 
       const handleClick = () => {
-        appStore.goTo(name);
+        quizStore.goTo(name);
       };
 
     	const writable_props = ['name'];
@@ -2135,9 +2145,9 @@ var app = (function () {
     	}
     }
 
-    /* src/ControlBar/ControlBar.svelte generated by Svelte v3.12.1 */
+    /* src/Layout/ControlBar.svelte generated by Svelte v3.12.1 */
 
-    const file$3 = "src/ControlBar/ControlBar.svelte";
+    const file$3 = "src/Layout/ControlBar.svelte";
 
     function get_each_context(ctx, list, i) {
     	const child_ctx = Object.create(ctx);
@@ -2554,9 +2564,9 @@ var app = (function () {
     	}
     }
 
-    /* src/MultiplicationEquations/SingleEquation.svelte generated by Svelte v3.12.1 */
+    /* src/Layout/SingleEquation.svelte generated by Svelte v3.12.1 */
 
-    const file$5 = "src/MultiplicationEquations/SingleEquation.svelte";
+    const file$5 = "src/Layout/SingleEquation.svelte";
 
     function get_each_context$1(ctx, list, i) {
     	const child_ctx = Object.create(ctx);
@@ -2882,9 +2892,9 @@ var app = (function () {
     	}
     }
 
-    /* src/MultiplicationEquations/EquationsDisplay.svelte generated by Svelte v3.12.1 */
+    /* src/Layout/EquationsDisplay.svelte generated by Svelte v3.12.1 */
 
-    const file$6 = "src/MultiplicationEquations/EquationsDisplay.svelte";
+    const file$6 = "src/Layout/EquationsDisplay.svelte";
 
     function create_fragment$6(ctx) {
     	var div, current;
@@ -2902,7 +2912,7 @@ var app = (function () {
     			div = element("div");
     			singleequation.$$.fragment.c();
     			attr_dev(div, "class", "wrapper");
-    			add_location(div, file$6, 46, 0, 1351);
+    			add_location(div, file$6, 13, 0, 277);
     		},
 
     		l: function claim(nodes) {
@@ -2954,32 +2964,6 @@ var app = (function () {
         console.log(val);
       });
 
-      // const onSubmitAnswer = i => {
-      //   quiz.incrementIndex();
-      //   currentEquation = quiz.getCurrentQuestion();
-      // };
-      // const onSubmitCorrectAnswer = i => {
-      //   dispatch("answerSubmitted", { correct: true, index: `${i}` });
-      // };
-      // const onSubmitIncorrectAnswer = i => {
-      //   dispatch("answerSubmitted", { correct: false, index: `${i}` });
-      // };
-
-      // const equations = MultiplicationEquationBuilder.getFromRangeRHS({
-      //   xMax: 10,
-      //   yMax: 10
-      // });
-
-      // const quizQuestions = equations.map((eq, i) =>
-      //   equationQuizAdapter(`[["_*y=z"], [${i}]]`, eq, 0, {
-      //     onSubmitAnswer,
-      //     onSubmitCorrectAnswer,
-      //     onSubmitIncorrectAnswer
-      //   })
-      // );
-
-      // const quiz = new Quiz(quizQuestions, 9, { shuffled: true });
-
     	$$self.$capture_state = () => {
     		return {};
     	};
@@ -3003,15 +2987,14 @@ var app = (function () {
     	}
     }
 
-    /* src/QuizDisplay/QuizDisplay.svelte generated by Svelte v3.12.1 */
+    /* src/Layout/QuizDisplay.svelte generated by Svelte v3.12.1 */
 
-    const file$7 = "src/QuizDisplay/QuizDisplay.svelte";
+    const file$7 = "src/Layout/QuizDisplay.svelte";
 
     function create_fragment$7(ctx) {
     	var div, t0, t1, current;
 
     	var equationsdisplay = new EquationsDisplay({ $$inline: true });
-    	equationsdisplay.$on("answerSubmitted", ctx.quizStore.handleAnswerSubmitted);
 
     	const block = {
     		c: function create() {
@@ -3020,7 +3003,7 @@ var app = (function () {
     			t1 = space();
     			equationsdisplay.$$.fragment.c();
     			attr_dev(div, "class", "wrapper svelte-1nfds69");
-    			add_location(div, file$7, 23, 0, 501);
+    			add_location(div, file$7, 22, 0, 434);
     		},
 
     		l: function claim(nodes) {
@@ -3068,12 +3051,11 @@ var app = (function () {
     function instance$7($$self, $$props, $$invalidate) {
     	
 
-      const appStore = getContext("appStore");
       const quizStore = getContext("quizStore");
 
       let currentAppletID;
 
-      appStore.subscribe(value => {
+      quizStore.subscribe(value => {
         $$invalidate('currentAppletID', currentAppletID = value);
       });
 
@@ -3085,7 +3067,7 @@ var app = (function () {
     		if ('currentAppletID' in $$props) $$invalidate('currentAppletID', currentAppletID = $$props.currentAppletID);
     	};
 
-    	return { quizStore, currentAppletID };
+    	return { currentAppletID };
     }
 
     class QuizDisplay extends SvelteComponentDev {
@@ -3108,7 +3090,7 @@ var app = (function () {
     	var quizdisplay = new QuizDisplay({ $$inline: true });
 
     	var controlbar = new ControlBar({
-    		props: { options: appStore.getAllIDs() },
+    		props: { options: quizStore.getAllIDs() },
     		$$inline: true
     	});
 
@@ -3124,13 +3106,13 @@ var app = (function () {
     			footer = element("footer");
     			controlbar.$$.fragment.c();
     			attr_dev(header1, "class", "header svelte-10iewqs");
-    			add_location(header1, file$8, 53, 2, 1067);
+    			add_location(header1, file$8, 52, 2, 1027);
     			attr_dev(main, "class", "main svelte-10iewqs");
-    			add_location(main, file$8, 57, 2, 1121);
+    			add_location(main, file$8, 56, 2, 1081);
     			attr_dev(footer, "class", "footer svelte-10iewqs");
-    			add_location(footer, file$8, 63, 2, 1176);
+    			add_location(footer, file$8, 62, 2, 1136);
     			attr_dev(div, "class", "app svelte-10iewqs");
-    			add_location(div, file$8, 51, 0, 1046);
+    			add_location(div, file$8, 50, 0, 1006);
     		},
 
     		l: function claim(nodes) {
@@ -3189,12 +3171,12 @@ var app = (function () {
     function instance$8($$self) {
     	
 
-      setContext("appStore", appStore);
-      appStore.subscribe(val => {
-        console.log(appStore.getCurrentQuiz());
+      setContext("quizStore", quizStore);
+      quizStore.subscribe(val => {
+        // console.log(quizStore.getCurrentQuiz());
+        console.log(quizStore.getAllIDs());
       });
       setContext("scoreStore", scoreStore);
-      setContext("quizStore", quizStore);
 
     	$$self.$capture_state = () => {
     		return {};

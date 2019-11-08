@@ -4,12 +4,12 @@
   import { quizStore } from "./stores/quizStore";
   import { scoreStore } from "./stores/scoreStore";
 
-  import Header from "./Header.svelte";
-  import ControlBar from "./ControlBar/ControlBar.svelte";
-  import QuizDisplay from "./QuizDisplay/QuizDisplay.svelte";
+  import Header from "./Layout//Header.svelte";
+  import ControlBar from "./Layout/ControlBar.svelte";
+  import QuizDisplay from "./Layout/QuizDisplay.svelte";
 
   setContext("quizStore", quizStore);
-  appStore.subscribe(val => {
+  quizStore.subscribe(val => {
     // console.log(quizStore.getCurrentQuiz());
     console.log(quizStore.getAllIDs());
   });

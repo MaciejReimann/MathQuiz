@@ -1,7 +1,7 @@
 <script>
-  import Quiz from "../Quiz.ts";
+  // import Quiz from "../Quiz.ts";
   import NumericInput from "../GenericComponents/NumericInput.svelte";
-  import MultiplicationTable from "../MultiplicationTable";
+  // import MultiplicationTable from "../MultiplicationTable";
   import { NavigationHandler } from "./NavigationHandler";
   import {
     parseIndex,
@@ -32,23 +32,25 @@
     }
   });
 
-  const multiplicationTableQuiz = new Quiz(
-    new MultiplicationTable(10).getQAPair(),
-    "mt",
-    {
-      onSubmitAnswer: () => {
-        navigationHandler.handleKey(allAnsweredFieldsIndexes)("ArrowRight");
-      },
-      onSubmitCorrectAnswer: id => {
-        fieldsAnsweredCorrectly = [...fieldsAnsweredCorrectly, id];
-        scoreStore.increment();
-      },
-      onSubmitIncorrectAnswer: id => {
-        fieldsAnsweredInorrectly = [...fieldsAnsweredInorrectly, id];
-        scoreStore.resetStrike();
-      }
-    }
-  );
+  // const multiplicationTableQuiz = new Quiz(
+  //   new MultiplicationTable(10).getQAPair(),
+  //   "mt",
+  //   {
+  //     onSubmitAnswer: () => {
+  //       navigationHandler.handleKey(allAnsweredFieldsIndexes)("ArrowRight");
+  //     },
+  //     onSubmitCorrectAnswer: id => {
+  //       fieldsAnsweredCorrectly = [...fieldsAnsweredCorrectly, id];
+  //       scoreStore.increment();
+  //     },
+  //     onSubmitIncorrectAnswer: id => {
+  //       fieldsAnsweredInorrectly = [...fieldsAnsweredInorrectly, id];
+  //       scoreStore.resetStrike();
+  //     }
+  //   }
+  // );
+
+  const multiplicationTableQuiz = null;
 
   function handleFocus(index) {
     navigationHandler.set(index);
