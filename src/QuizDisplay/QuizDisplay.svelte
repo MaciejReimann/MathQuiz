@@ -4,20 +4,13 @@
   import EquationsDisplay from "../MultiplicationEquations/EquationsDisplay.svelte";
 
   const appStore = getContext("appStore");
-  const scoreStore = getContext("scoreStore");
+  const quizStore = getContext("quizStore");
+
   let currentAppletID;
 
   appStore.subscribe(value => {
     currentAppletID = value;
   });
-
-  const handleAnswerSubmitted = e => {
-    if (e.detail.correct) {
-      scoreStore.increment();
-    } else {
-      scoreStore.resetStrike();
-    }
-  };
 </script>
 
 <style>
@@ -30,5 +23,5 @@
 
 <div class="wrapper">
   {currentAppletID}
-  <EquationsDisplay on:answerSubmitted={handleAnswerSubmitted} />
+  <EquationsDisplay on:answerSubmitted={quizStore.handleAnswerSubmitted} />
 </div>

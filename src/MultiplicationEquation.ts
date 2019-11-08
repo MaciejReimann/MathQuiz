@@ -1,10 +1,10 @@
-enum Signs {
+export enum Signs {
   Mult = "x",
   Equal = "="
 }
 
-type ResultRHS = [number, Signs.Mult, number, Signs.Equal, number] // x * y = z
-type ResultLHS = [number, Signs.Equal, number, Signs.Mult, number] // z = x * y
+export type ResultRHS = [number, Signs.Mult, number, Signs.Equal, number] // x * y = z
+export type ResultLHS = [number, Signs.Equal, number, Signs.Mult, number] // z = x * y
 interface MultiplicationEquationI {
   formatEqResultRHS: () => ResultRHS
   formatEqResultLHS: () => ResultLHS
@@ -41,7 +41,7 @@ export default class MultiplicationEquation implements MultiplicationEquationI {
   getResult = () => this.value1 * this.value2
 }
 
-interface XYRangeI {
+export interface XYRangeI {
   xMin?: number
   xMax: number
   yMin?: number
@@ -63,13 +63,13 @@ export class MultiplicationEquationBuilder {
       .flat()
 
   // x * y = z
-  static getFromRangeRHS = (range: XYRangeI) =>
+  static getFromRangeRHS = (range: XYRangeI): ResultRHS[] =>
     MultiplicationEquationBuilder.getFromRange(range).map(eq =>
       eq.formatEqResultRHS()
     )
 
   // z = x * y
-  static getFromRangeLHS = (range: XYRangeI) =>
+  static getFromRangeLHS = (range: XYRangeI): ResultLHS[] =>
     MultiplicationEquationBuilder.getFromRange(range).map(eq =>
       eq.formatEqResultLHS()
     )

@@ -1,14 +1,18 @@
 <script>
   import { writable } from "svelte/store";
   import { setContext } from "svelte";
-  import { appStore } from "./stores/appStore";
+  import { quizStore } from "./stores/quizStore";
   import { scoreStore } from "./stores/scoreStore";
 
   import Header from "./Header.svelte";
   import ControlBar from "./ControlBar/ControlBar.svelte";
-  import AppletWindow from "./AppletWindow/AppletWindow.svelte";
+  import QuizDisplay from "./QuizDisplay/QuizDisplay.svelte";
 
-  setContext("appStore", appStore);
+  setContext("quizStore", quizStore);
+  appStore.subscribe(val => {
+    // console.log(quizStore.getCurrentQuiz());
+    console.log(quizStore.getAllIDs());
+  });
   setContext("scoreStore", scoreStore);
 </script>
 
@@ -52,12 +56,12 @@
 
   <main class="main">
 
-    <AppletWindow />
+    <QuizDisplay />
 
   </main>
 
   <footer class="footer">
-    <ControlBar options={appStore.getAllIDs()} />
+    <ControlBar options={quizStore.getAllIDs()} />
   </footer>
 
 </div>

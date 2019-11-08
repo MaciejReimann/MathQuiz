@@ -1,5 +1,5 @@
-import Quiz from "../Quiz.v2"
-import QuizQuestion from "../QuizQuestion"
+import Quiz from "../quizzes/Quiz"
+import QuizQuestion from "../quizzes/QuizQuestion"
 
 describe("Quiz", () => {
   it("", () => {

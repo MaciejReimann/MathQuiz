@@ -1,6 +1,5 @@
 <script>
   import Quiz from "../Quiz.ts";
-  import ScoreService from "../Score.service.ts";
   import NumericInput from "../GenericComponents/NumericInput.svelte";
   import MultiplicationTable from "../MultiplicationTable";
   import { NavigationHandler } from "./NavigationHandler";
@@ -23,7 +22,7 @@
     ...fieldsAnsweredInorrectly
   ].map(parseIndex);
 
-  const score = new ScoreService({ strikeThreshhold: 5 });
+  const scoreStore = getContext("scoreStore");
 
   const navigationHandler = new NavigationHandler({
     firstFieldIndex,
@@ -42,11 +41,11 @@
       },
       onSubmitCorrectAnswer: id => {
         fieldsAnsweredCorrectly = [...fieldsAnsweredCorrectly, id];
-        score.increment();
+        scoreStore.increment();
       },
       onSubmitIncorrectAnswer: id => {
         fieldsAnsweredInorrectly = [...fieldsAnsweredInorrectly, id];
-        score.resetStrike();
+        scoreStore.resetStrike();
       }
     }
   );
