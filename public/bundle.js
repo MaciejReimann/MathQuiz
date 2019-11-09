@@ -1511,7 +1511,9 @@ var app = (function () {
             return this.id;
         };
         Quiz.prototype.getAnsweredQuestions = function () {
-            return this.quizQuestions.filter(function (q) { return q.getLastSubmittedAnswer() != undefined; });
+            var answeredQuestions = this.quizQuestions.filter(function (q) { return q.getLastSubmittedAnswer() != undefined; });
+            console.log("getAnsweredQuestions", answeredQuestions);
+            return answeredQuestions;
         };
         return Quiz;
     }());
@@ -1673,6 +1675,7 @@ var app = (function () {
             }
         }
     ];
+    //# sourceMappingURL=quiz-setup.js.map
 
     function createQuizStore(quizzes) {
         var quizzesID = quizzes.map(function (quiz) { return quiz.getID(); });
@@ -2933,38 +2936,41 @@ var app = (function () {
 
     const file$6 = "src/Layout/EquationsDisplay.svelte";
 
-    function create_fragment$6(ctx) {
-    	var div, current;
+    function get_each_context$2(ctx, list, i) {
+    	const child_ctx = Object.create(ctx);
+    	child_ctx.answeredEquation = list[i];
+    	return child_ctx;
+    }
+
+    // (38:4) {#each answeredEquations as answeredEquation (answeredEquation.ID)}
+    function create_each_block$2(key_1, ctx) {
+    	var first, current;
 
     	var singleequation = new SingleEquation({
-    		props: {
-    		quizQuestion: ctx.quizQuestion,
-    		onSubmitAnswer: ctx.quizStore.onSubmitAnswer
-    	},
+    		props: { quizQuestion: ctx.answeredEquation },
     		$$inline: true
     	});
 
     	const block = {
-    		c: function create() {
-    			div = element("div");
-    			singleequation.$$.fragment.c();
-    			attr_dev(div, "class", "wrapper");
-    			add_location(div, file$6, 13, 0, 271);
-    		},
+    		key: key_1,
 
-    		l: function claim(nodes) {
-    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
+    		first: null,
+
+    		c: function create() {
+    			first = empty();
+    			singleequation.$$.fragment.c();
+    			this.first = first;
     		},
 
     		m: function mount(target, anchor) {
-    			insert_dev(target, div, anchor);
-    			mount_component(singleequation, div, null);
+    			insert_dev(target, first, anchor);
+    			mount_component(singleequation, target, anchor);
     			current = true;
     		},
 
     		p: function update(changed, ctx) {
     			var singleequation_changes = {};
-    			if (changed.quizQuestion) singleequation_changes.quizQuestion = ctx.quizQuestion;
+    			if (changed.answeredEquations) singleequation_changes.quizQuestion = ctx.answeredEquation;
     			singleequation.$set(singleequation_changes);
     		},
 
@@ -2982,7 +2988,114 @@ var app = (function () {
 
     		d: function destroy(detaching) {
     			if (detaching) {
-    				detach_dev(div);
+    				detach_dev(first);
+    			}
+
+    			destroy_component(singleequation, detaching);
+    		}
+    	};
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_each_block$2.name, type: "each", source: "(38:4) {#each answeredEquations as answeredEquation (answeredEquation.ID)}", ctx });
+    	return block;
+    }
+
+    function create_fragment$6(ctx) {
+    	var div2, div0, each_blocks = [], each_1_lookup = new Map(), t, div1, current;
+
+    	let each_value = ctx.answeredEquations;
+
+    	const get_key = ctx => ctx.answeredEquation.ID;
+
+    	for (let i = 0; i < each_value.length; i += 1) {
+    		let child_ctx = get_each_context$2(ctx, each_value, i);
+    		let key = get_key(child_ctx);
+    		each_1_lookup.set(key, each_blocks[i] = create_each_block$2(key, child_ctx));
+    	}
+
+    	var singleequation = new SingleEquation({
+    		props: {
+    		quizQuestion: ctx.quizQuestion,
+    		onSubmitAnswer: ctx.quizStore.onSubmitAnswer
+    	},
+    		$$inline: true
+    	});
+
+    	const block = {
+    		c: function create() {
+    			div2 = element("div");
+    			div0 = element("div");
+
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				each_blocks[i].c();
+    			}
+
+    			t = space();
+    			div1 = element("div");
+    			singleequation.$$.fragment.c();
+    			attr_dev(div0, "class", "answered svelte-1h5j0n1");
+    			add_location(div0, file$6, 36, 2, 708);
+    			attr_dev(div1, "class", "current svelte-1h5j0n1");
+    			add_location(div1, file$6, 41, 2, 883);
+    			attr_dev(div2, "class", "wrapper svelte-1h5j0n1");
+    			add_location(div2, file$6, 35, 0, 684);
+    		},
+
+    		l: function claim(nodes) {
+    			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
+    		},
+
+    		m: function mount(target, anchor) {
+    			insert_dev(target, div2, anchor);
+    			append_dev(div2, div0);
+
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				each_blocks[i].m(div0, null);
+    			}
+
+    			append_dev(div2, t);
+    			append_dev(div2, div1);
+    			mount_component(singleequation, div1, null);
+    			current = true;
+    		},
+
+    		p: function update(changed, ctx) {
+    			const each_value = ctx.answeredEquations;
+
+    			group_outros();
+    			each_blocks = update_keyed_each(each_blocks, changed, get_key, 1, ctx, each_value, each_1_lookup, div0, outro_and_destroy_block, create_each_block$2, null, get_each_context$2);
+    			check_outros();
+
+    			var singleequation_changes = {};
+    			if (changed.quizQuestion) singleequation_changes.quizQuestion = ctx.quizQuestion;
+    			singleequation.$set(singleequation_changes);
+    		},
+
+    		i: function intro(local) {
+    			if (current) return;
+    			for (let i = 0; i < each_value.length; i += 1) {
+    				transition_in(each_blocks[i]);
+    			}
+
+    			transition_in(singleequation.$$.fragment, local);
+
+    			current = true;
+    		},
+
+    		o: function outro(local) {
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				transition_out(each_blocks[i]);
+    			}
+
+    			transition_out(singleequation.$$.fragment, local);
+    			current = false;
+    		},
+
+    		d: function destroy(detaching) {
+    			if (detaching) {
+    				detach_dev(div2);
+    			}
+
+    			for (let i = 0; i < each_blocks.length; i += 1) {
+    				each_blocks[i].d();
     			}
 
     			destroy_component(singleequation);
@@ -2998,9 +3111,11 @@ var app = (function () {
       const quizStore = getContext("quizStore");
 
       let quizQuestion;
+      let answeredEquations;
 
       quizStore.subscribe(val => {
         $$invalidate('quizQuestion', quizQuestion = quizStore.getCurrentQuestion());
+        $$invalidate('answeredEquations', answeredEquations = quizStore.getCurrentQuiz().getAnsweredQuestions());
       });
 
     	$$self.$capture_state = () => {
@@ -3009,9 +3124,14 @@ var app = (function () {
 
     	$$self.$inject_state = $$props => {
     		if ('quizQuestion' in $$props) $$invalidate('quizQuestion', quizQuestion = $$props.quizQuestion);
+    		if ('answeredEquations' in $$props) $$invalidate('answeredEquations', answeredEquations = $$props.answeredEquations);
     	};
 
-    	return { quizStore, quizQuestion };
+    	return {
+    		quizStore,
+    		quizQuestion,
+    		answeredEquations
+    	};
     }
 
     class EquationsDisplay extends SvelteComponentDev {
@@ -3027,18 +3147,16 @@ var app = (function () {
     const file$7 = "src/Layout/QuizDisplay.svelte";
 
     function create_fragment$7(ctx) {
-    	var div, t0, t1, current;
+    	var div, current;
 
     	var equationsdisplay = new EquationsDisplay({ $$inline: true });
 
     	const block = {
     		c: function create() {
     			div = element("div");
-    			t0 = text(ctx.currentAppletID);
-    			t1 = space();
     			equationsdisplay.$$.fragment.c();
-    			attr_dev(div, "class", "wrapper svelte-1nfds69");
-    			add_location(div, file$7, 22, 0, 441);
+    			attr_dev(div, "class", "wrapper svelte-1eof4gf");
+    			add_location(div, file$7, 23, 0, 475);
     		},
 
     		l: function claim(nodes) {
@@ -3047,17 +3165,11 @@ var app = (function () {
 
     		m: function mount(target, anchor) {
     			insert_dev(target, div, anchor);
-    			append_dev(div, t0);
-    			append_dev(div, t1);
     			mount_component(equationsdisplay, div, null);
     			current = true;
     		},
 
-    		p: function update(changed, ctx) {
-    			if (!current || changed.currentAppletID) {
-    				set_data_dev(t0, ctx.currentAppletID);
-    			}
-    		},
+    		p: noop,
 
     		i: function intro(local) {
     			if (current) return;
@@ -3083,7 +3195,7 @@ var app = (function () {
     	return block;
     }
 
-    function instance$7($$self, $$props, $$invalidate) {
+    function instance$7($$self) {
     	
 
       const quizStore = getContext("quizStore");
@@ -3091,7 +3203,7 @@ var app = (function () {
       let currentAppletID;
 
       quizStore.subscribe(value => {
-        $$invalidate('currentAppletID', currentAppletID = value.quizID);
+        currentAppletID = value.quizID;
       });
 
     	$$self.$capture_state = () => {
@@ -3099,10 +3211,10 @@ var app = (function () {
     	};
 
     	$$self.$inject_state = $$props => {
-    		if ('currentAppletID' in $$props) $$invalidate('currentAppletID', currentAppletID = $$props.currentAppletID);
+    		if ('currentAppletID' in $$props) currentAppletID = $$props.currentAppletID;
     	};
 
-    	return { currentAppletID };
+    	return {};
     }
 
     class QuizDisplay extends SvelteComponentDev {
@@ -3140,14 +3252,14 @@ var app = (function () {
     			t1 = space();
     			footer = element("footer");
     			controlbar.$$.fragment.c();
-    			attr_dev(header1, "class", "header svelte-10iewqs");
-    			add_location(header1, file$8, 48, 2, 902);
-    			attr_dev(main, "class", "main svelte-10iewqs");
-    			add_location(main, file$8, 52, 2, 956);
-    			attr_dev(footer, "class", "footer svelte-10iewqs");
-    			add_location(footer, file$8, 58, 2, 1011);
-    			attr_dev(div, "class", "app svelte-10iewqs");
-    			add_location(div, file$8, 46, 0, 881);
+    			attr_dev(header1, "class", "header svelte-3wugrf");
+    			add_location(header1, file$8, 49, 2, 919);
+    			attr_dev(main, "class", "main svelte-3wugrf");
+    			add_location(main, file$8, 53, 2, 973);
+    			attr_dev(footer, "class", "footer svelte-3wugrf");
+    			add_location(footer, file$8, 59, 2, 1028);
+    			attr_dev(div, "class", "app svelte-3wugrf");
+    			add_location(div, file$8, 47, 0, 898);
     		},
 
     		l: function claim(nodes) {

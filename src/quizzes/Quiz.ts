@@ -20,9 +20,11 @@ export default class Quiz {
   }
 
   getAnsweredQuestions() {
-    return this.quizQuestions.filter(
+    const answeredQuestions = this.quizQuestions.filter(
       q => q.getLastSubmittedAnswer() != undefined
     )
+    console.log("getAnsweredQuestions", answeredQuestions)
+    return answeredQuestions
   }
 
   getQuestion = nr => this.quizQuestions[nr]

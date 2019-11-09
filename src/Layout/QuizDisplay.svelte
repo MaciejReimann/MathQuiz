@@ -14,13 +14,13 @@
 
 <style>
   .wrapper {
-    width: 100%;
-    height: 100%;
-    display: flex;
+    width: 50%;
+    height: 50%;
+    /*  display: flex; */
+    border: 1px solid black;
   }
 </style>
 
 <div class="wrapper">
-  {currentAppletID}
   <EquationsDisplay />
 </div>
