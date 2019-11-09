@@ -21,7 +21,7 @@ export default class QuizQuestion {
     this.listeners = listeners
   }
 
-  getInArray() {
+  getAsArray() {
     return this.question
   }
 

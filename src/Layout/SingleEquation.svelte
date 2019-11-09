@@ -1,6 +1,12 @@
 <script>
-  export let equation;
+  export let quizQuestion;
+  export let onSubmitAnswer;
   import NumericInputv2 from "../GenericComponents/NumericInputv2.svelte";
+
+  const onSubmit = answer => {
+    quizQuestion.submitAnswer(answer);
+    onSubmitAnswer();
+  };
 </script>
 
 <style>
@@ -29,14 +35,14 @@
 </style>
 
 <div class="wrapper">
-  {#each equation.getInArray() as element}
+  {#each quizQuestion.getAsArray() as element}
     <div class="cell">
       {#if element === '|_|'}
         <div class="input">
           <NumericInputv2
             maxLength={3}
-            onSubmit={answer => equation.submitAnswer(answer)}
-            submittedValue={equation.getLastSubmittedAnswer()} />
+            {onSubmit}
+            submittedValue={quizQuestion.getLastSubmittedAnswer()} />
         </div>
       {:else}
         <div class="symbol">{element}</div>

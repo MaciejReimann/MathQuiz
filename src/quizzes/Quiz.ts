@@ -4,17 +4,15 @@ import QuizQuestion from "./QuizQuestion"
 export default class Quiz {
   private id: string
   private quizQuestions: QuizQuestion[]
-  private currentIndex: number
   options?: any
 
-  constructor(id, quizQuestions, startIndex?, options?) {
+  constructor(id, quizQuestions, options?) {
     if (options.shuffled) {
       this.quizQuestions = shuffle(quizQuestions)
     } else {
       this.quizQuestions = quizQuestions
     }
     this.id = id
-    this.currentIndex = startIndex || 0
   }
 
   getID() {
@@ -27,15 +25,5 @@ export default class Quiz {
     )
   }
 
-  incrementIndex() {
-    this.currentIndex = this.currentIndex + 1
-  }
-
-  getCurrentQuestion() {
-    return this.quizQuestions[this.currentIndex]
-  }
-
-  onSubmitAnswer() {
-    this.getCurrentQuestion().listeners.onSubmitAnswer()
-  }
+  getQuestion = nr => this.quizQuestions[nr]
 }

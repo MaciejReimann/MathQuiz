@@ -4,18 +4,16 @@
 
   const quizStore = getContext("quizStore");
 
-  quizStore.subscribe(val => {
-    console.log(val);
-  });
+  let quizQuestion;
 
-  $: currentEquation = quizStore.getCurrentQuestion();
+  quizStore.subscribe(val => {
+    quizQuestion = quizStore.getCurrentQuestion();
+  });
 </script>
 
 <div class="wrapper">
   <!-- {#each quizStore.getAnsweredQuestions() as answeredEquation (answeredEquation.ID)}
     <SingleEquation equation={answeredEquation} />
   {/each} -->
-  <SingleEquation
-    equation={currentEquation}
-    onSubmit={quizStore.onSubmitAnswer} />
+  <SingleEquation {quizQuestion} onSubmitAnswer={quizStore.onSubmitAnswer} />
 </div>

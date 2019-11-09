@@ -510,6 +510,40 @@ var app = (function () {
         return { set, update, subscribe };
     }
 
+    /*! *****************************************************************************
+    Copyright (c) Microsoft Corporation. All rights reserved.
+    Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+    this file except in compliance with the License. You may obtain a copy of the
+    License at http://www.apache.org/licenses/LICENSE-2.0
+
+    THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
+    WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+    MERCHANTABLITY OR NON-INFRINGEMENT.
+
+    See the Apache Version 2.0 License for specific language governing permissions
+    and limitations under the License.
+    ***************************************************************************** */
+
+    var __assign = function() {
+        __assign = Object.assign || function __assign(t) {
+            for (var s, i = 1, n = arguments.length; i < n; i++) {
+                s = arguments[i];
+                for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+            }
+            return t;
+        };
+        return __assign.apply(this, arguments);
+    };
+
+    function __spreadArrays() {
+        for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+        for (var r = Array(s), k = 0, i = 0; i < il; i++)
+            for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+                r[k] = a[j];
+        return r;
+    }
+
     function createStrikeStore() {
         var _a = writable(0), subscribe = _a.subscribe, set = _a.set, update = _a.update;
         return {
@@ -538,6 +572,7 @@ var app = (function () {
         };
     }
     var scoreStore = createScoreStore();
+    //# sourceMappingURL=scoreStore.js.map
 
     /**
      * Copies the values of `source` to `array`.
@@ -1461,7 +1496,9 @@ var app = (function () {
     var shuffle_1 = shuffle;
 
     var Quiz = /** @class */ (function () {
-        function Quiz(id, quizQuestions, startIndex, options) {
+        function Quiz(id, quizQuestions, options) {
+            var _this = this;
+            this.getQuestion = function (nr) { return _this.quizQuestions[nr]; };
             if (options.shuffled) {
                 this.quizQuestions = shuffle_1(quizQuestions);
             }
@@ -1469,7 +1506,6 @@ var app = (function () {
                 this.quizQuestions = quizQuestions;
             }
             this.id = id;
-            this.currentIndex = startIndex || 0;
         }
         Quiz.prototype.getID = function () {
             return this.id;
@@ -1477,40 +1513,9 @@ var app = (function () {
         Quiz.prototype.getAnsweredQuestions = function () {
             return this.quizQuestions.filter(function (q) { return q.getLastSubmittedAnswer() != undefined; });
         };
-        Quiz.prototype.incrementIndex = function () {
-            this.currentIndex = this.currentIndex + 1;
-        };
-        Quiz.prototype.getCurrentQuestion = function () {
-            return this.quizQuestions[this.currentIndex];
-        };
-        Quiz.prototype.onSubmitAnswer = function () {
-            this.getCurrentQuestion().listeners.onSubmitAnswer();
-        };
         return Quiz;
     }());
-
-    /*! *****************************************************************************
-    Copyright (c) Microsoft Corporation. All rights reserved.
-    Licensed under the Apache License, Version 2.0 (the "License"); you may not use
-    this file except in compliance with the License. You may obtain a copy of the
-    License at http://www.apache.org/licenses/LICENSE-2.0
-
-    THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-    KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
-    WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
-    MERCHANTABLITY OR NON-INFRINGEMENT.
-
-    See the Apache Version 2.0 License for specific language governing permissions
-    and limitations under the License.
-    ***************************************************************************** */
-
-    function __spreadArrays() {
-        for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
-        for (var r = Array(s), k = 0, i = 0; i < il; i++)
-            for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
-                r[k] = a[j];
-        return r;
-    }
+    //# sourceMappingURL=Quiz.js.map
 
     var Signs;
     (function (Signs) {
@@ -1542,6 +1547,7 @@ var app = (function () {
         }
         return MultiplicationEquation;
     }());
+    //# sourceMappingURL=MultiplicationEquation.js.map
 
     var MultiplicationEquationBuilder = /** @class */ (function () {
         function MultiplicationEquationBuilder() {
@@ -1570,6 +1576,7 @@ var app = (function () {
         };
         return MultiplicationEquationBuilder;
     }());
+    //# sourceMappingURL=MultiplicationEquationBuilder.js.map
 
     var QuizQuestion = /** @class */ (function () {
         function QuizQuestion(ID, question, correctAnswers, listeners) {
@@ -1584,7 +1591,7 @@ var app = (function () {
             this.correctAnswers = correctAnswers;
             this.listeners = listeners;
         }
-        QuizQuestion.prototype.getInArray = function () {
+        QuizQuestion.prototype.getAsArray = function () {
             return this.question;
         };
         QuizQuestion.prototype.getLastSubmittedAnswer = function () {
@@ -1603,6 +1610,7 @@ var app = (function () {
         };
         return QuizQuestion;
     }());
+    //# sourceMappingURL=QuizQuestion.js.map
 
     function adaptEquationToQuizQuestion(equation, id, listeners) {
         var inputPosition = id.indexOf("_") > -1 ? id.indexOf("_") : equation.length - 1;
@@ -1612,6 +1620,7 @@ var app = (function () {
         var correctAnswers = equation[inputPosition].toString();
         return new QuizQuestion(id, question, [correctAnswers], listeners);
     }
+    //# sourceMappingURL=adaptEquationToQuizQuestion.js.map
 
     function createEquationQuizzesFromConfig(config, listeners) {
         return config.map(function (_a) {
@@ -1623,7 +1632,7 @@ var app = (function () {
             var quizQuestions = equations.map(function (eq, i) {
                 return adaptEquationToQuizQuestion(eq, id + "-" + i, listeners);
             });
-            return new Quiz(id, quizQuestions, 9, { shuffled: true });
+            return new Quiz(id, quizQuestions, { shuffled: true });
         });
     }
     var quizConfig = [
@@ -1667,24 +1676,36 @@ var app = (function () {
 
     function createQuizStore(quizzes) {
         var quizzesID = quizzes.map(function (quiz) { return quiz.getID(); });
-        var _a = writable(quizzesID[0]), subscribe = _a.subscribe, set = _a.set, update = _a.update;
+        var _a = writable({
+            quizID: quizzesID[0],
+            questionNo: 0
+        }), subscribe = _a.subscribe, update = _a.update;
         var currentId;
+        var currentQuestionNo;
         subscribe(function (val) {
-            currentId = val;
+            currentId = val.quizID;
+            currentQuestionNo = val.questionNo;
         });
-        var getCurrentQuiz = function () {
-            var id = quizzesID.indexOf(currentId);
-            return quizzes[id];
+        var next = function () { return update(function (n) { return (__assign(__assign({}, n), { quizID: n.quizID + 1 })); }); };
+        var previous = function () { return update(function (n) { return (__assign(__assign({}, n), { quizID: n.quizID - 1 })); }); };
+        var goTo = function (quizID) { return update(function (n) { return (__assign(__assign({}, n), { quizID: quizID })); }); };
+        var getAllIDs = function () { return quizzesID; };
+        var getCurrentQuiz = function () { return quizzes[quizzesID.indexOf(currentId)]; };
+        var getCurrentQuestion = function () {
+            return getCurrentQuiz().getQuestion(currentQuestionNo);
         };
-        var getCurrentQuestion = function () { return getCurrentQuiz().getCurrentQuestion(); };
+        var onSubmitAnswer = function () {
+            return update(function (n) { return (__assign(__assign({}, n), { questionNo: n.questionNo + 1 })); });
+        };
         return {
             subscribe: subscribe,
-            next: function () { return update(function (n) { return quizzesID[quizzesID.indexOf(n) + 1]; }); },
-            previous: function () { return update(function (n) { return quizzesID[quizzesID.indexOf(n) - 1]; }); },
-            goTo: function (n) { return set(n); },
-            getAllIDs: function () { return quizzesID; },
+            next: next,
+            previous: previous,
+            goTo: goTo,
+            getAllIDs: getAllIDs,
             getCurrentQuiz: getCurrentQuiz,
-            getCurrentQuestion: getCurrentQuestion
+            getCurrentQuestion: getCurrentQuestion,
+            onSubmitAnswer: onSubmitAnswer
         };
     }
     var listeners = {
@@ -1694,6 +1715,7 @@ var app = (function () {
     };
     var quizzes = createEquationQuizzesFromConfig(quizConfig, listeners);
     var quizStore = createQuizStore(quizzes);
+    //# sourceMappingURL=quizStore.js.map
 
     /* src/GenericComponents/NumericDisplay.svelte generated by Svelte v3.12.1 */
 
@@ -2042,7 +2064,7 @@ var app = (function () {
     			t = text(ctx.name);
     			attr_dev(div, "class", "wrapper svelte-1hwm0cr");
     			toggle_class(div, "selected", ctx.isSelected);
-    			add_location(div, file$2, 41, 0, 658);
+    			add_location(div, file$2, 41, 0, 665);
     			dispose = listen_dev(div, "click", ctx.handleClick);
     		},
 
@@ -2088,7 +2110,7 @@ var app = (function () {
       let selectedAppletID;
 
       quizStore.subscribe(value => {
-        $$invalidate('selectedAppletID', selectedAppletID = value);
+        $$invalidate('selectedAppletID', selectedAppletID = value.quizID);
       });
 
       const handleClick = () => {
@@ -2574,7 +2596,7 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (41:6) {:else}
+    // (47:6) {:else}
     function create_else_block(ctx) {
     	var div, t_value = ctx.element + "", t;
 
@@ -2583,7 +2605,7 @@ var app = (function () {
     			div = element("div");
     			t = text(t_value);
     			attr_dev(div, "class", "symbol svelte-1n1izmm");
-    			add_location(div, file$5, 41, 8, 825);
+    			add_location(div, file$5, 47, 8, 924);
     		},
 
     		m: function mount(target, anchor) {
@@ -2592,7 +2614,7 @@ var app = (function () {
     		},
 
     		p: function update(changed, ctx) {
-    			if ((changed.equation) && t_value !== (t_value = ctx.element + "")) {
+    			if ((changed.quizQuestion) && t_value !== (t_value = ctx.element + "")) {
     				set_data_dev(t, t_value);
     			}
     		},
@@ -2606,19 +2628,19 @@ var app = (function () {
     			}
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_else_block.name, type: "else", source: "(41:6) {:else}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_else_block.name, type: "else", source: "(47:6) {:else}", ctx });
     	return block;
     }
 
-    // (34:6) {#if element === '|_|'}
+    // (40:6) {#if element === '|_|'}
     function create_if_block(ctx) {
     	var div, current;
 
     	var numericinputv2 = new NumericInputv2({
     		props: {
     		maxLength: 3,
-    		onSubmit: ctx.func,
-    		submittedValue: ctx.equation.getLastSubmittedAnswer()
+    		onSubmit: ctx.onSubmit,
+    		submittedValue: ctx.quizQuestion.getLastSubmittedAnswer()
     	},
     		$$inline: true
     	});
@@ -2628,7 +2650,7 @@ var app = (function () {
     			div = element("div");
     			numericinputv2.$$.fragment.c();
     			attr_dev(div, "class", "input svelte-1n1izmm");
-    			add_location(div, file$5, 34, 8, 587);
+    			add_location(div, file$5, 40, 8, 722);
     		},
 
     		m: function mount(target, anchor) {
@@ -2639,8 +2661,7 @@ var app = (function () {
 
     		p: function update(changed, ctx) {
     			var numericinputv2_changes = {};
-    			if (changed.equation) numericinputv2_changes.onSubmit = ctx.func;
-    			if (changed.equation) numericinputv2_changes.submittedValue = ctx.equation.getLastSubmittedAnswer();
+    			if (changed.quizQuestion) numericinputv2_changes.submittedValue = ctx.quizQuestion.getLastSubmittedAnswer();
     			numericinputv2.$set(numericinputv2_changes);
     		},
 
@@ -2664,11 +2685,11 @@ var app = (function () {
     			destroy_component(numericinputv2);
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_if_block.name, type: "if", source: "(34:6) {#if element === '|_|'}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_if_block.name, type: "if", source: "(40:6) {#if element === '|_|'}", ctx });
     	return block;
     }
 
-    // (32:2) {#each equation.getInArray() as element}
+    // (38:2) {#each quizQuestion.getAsArray() as element}
     function create_each_block$1(ctx) {
     	var div, current_block_type_index, if_block, t, current;
 
@@ -2693,7 +2714,7 @@ var app = (function () {
     			if_block.c();
     			t = space();
     			attr_dev(div, "class", "cell svelte-1n1izmm");
-    			add_location(div, file$5, 32, 4, 530);
+    			add_location(div, file$5, 38, 4, 665);
     		},
 
     		m: function mount(target, anchor) {
@@ -2744,14 +2765,14 @@ var app = (function () {
     			if_blocks[current_block_type_index].d();
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_each_block$1.name, type: "each", source: "(32:2) {#each equation.getInArray() as element}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_each_block$1.name, type: "each", source: "(38:2) {#each quizQuestion.getAsArray() as element}", ctx });
     	return block;
     }
 
     function create_fragment$5(ctx) {
     	var div, current;
 
-    	let each_value = ctx.equation.getInArray();
+    	let each_value = ctx.quizQuestion.getAsArray();
 
     	let each_blocks = [];
 
@@ -2771,7 +2792,7 @@ var app = (function () {
     				each_blocks[i].c();
     			}
     			attr_dev(div, "class", "wrapper svelte-1n1izmm");
-    			add_location(div, file$5, 30, 0, 461);
+    			add_location(div, file$5, 36, 0, 592);
     		},
 
     		l: function claim(nodes) {
@@ -2789,8 +2810,8 @@ var app = (function () {
     		},
 
     		p: function update(changed, ctx) {
-    			if (changed.equation) {
-    				each_value = ctx.equation.getInArray();
+    			if (changed.quizQuestion || changed.onSubmit) {
+    				each_value = ctx.quizQuestion.getAsArray();
 
     				let i;
     				for (i = 0; i < each_value.length; i += 1) {
@@ -2846,48 +2867,64 @@ var app = (function () {
     }
 
     function instance$5($$self, $$props, $$invalidate) {
-    	let { equation } = $$props;
+    	let { quizQuestion, onSubmitAnswer } = $$props;
 
-    	const writable_props = ['equation'];
+      const onSubmit = answer => {
+        quizQuestion.submitAnswer(answer);
+        onSubmitAnswer();
+      };
+
+    	const writable_props = ['quizQuestion', 'onSubmitAnswer'];
     	Object.keys($$props).forEach(key => {
     		if (!writable_props.includes(key) && !key.startsWith('$$')) console.warn(`<SingleEquation> was created with unknown prop '${key}'`);
     	});
 
-    	const func = (answer) => equation.submitAnswer(answer);
-
     	$$self.$set = $$props => {
-    		if ('equation' in $$props) $$invalidate('equation', equation = $$props.equation);
+    		if ('quizQuestion' in $$props) $$invalidate('quizQuestion', quizQuestion = $$props.quizQuestion);
+    		if ('onSubmitAnswer' in $$props) $$invalidate('onSubmitAnswer', onSubmitAnswer = $$props.onSubmitAnswer);
     	};
 
     	$$self.$capture_state = () => {
-    		return { equation };
+    		return { quizQuestion, onSubmitAnswer };
     	};
 
     	$$self.$inject_state = $$props => {
-    		if ('equation' in $$props) $$invalidate('equation', equation = $$props.equation);
+    		if ('quizQuestion' in $$props) $$invalidate('quizQuestion', quizQuestion = $$props.quizQuestion);
+    		if ('onSubmitAnswer' in $$props) $$invalidate('onSubmitAnswer', onSubmitAnswer = $$props.onSubmitAnswer);
     	};
 
-    	return { equation, func };
+    	return { quizQuestion, onSubmitAnswer, onSubmit };
     }
 
     class SingleEquation extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$5, create_fragment$5, safe_not_equal, ["equation"]);
+    		init(this, options, instance$5, create_fragment$5, safe_not_equal, ["quizQuestion", "onSubmitAnswer"]);
     		dispatch_dev("SvelteRegisterComponent", { component: this, tagName: "SingleEquation", options, id: create_fragment$5.name });
 
     		const { ctx } = this.$$;
     		const props = options.props || {};
-    		if (ctx.equation === undefined && !('equation' in props)) {
-    			console.warn("<SingleEquation> was created without expected prop 'equation'");
+    		if (ctx.quizQuestion === undefined && !('quizQuestion' in props)) {
+    			console.warn("<SingleEquation> was created without expected prop 'quizQuestion'");
+    		}
+    		if (ctx.onSubmitAnswer === undefined && !('onSubmitAnswer' in props)) {
+    			console.warn("<SingleEquation> was created without expected prop 'onSubmitAnswer'");
     		}
     	}
 
-    	get equation() {
+    	get quizQuestion() {
     		throw new Error("<SingleEquation>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
 
-    	set equation(value) {
+    	set quizQuestion(value) {
+    		throw new Error("<SingleEquation>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get onSubmitAnswer() {
+    		throw new Error("<SingleEquation>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set onSubmitAnswer(value) {
     		throw new Error("<SingleEquation>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
     }
@@ -2901,8 +2938,8 @@ var app = (function () {
 
     	var singleequation = new SingleEquation({
     		props: {
-    		equation: ctx.currentEquation,
-    		onSubmit: ctx.quizStore.onSubmitAnswer
+    		quizQuestion: ctx.quizQuestion,
+    		onSubmitAnswer: ctx.quizStore.onSubmitAnswer
     	},
     		$$inline: true
     	});
@@ -2912,7 +2949,7 @@ var app = (function () {
     			div = element("div");
     			singleequation.$$.fragment.c();
     			attr_dev(div, "class", "wrapper");
-    			add_location(div, file$6, 13, 0, 277);
+    			add_location(div, file$6, 13, 0, 271);
     		},
 
     		l: function claim(nodes) {
@@ -2927,7 +2964,7 @@ var app = (function () {
 
     		p: function update(changed, ctx) {
     			var singleequation_changes = {};
-    			if (changed.currentEquation) singleequation_changes.equation = ctx.currentEquation;
+    			if (changed.quizQuestion) singleequation_changes.quizQuestion = ctx.quizQuestion;
     			singleequation.$set(singleequation_changes);
     		},
 
@@ -2960,8 +2997,10 @@ var app = (function () {
 
       const quizStore = getContext("quizStore");
 
+      let quizQuestion;
+
       quizStore.subscribe(val => {
-        console.log(val);
+        $$invalidate('quizQuestion', quizQuestion = quizStore.getCurrentQuestion());
       });
 
     	$$self.$capture_state = () => {
@@ -2969,14 +3008,10 @@ var app = (function () {
     	};
 
     	$$self.$inject_state = $$props => {
-    		if ('currentEquation' in $$props) $$invalidate('currentEquation', currentEquation = $$props.currentEquation);
+    		if ('quizQuestion' in $$props) $$invalidate('quizQuestion', quizQuestion = $$props.quizQuestion);
     	};
 
-    	let currentEquation;
-
-    	$$invalidate('currentEquation', currentEquation = quizStore.getCurrentQuestion());
-
-    	return { quizStore, currentEquation };
+    	return { quizStore, quizQuestion };
     }
 
     class EquationsDisplay extends SvelteComponentDev {
@@ -3003,7 +3038,7 @@ var app = (function () {
     			t1 = space();
     			equationsdisplay.$$.fragment.c();
     			attr_dev(div, "class", "wrapper svelte-1nfds69");
-    			add_location(div, file$7, 22, 0, 434);
+    			add_location(div, file$7, 22, 0, 441);
     		},
 
     		l: function claim(nodes) {
@@ -3056,7 +3091,7 @@ var app = (function () {
       let currentAppletID;
 
       quizStore.subscribe(value => {
-        $$invalidate('currentAppletID', currentAppletID = value);
+        $$invalidate('currentAppletID', currentAppletID = value.quizID);
       });
 
     	$$self.$capture_state = () => {
@@ -3106,13 +3141,13 @@ var app = (function () {
     			footer = element("footer");
     			controlbar.$$.fragment.c();
     			attr_dev(header1, "class", "header svelte-10iewqs");
-    			add_location(header1, file$8, 52, 2, 1027);
+    			add_location(header1, file$8, 48, 2, 902);
     			attr_dev(main, "class", "main svelte-10iewqs");
-    			add_location(main, file$8, 56, 2, 1081);
+    			add_location(main, file$8, 52, 2, 956);
     			attr_dev(footer, "class", "footer svelte-10iewqs");
-    			add_location(footer, file$8, 62, 2, 1136);
+    			add_location(footer, file$8, 58, 2, 1011);
     			attr_dev(div, "class", "app svelte-10iewqs");
-    			add_location(div, file$8, 50, 0, 1006);
+    			add_location(div, file$8, 46, 0, 881);
     		},
 
     		l: function claim(nodes) {
@@ -3172,10 +3207,6 @@ var app = (function () {
     	
 
       setContext("quizStore", quizStore);
-      quizStore.subscribe(val => {
-        // console.log(quizStore.getCurrentQuiz());
-        console.log(quizStore.getAllIDs());
-      });
       setContext("scoreStore", scoreStore);
 
     	$$self.$capture_state = () => {

@@ -24,7 +24,7 @@ export function createEquationQuizzesFromConfig(
     const quizQuestions: QuizQuestion[] = equations.map((eq, i) =>
       adaptEquationToQuizQuestion(eq, `${id}-${i}`, listeners)
     )
-    return new Quiz(id, quizQuestions, 9, { shuffled: true })
+    return new Quiz(id, quizQuestions, { shuffled: true })
   })
 }
 

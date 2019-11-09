@@ -8,7 +8,7 @@
   $: isSelected = selectedAppletID === name;
 
   quizStore.subscribe(value => {
-    selectedAppletID = value;
+    selectedAppletID = value.quizID;
   });
 
   const handleClick = () => {

@@ -8,7 +8,7 @@
   let currentAppletID;
 
   quizStore.subscribe(value => {
-    currentAppletID = value;
+    currentAppletID = value.quizID;
   });
 </script>
 

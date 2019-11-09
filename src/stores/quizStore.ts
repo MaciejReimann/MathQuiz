@@ -8,28 +8,44 @@ import { QuizQuestionListeners } from "../quizzes/QuizQuestion"
 
 function createQuizStore(quizzes) {
   const quizzesID = quizzes.map(quiz => quiz.getID())
-  const { subscribe, set, update } = writable(quizzesID[0])
-  let currentId
 
-  subscribe(val => {
-    currentId = val
+  const { subscribe, set, update } = writable({
+    quizID: quizzesID[0],
+    questionNo: 0
   })
 
-  const getCurrentQuiz = () => {
-    const id = quizzesID.indexOf(currentId)
-    return quizzes[id]
-  }
+  let currentId
+  let currentQuestionNo
 
-  const getCurrentQuestion = () => getCurrentQuiz().getCurrentQuestion()
+  subscribe(val => {
+    currentId = val.quizID
+    currentQuestionNo = val.questionNo
+  })
+
+  const next = () => update(n => ({ ...n, quizID: n.quizID + 1 }))
+  const previous = () => update(n => ({ ...n, quizID: n.quizID - 1 }))
+  const goTo = quizID => update(n => ({ ...n, quizID }))
+
+  const getAllIDs = () => quizzesID
+  const getCurrentQuiz = () => quizzes[quizzesID.indexOf(currentId)]
+  const getCurrentQuestion = () =>
+    getCurrentQuiz().getQuestion(currentQuestionNo)
+
+  const onSubmitAnswer = () =>
+    update(n => ({
+      ...n,
+      questionNo: n.questionNo + 1
+    }))
 
   return {
     subscribe,
-    next: () => update(n => quizzesID[quizzesID.indexOf(n) + 1]),
-    previous: () => update(n => quizzesID[quizzesID.indexOf(n) - 1]),
-    goTo: n => set(n),
-    getAllIDs: () => quizzesID,
+    next,
+    previous,
+    goTo,
+    getAllIDs,
     getCurrentQuiz,
-    getCurrentQuestion
+    getCurrentQuestion,
+    onSubmitAnswer
   }
 }
 

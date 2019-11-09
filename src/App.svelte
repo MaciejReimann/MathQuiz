@@ -9,10 +9,6 @@
   import QuizDisplay from "./Layout/QuizDisplay.svelte";
 
   setContext("quizStore", quizStore);
-  quizStore.subscribe(val => {
-    // console.log(quizStore.getCurrentQuiz());
-    console.log(quizStore.getAllIDs());
-  });
   setContext("scoreStore", scoreStore);
 </script>
 
