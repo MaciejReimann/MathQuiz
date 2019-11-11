@@ -1,5 +1,5 @@
 import QuizQuestion, { QuizQuestionListeners } from "./QuizQuestion"
-import { INPUT_SYMBOL } from "./quiz-setup"
+import { INPUT_SYMBOL } from "./constants"
 
 export function convertEquationToQuizQuestion(
   equation: (number | string)[],
@@ -19,3 +19,7 @@ export function convertEquationToQuizQuestion(
 
   return new QuizQuestion(id, question, correctAnswers, listeners)
 }
+
+const isIdValid = id => {}
+
+const getInputPositionFromId = id => {}

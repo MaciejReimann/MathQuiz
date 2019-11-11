@@ -2,9 +2,7 @@
   export let quizQuestion;
   export let onSubmitAnswer;
   import NumericInputv2 from "../GenericComponents/NumericInputv2.svelte";
-  import { INPUT_SYMBOL } from "../quizzes/quiz-setup";
-
-  console.log(quizQuestion);
+  import { INPUT_SYMBOL } from "../quizzes/constants";
 
   const onSubmit = answer => {
     quizQuestion.submitAnswer(answer);

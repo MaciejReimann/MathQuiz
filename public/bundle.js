@@ -526,6 +526,20 @@ var app = (function () {
     See the Apache Version 2.0 License for specific language governing permissions
     and limitations under the License.
     ***************************************************************************** */
+    /* global Reflect, Promise */
+
+    var extendStatics = function(d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+
+    function __extends(d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    }
 
     var __assign = function() {
         __assign = Object.assign || function __assign(t) {
@@ -1526,57 +1540,87 @@ var app = (function () {
     var MultiplicationEquation = /** @class */ (function () {
         function MultiplicationEquation(value1, value2) {
             var _this = this;
-            this.formatEqResultRHS = function () { return [
-                _this.value1,
-                Signs.Mult,
-                _this.value2,
-                Signs.Equal,
-                _this.result
-            ]; };
-            this.formatEqResultLHS = function () { return [
-                _this.result,
-                Signs.Equal,
-                _this.value1,
-                Signs.Mult,
-                _this.value2
-            ]; };
-            this.formatRHEq = function () { return [_this.value1, "x", _this.value2, "=", _this.result]; };
-            this.getResult = function () { return _this.value1 * _this.value2; };
+            this.formatRHEq = function () { return [_this.value1, "x", _this.value2, "=", _this.result]; }; // delete this
+            this.getResult = function () { return _this.value1 * _this.value2; }; // delete this
             this.value1 = value1;
             this.value2 = value2;
             this.result = value1 * value2;
         }
         return MultiplicationEquation;
     }());
+    var RHSMultiplicationEquation = /** @class */ (function (_super) {
+        __extends(RHSMultiplicationEquation, _super);
+        function RHSMultiplicationEquation(value1, value2) {
+            var _this = _super.call(this, value1, value2) || this;
+            _this.getAsArray = function () { return [
+                _this.value1,
+                Signs.Mult,
+                _this.value2,
+                Signs.Equal,
+                _this.result
+            ]; };
+            return _this;
+        }
+        return RHSMultiplicationEquation;
+    }(MultiplicationEquation));
+    var LHSMultiplicationEquation = /** @class */ (function (_super) {
+        __extends(LHSMultiplicationEquation, _super);
+        function LHSMultiplicationEquation(value1, value2) {
+            var _this = _super.call(this, value1, value2) || this;
+            _this.getAsArray = function () { return [
+                _this.result,
+                Signs.Equal,
+                _this.value1,
+                Signs.Mult,
+                _this.value2
+            ]; };
+            return _this;
+        }
+        return LHSMultiplicationEquation;
+    }(MultiplicationEquation));
     //# sourceMappingURL=MultiplicationEquation.js.map
 
-    var MultiplicationEquationBuilder = /** @class */ (function () {
-        function MultiplicationEquationBuilder() {
+    var Range = /** @class */ (function () {
+        function Range(range, Element) {
+            var _this = this;
+            this.get = function () { return _this.range; };
+            this.range = buildFlatArrayOfIndexedElements(range, Element);
         }
-        MultiplicationEquationBuilder.getFromRange = function (range) {
-            return __spreadArrays(new Array(range.xMax)).slice(range.xMin, range.xMax)
-                .map(function (_, i) { return (range.xMin ? i + range.xMin : i); })
-                .map(function (i) {
-                return __spreadArrays(new Array(range.yMax)).slice(range.yMin, range.yMax)
-                    .map(function (_, j) { return (range.yMin ? j + range.yMin : j); })
-                    .map(function (j) { return new MultiplicationEquation(i + 1, j + 1); });
-            })
-                .flat();
-        };
-        // x * y = z
-        MultiplicationEquationBuilder.getFromRangeRHS = function (range) {
-            return MultiplicationEquationBuilder.getFromRange(range).map(function (eq) {
-                return eq.formatEqResultRHS();
-            });
-        };
-        // z = x * y
-        MultiplicationEquationBuilder.getFromRangeLHS = function (range) {
-            return MultiplicationEquationBuilder.getFromRange(range).map(function (eq) {
-                return eq.formatEqResultLHS();
-            });
-        };
-        return MultiplicationEquationBuilder;
+        return Range;
     }());
+    var buildFlatArrayOfIndexedElements = function (range, Element) {
+        return __spreadArrays(new Array(range.xMax)).slice(range.xMin, range.xMax)
+            .map(function (_, i) { return (range.xMin ? i + range.xMin : i); })
+            .map(function (i) {
+            return __spreadArrays(new Array(range.yMax)).slice(range.yMin, range.yMax)
+                .map(function (_, j) { return (range.yMin ? j + range.yMin : j); })
+                .map(function (j) { return new Element(i + 1, j + 1); });
+        })
+            .flat();
+    };
+    //# sourceMappingURL=range.js.map
+
+    var EquationShapes;
+    (function (EquationShapes) {
+        EquationShapes["x*y=_"] = "x*y=_";
+        EquationShapes["x*_=z"] = "x*_=z";
+        EquationShapes["_*y=z"] = "_*y=z";
+        EquationShapes["_=x*y"] = "_=x*y";
+        EquationShapes["z=_*y"] = "z=_*y";
+        EquationShapes["z=x*_"] = "z=x*_";
+    })(EquationShapes || (EquationShapes = {}));
+    var buildEquations = function (range, shape) {
+        return new Range(range, isEquationLeftHandSide(shape)
+            ? LHSMultiplicationEquation
+            : RHSMultiplicationEquation).get();
+    };
+    var buildEquationsAsArrays = function (range, shape) {
+        return buildEquations(range, shape).map(function (eq) { return eq.getAsArray(); });
+    };
+    var isEquationLeftHandSide = function (equationShape) {
+        console.log(equationShape);
+        return equationShape.indexOf(Signs.Equal) < equationShape.length - 3;
+    };
     //# sourceMappingURL=MultiplicationEquationBuilder.js.map
 
     var QuizQuestion = /** @class */ (function () {
@@ -1613,6 +1657,10 @@ var app = (function () {
     }());
     //# sourceMappingURL=QuizQuestion.js.map
 
+    var INPUT_SYMBOL = "_";
+    var MULTIPLICATION_TABLE = "multiplication-table";
+    //# sourceMappingURL=constants.js.map
+
     function convertEquationToQuizQuestion(equation, id, listeners) {
         var inputPosition = id.indexOf(INPUT_SYMBOL) > -1 ? id.indexOf(INPUT_SYMBOL) : id.length - 1;
         var question = __spreadArrays(equation.slice(0, inputPosition), [
@@ -1627,7 +1675,7 @@ var app = (function () {
         return config.map(function (_a) {
             var shape = _a.shape, range = _a.range, name = _a.name;
             var isMultiplicationTable = name === MULTIPLICATION_TABLE;
-            var equations = createEquationSet(shape, range);
+            var equations = buildEquationsAsArrays(range, shape);
             var quizQuestions = equations.map(function (equation, i) {
                 return convertEquationToQuizQuestion(equation, shape + "-" + i, listeners);
             });
@@ -1636,19 +1684,9 @@ var app = (function () {
             });
         });
     }
-    var createEquationSet = function (shape, range) {
-        return isEquationLeftHandSide(shape)
-            ? MultiplicationEquationBuilder.getFromRangeLHS(range)
-            : MultiplicationEquationBuilder.getFromRangeRHS(range);
-    };
-    var isEquationLeftHandSide = function (equationShape) {
-        return equationShape.indexOf(Signs.Equal) < equationShape.length - 3;
-    };
-    var INPUT_SYMBOL = "_";
-    var MULTIPLICATION_TABLE = "multiplication-table";
     var quizConfig = [
         {
-            shape: "x*y=_",
+            shape: EquationShapes["x*y=_"],
             range: {
                 xMin: 1,
                 xMax: 10,
@@ -1657,7 +1695,7 @@ var app = (function () {
             }
         },
         {
-            shape: "_*y=z",
+            shape: EquationShapes["_*y=z"],
             range: {
                 xMin: 1,
                 xMax: 10,
@@ -1666,7 +1704,7 @@ var app = (function () {
             }
         },
         {
-            shape: "z=_*y",
+            shape: EquationShapes["z=_*y"],
             range: {
                 xMin: 1,
                 xMax: 10,
@@ -1675,7 +1713,7 @@ var app = (function () {
             }
         },
         {
-            shape: "x*y=_",
+            shape: EquationShapes["x*y=_"],
             name: MULTIPLICATION_TABLE,
             range: {
                 xMin: 0,
@@ -2064,9 +2102,9 @@ var app = (function () {
     	}
     }
 
-    /* src/Layout/AppletIcon.svelte generated by Svelte v3.12.1 */
+    /* src/Layout/QuizIcon.svelte generated by Svelte v3.12.1 */
 
-    const file$2 = "src/Layout/AppletIcon.svelte";
+    const file$2 = "src/Layout/QuizIcon.svelte";
 
     function create_fragment$2(ctx) {
     	var div, t, dispose;
@@ -2132,7 +2170,7 @@ var app = (function () {
 
     	const writable_props = ['name'];
     	Object.keys($$props).forEach(key => {
-    		if (!writable_props.includes(key) && !key.startsWith('$$')) console.warn(`<AppletIcon> was created with unknown prop '${key}'`);
+    		if (!writable_props.includes(key) && !key.startsWith('$$')) console.warn(`<QuizIcon> was created with unknown prop '${key}'`);
     	});
 
     	$$self.$set = $$props => {
@@ -2158,44 +2196,45 @@ var app = (function () {
     	return { name, handleClick, isSelected };
     }
 
-    class AppletIcon extends SvelteComponentDev {
+    class QuizIcon extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
     		init(this, options, instance$2, create_fragment$2, safe_not_equal, ["name"]);
-    		dispatch_dev("SvelteRegisterComponent", { component: this, tagName: "AppletIcon", options, id: create_fragment$2.name });
+    		dispatch_dev("SvelteRegisterComponent", { component: this, tagName: "QuizIcon", options, id: create_fragment$2.name });
 
     		const { ctx } = this.$$;
     		const props = options.props || {};
     		if (ctx.name === undefined && !('name' in props)) {
-    			console.warn("<AppletIcon> was created without expected prop 'name'");
+    			console.warn("<QuizIcon> was created without expected prop 'name'");
     		}
     	}
 
     	get name() {
-    		throw new Error("<AppletIcon>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    		throw new Error("<QuizIcon>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
 
     	set name(value) {
-    		throw new Error("<AppletIcon>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    		throw new Error("<QuizIcon>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
     }
 
     /* src/Layout/ControlBar.svelte generated by Svelte v3.12.1 */
+    const { console: console_1 } = globals;
 
     const file$3 = "src/Layout/ControlBar.svelte";
 
     function get_each_context(ctx, list, i) {
     	const child_ctx = Object.create(ctx);
-    	child_ctx.option = list[i];
+    	child_ctx.name = list[i];
     	return child_ctx;
     }
 
-    // (17:2) {#each options as option (option)}
+    // (18:2) {#each names as name (name)}
     function create_each_block(key_1, ctx) {
     	var first, current;
 
-    	var appleticon = new AppletIcon({
-    		props: { name: ctx.option },
+    	var quizicon = new QuizIcon({
+    		props: { name: ctx.name },
     		$$inline: true
     	});
 
@@ -2206,31 +2245,31 @@ var app = (function () {
 
     		c: function create() {
     			first = empty();
-    			appleticon.$$.fragment.c();
+    			quizicon.$$.fragment.c();
     			this.first = first;
     		},
 
     		m: function mount(target, anchor) {
     			insert_dev(target, first, anchor);
-    			mount_component(appleticon, target, anchor);
+    			mount_component(quizicon, target, anchor);
     			current = true;
     		},
 
     		p: function update(changed, ctx) {
-    			var appleticon_changes = {};
-    			if (changed.options) appleticon_changes.name = ctx.option;
-    			appleticon.$set(appleticon_changes);
+    			var quizicon_changes = {};
+    			if (changed.names) quizicon_changes.name = ctx.name;
+    			quizicon.$set(quizicon_changes);
     		},
 
     		i: function intro(local) {
     			if (current) return;
-    			transition_in(appleticon.$$.fragment, local);
+    			transition_in(quizicon.$$.fragment, local);
 
     			current = true;
     		},
 
     		o: function outro(local) {
-    			transition_out(appleticon.$$.fragment, local);
+    			transition_out(quizicon.$$.fragment, local);
     			current = false;
     		},
 
@@ -2239,19 +2278,19 @@ var app = (function () {
     				detach_dev(first);
     			}
 
-    			destroy_component(appleticon, detaching);
+    			destroy_component(quizicon, detaching);
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_each_block.name, type: "each", source: "(17:2) {#each options as option (option)}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_each_block.name, type: "each", source: "(18:2) {#each names as name (name)}", ctx });
     	return block;
     }
 
     function create_fragment$3(ctx) {
     	var div, each_blocks = [], each_1_lookup = new Map(), current;
 
-    	let each_value = ctx.options;
+    	let each_value = ctx.names;
 
-    	const get_key = ctx => ctx.option;
+    	const get_key = ctx => ctx.name;
 
     	for (let i = 0; i < each_value.length; i += 1) {
     		let child_ctx = get_each_context(ctx, each_value, i);
@@ -2267,7 +2306,7 @@ var app = (function () {
     				each_blocks[i].c();
     			}
     			attr_dev(div, "class", "wrapper svelte-1awiuh0");
-    			add_location(div, file$3, 14, 0, 214);
+    			add_location(div, file$3, 15, 0, 230);
     		},
 
     		l: function claim(nodes) {
@@ -2285,7 +2324,7 @@ var app = (function () {
     		},
 
     		p: function update(changed, ctx) {
-    			const each_value = ctx.options;
+    			const each_value = ctx.names;
 
     			group_outros();
     			each_blocks = update_keyed_each(each_blocks, changed, get_key, 1, ctx, each_value, each_1_lookup, div, outro_and_destroy_block, create_each_block, null, get_each_context);
@@ -2324,52 +2363,53 @@ var app = (function () {
     }
 
     function instance$3($$self, $$props, $$invalidate) {
-    	let { options } = $$props;
+    	let { names } = $$props;
+      console.log(names);
 
-    	const writable_props = ['options'];
+    	const writable_props = ['names'];
     	Object.keys($$props).forEach(key => {
-    		if (!writable_props.includes(key) && !key.startsWith('$$')) console.warn(`<ControlBar> was created with unknown prop '${key}'`);
+    		if (!writable_props.includes(key) && !key.startsWith('$$')) console_1.warn(`<ControlBar> was created with unknown prop '${key}'`);
     	});
 
     	$$self.$set = $$props => {
-    		if ('options' in $$props) $$invalidate('options', options = $$props.options);
+    		if ('names' in $$props) $$invalidate('names', names = $$props.names);
     	};
 
     	$$self.$capture_state = () => {
-    		return { options };
+    		return { names };
     	};
 
     	$$self.$inject_state = $$props => {
-    		if ('options' in $$props) $$invalidate('options', options = $$props.options);
+    		if ('names' in $$props) $$invalidate('names', names = $$props.names);
     	};
 
-    	return { options };
+    	return { names };
     }
 
     class ControlBar extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$3, create_fragment$3, safe_not_equal, ["options"]);
+    		init(this, options, instance$3, create_fragment$3, safe_not_equal, ["names"]);
     		dispatch_dev("SvelteRegisterComponent", { component: this, tagName: "ControlBar", options, id: create_fragment$3.name });
 
     		const { ctx } = this.$$;
     		const props = options.props || {};
-    		if (ctx.options === undefined && !('options' in props)) {
-    			console.warn("<ControlBar> was created without expected prop 'options'");
+    		if (ctx.names === undefined && !('names' in props)) {
+    			console_1.warn("<ControlBar> was created without expected prop 'names'");
     		}
     	}
 
-    	get options() {
+    	get names() {
     		throw new Error("<ControlBar>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
 
-    	set options(value) {
+    	set names(value) {
     		throw new Error("<ControlBar>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
     }
 
     /* src/GenericComponents/NumericInput.svelte generated by Svelte v3.12.1 */
-    const { console: console_1 } = globals;
+    const { console: console_1$1 } = globals;
 
     const file$4 = "src/GenericComponents/NumericInput.svelte";
 
@@ -2459,7 +2499,7 @@ var app = (function () {
 
     	const writable_props = ['onSubmit', 'onNavigate', 'onFocus', 'isFocused', 'maxLength'];
     	Object.keys($$props).forEach(key => {
-    		if (!writable_props.includes(key) && !key.startsWith('$$')) console_1.warn(`<NumericInput> was created with unknown prop '${key}'`);
+    		if (!writable_props.includes(key) && !key.startsWith('$$')) console_1$1.warn(`<NumericInput> was created with unknown prop '${key}'`);
     	});
 
     	function input_input_handler() {
@@ -2528,19 +2568,19 @@ var app = (function () {
     		const { ctx } = this.$$;
     		const props = options.props || {};
     		if (ctx.onSubmit === undefined && !('onSubmit' in props)) {
-    			console_1.warn("<NumericInput> was created without expected prop 'onSubmit'");
+    			console_1$1.warn("<NumericInput> was created without expected prop 'onSubmit'");
     		}
     		if (ctx.onNavigate === undefined && !('onNavigate' in props)) {
-    			console_1.warn("<NumericInput> was created without expected prop 'onNavigate'");
+    			console_1$1.warn("<NumericInput> was created without expected prop 'onNavigate'");
     		}
     		if (ctx.onFocus === undefined && !('onFocus' in props)) {
-    			console_1.warn("<NumericInput> was created without expected prop 'onFocus'");
+    			console_1$1.warn("<NumericInput> was created without expected prop 'onFocus'");
     		}
     		if (ctx.isFocused === undefined && !('isFocused' in props)) {
-    			console_1.warn("<NumericInput> was created without expected prop 'isFocused'");
+    			console_1$1.warn("<NumericInput> was created without expected prop 'isFocused'");
     		}
     		if (ctx.maxLength === undefined && !('maxLength' in props)) {
-    			console_1.warn("<NumericInput> was created without expected prop 'maxLength'");
+    			console_1$1.warn("<NumericInput> was created without expected prop 'maxLength'");
     		}
     	}
 
@@ -3338,7 +3378,6 @@ var app = (function () {
     }
 
     /* src/Layout/SingleEquation.svelte generated by Svelte v3.12.1 */
-    const { console: console_1$1 } = globals;
 
     const file$7 = "src/Layout/SingleEquation.svelte";
 
@@ -3348,7 +3387,7 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (50:6) {:else}
+    // (48:6) {:else}
     function create_else_block$1(ctx) {
     	var div, t_value = ctx.element + "", t;
 
@@ -3357,7 +3396,7 @@ var app = (function () {
     			div = element("div");
     			t = text(t_value);
     			attr_dev(div, "class", "symbol svelte-1n1izmm");
-    			add_location(div, file$7, 50, 8, 1017);
+    			add_location(div, file$7, 48, 8, 986);
     		},
 
     		m: function mount(target, anchor) {
@@ -3380,11 +3419,11 @@ var app = (function () {
     			}
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_else_block$1.name, type: "else", source: "(50:6) {:else}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_else_block$1.name, type: "else", source: "(48:6) {:else}", ctx });
     	return block;
     }
 
-    // (43:6) {#if element === INPUT_SYMBOL}
+    // (41:6) {#if element === INPUT_SYMBOL}
     function create_if_block$1(ctx) {
     	var div, current;
 
@@ -3402,7 +3441,7 @@ var app = (function () {
     			div = element("div");
     			numericinputv2.$$.fragment.c();
     			attr_dev(div, "class", "input svelte-1n1izmm");
-    			add_location(div, file$7, 43, 8, 815);
+    			add_location(div, file$7, 41, 8, 784);
     		},
 
     		m: function mount(target, anchor) {
@@ -3437,11 +3476,11 @@ var app = (function () {
     			destroy_component(numericinputv2);
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_if_block$1.name, type: "if", source: "(43:6) {#if element === INPUT_SYMBOL}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_if_block$1.name, type: "if", source: "(41:6) {#if element === INPUT_SYMBOL}", ctx });
     	return block;
     }
 
-    // (41:2) {#each quizQuestion.getAsArray() as element}
+    // (39:2) {#each quizQuestion.getAsArray() as element}
     function create_each_block$2(ctx) {
     	var div, current_block_type_index, if_block, t, current;
 
@@ -3466,7 +3505,7 @@ var app = (function () {
     			if_block.c();
     			t = space();
     			attr_dev(div, "class", "cell svelte-1n1izmm");
-    			add_location(div, file$7, 41, 4, 751);
+    			add_location(div, file$7, 39, 4, 720);
     		},
 
     		m: function mount(target, anchor) {
@@ -3517,7 +3556,7 @@ var app = (function () {
     			if_blocks[current_block_type_index].d();
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_each_block$2.name, type: "each", source: "(41:2) {#each quizQuestion.getAsArray() as element}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_each_block$2.name, type: "each", source: "(39:2) {#each quizQuestion.getAsArray() as element}", ctx });
     	return block;
     }
 
@@ -3544,7 +3583,7 @@ var app = (function () {
     				each_blocks[i].c();
     			}
     			attr_dev(div, "class", "wrapper svelte-1n1izmm");
-    			add_location(div, file$7, 39, 0, 678);
+    			add_location(div, file$7, 37, 0, 647);
     		},
 
     		l: function claim(nodes) {
@@ -3621,8 +3660,6 @@ var app = (function () {
     function instance$7($$self, $$props, $$invalidate) {
     	let { quizQuestion, onSubmitAnswer } = $$props;
 
-      console.log(quizQuestion);
-
       const onSubmit = answer => {
         quizQuestion.submitAnswer(answer);
         onSubmitAnswer();
@@ -3630,7 +3667,7 @@ var app = (function () {
 
     	const writable_props = ['quizQuestion', 'onSubmitAnswer'];
     	Object.keys($$props).forEach(key => {
-    		if (!writable_props.includes(key) && !key.startsWith('$$')) console_1$1.warn(`<SingleEquation> was created with unknown prop '${key}'`);
+    		if (!writable_props.includes(key) && !key.startsWith('$$')) console.warn(`<SingleEquation> was created with unknown prop '${key}'`);
     	});
 
     	$$self.$set = $$props => {
@@ -3659,10 +3696,10 @@ var app = (function () {
     		const { ctx } = this.$$;
     		const props = options.props || {};
     		if (ctx.quizQuestion === undefined && !('quizQuestion' in props)) {
-    			console_1$1.warn("<SingleEquation> was created without expected prop 'quizQuestion'");
+    			console.warn("<SingleEquation> was created without expected prop 'quizQuestion'");
     		}
     		if (ctx.onSubmitAnswer === undefined && !('onSubmitAnswer' in props)) {
-    			console_1$1.warn("<SingleEquation> was created without expected prop 'onSubmitAnswer'");
+    			console.warn("<SingleEquation> was created without expected prop 'onSubmitAnswer'");
     		}
     	}
 
@@ -3999,7 +4036,7 @@ var app = (function () {
     			div = element("div");
     			if_block.c();
     			attr_dev(div, "class", "wrapper svelte-1eof4gf");
-    			add_location(div, file$9, 24, 0, 578);
+    			add_location(div, file$9, 24, 0, 577);
     		},
 
     		l: function claim(nodes) {
@@ -4099,7 +4136,7 @@ var app = (function () {
     	var quizdisplay = new QuizDisplay({ $$inline: true });
 
     	var controlbar = new ControlBar({
-    		props: { options: quizStore.getAllQuizNames() },
+    		props: { names: quizStore.getAllQuizNames() },
     		$$inline: true
     	});
 

@@ -1,6 +1,7 @@
 <script>
-  export let options;
-  import AppletIcon from "./AppletIcon.svelte";
+  export let names;
+  import QuizIcon from "./QuizIcon.svelte";
+  console.log(names);
 </script>
 
 <style>
@@ -14,8 +15,8 @@
 
 <div class="wrapper">
 
-  {#each options as option (option)}
-    <AppletIcon name={option} />
+  {#each names as name (name)}
+    <QuizIcon {name} />
   {/each}
 
 </div>

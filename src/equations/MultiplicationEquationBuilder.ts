@@ -1,38 +1,39 @@
-import MultiplicationEquation, {
+import {
+  RHSMultiplicationEquation,
+  LHSMultiplicationEquation,
   ResultRHS,
-  ResultLHS
+  ResultLHS,
+  Signs
 } from "./MultiplicationEquation"
+import { Range, XYRangeI } from "./range"
 
-export interface XYRangeI {
-  xMin?: number
-  xMax: number
-  yMin?: number
-  yMax: number
+export enum EquationShapes {
+  "x*y=_" = "x*y=_",
+  "x*_=z" = "x*_=z",
+  "_*y=z" = "_*y=z",
+  "_=x*y" = "_=x*y",
+  "z=_*y" = "z=_*y",
+  "z=x*_" = "z=x*_"
 }
 
-export default class MultiplicationEquationBuilder {
-  static getFromRange = (range: XYRangeI) =>
-    [...new Array(range.xMax)]
-      .slice(range.xMin, range.xMax)
-      .map((_, i) => (range.xMin ? i + range.xMin : i))
-      .map(i =>
-        [...new Array(range.yMax)]
-          .slice(range.yMin, range.yMax)
-          .map((_, j) => (range.yMin ? j + range.yMin : j))
-          .map(j => new MultiplicationEquation(i + 1, j + 1))
-      )
+export const buildEquations = (
+  range: XYRangeI,
+  shape: EquationShapes
+): (LHSMultiplicationEquation | RHSMultiplicationEquation)[] =>
+  new Range<LHSMultiplicationEquation | RHSMultiplicationEquation>(
+    range,
+    isEquationLeftHandSide(shape)
+      ? LHSMultiplicationEquation
+      : RHSMultiplicationEquation
+  ).get()
 
-      .flat()
+export const buildEquationsAsArrays = (
+  range: XYRangeI,
+  shape: EquationShapes
+): (ResultRHS | ResultLHS)[] =>
+  buildEquations(range, shape).map(eq => eq.getAsArray())
 
-  // x * y = z
-  static getFromRangeRHS = (range: XYRangeI): ResultRHS[] =>
-    MultiplicationEquationBuilder.getFromRange(range).map(eq =>
-      eq.formatEqResultRHS()
-    )
-
-  // z = x * y
-  static getFromRangeLHS = (range: XYRangeI): ResultLHS[] =>
-    MultiplicationEquationBuilder.getFromRange(range).map(eq =>
-      eq.formatEqResultLHS()
-    )
+export const isEquationLeftHandSide = equationShape => {
+  console.log(equationShape)
+  return equationShape.indexOf(Signs.Equal) < equationShape.length - 3
 }

@@ -1,14 +1,13 @@
 import Quiz from "./Quiz"
-import MultiplicationEquationBuilder, {
-  XYRangeI
-} from "../equations/MultiplicationEquationBuilder"
 import {
-  Signs,
-  ResultRHS,
-  ResultLHS
-} from "../equations/MultiplicationEquation"
+  buildEquationsAsArrays,
+  EquationShapes
+} from "../equations/MultiplicationEquationBuilder"
+import { ResultRHS, ResultLHS } from "../equations/MultiplicationEquation"
+import { XYRangeI } from "../equations/range"
 import { convertEquationToQuizQuestion } from "./convertEquationToQuizQuestion"
 import QuizQuestion, { QuizQuestionListeners } from "./QuizQuestion"
+import { MULTIPLICATION_TABLE } from "./constants"
 
 export function createEquationQuizzesFromConfig(
   config: QuizConfig[],
@@ -17,7 +16,10 @@ export function createEquationQuizzesFromConfig(
   return config.map(({ shape, range, name }) => {
     const isMultiplicationTable = name === MULTIPLICATION_TABLE
 
-    const equations: (ResultRHS | ResultLHS)[] = createEquationSet(shape, range)
+    const equations: (ResultRHS | ResultLHS)[] = buildEquationsAsArrays(
+      range,
+      shape
+    )
 
     const quizQuestions: QuizQuestion[] = equations.map((equation, i) =>
       convertEquationToQuizQuestion(equation, `${shape}-${i}`, listeners)
@@ -27,27 +29,15 @@ export function createEquationQuizzesFromConfig(
     })
   })
 }
-
-const createEquationSet = (shape, range) =>
-  isEquationLeftHandSide(shape)
-    ? MultiplicationEquationBuilder.getFromRangeLHS(range)
-    : MultiplicationEquationBuilder.getFromRangeRHS(range)
-
-const isEquationLeftHandSide = equationShape =>
-  equationShape.indexOf(Signs.Equal) < equationShape.length - 3
-
 export interface QuizConfig {
-  shape: string
+  shape: EquationShapes
   name?: string
   range: XYRangeI
 }
-export const INPUT_SYMBOL = "_"
-
-export const MULTIPLICATION_TABLE = "multiplication-table"
 
 export const quizConfig: QuizConfig[] = [
   {
-    shape: "x*y=_",
+    shape: EquationShapes["x*y=_"],
     range: {
       xMin: 1,
       xMax: 10,
@@ -56,7 +46,7 @@ export const quizConfig: QuizConfig[] = [
     }
   },
   {
-    shape: "_*y=z",
+    shape: EquationShapes["_*y=z"],
     range: {
       xMin: 1,
       xMax: 10,
@@ -65,7 +55,7 @@ export const quizConfig: QuizConfig[] = [
     }
   },
   {
-    shape: "z=_*y",
+    shape: EquationShapes["z=_*y"],
     range: {
       xMin: 1,
       xMax: 10,
@@ -74,7 +64,7 @@ export const quizConfig: QuizConfig[] = [
     }
   },
   {
-    shape: "x*y=_",
+    shape: EquationShapes["x*y=_"],
     name: MULTIPLICATION_TABLE,
     range: {
       xMin: 0,

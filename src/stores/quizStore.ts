@@ -9,7 +9,7 @@ import { QuizQuestionListeners } from "../quizzes/QuizQuestion"
 function createQuizStore(quizzes) {
   const quizNames = quizzes.map(quiz => quiz.getName())
 
-  const { subscribe, set, update } = writable({
+  const { subscribe, update } = writable({
     quizName: quizNames[0],
     questionNo: 0
   })

@@ -58,7 +58,7 @@
   </main>
 
   <footer class="footer">
-    <ControlBar options={quizStore.getAllQuizNames()} />
+    <ControlBar names={quizStore.getAllQuizNames()} />
   </footer>
 
 </div>

@@ -1,6 +1,6 @@
 <script>
   import { getContext } from "svelte";
-  import { MULTIPLICATION_TABLE } from "../quizzes/quiz-setup";
+  import { MULTIPLICATION_TABLE } from "../quizzes/constants";
   import MultiplicationTable from "../MultiplicationTable/MultiplicationTable.svelte";
   import EquationsDisplay from "./EquationsDisplay.svelte";
 
