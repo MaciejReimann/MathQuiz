@@ -1,7 +1,6 @@
 <script>
   export let names;
   import QuizIcon from "./QuizIcon.svelte";
-  console.log(names);
 </script>
 
 <style>

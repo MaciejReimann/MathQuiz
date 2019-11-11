@@ -2,7 +2,7 @@ import Quiz from "./Quiz"
 import {
   buildEquationsAsArrays,
   EquationShapes
-} from "../equations/MultiplicationEquationBuilder"
+} from "../equations/buildEquations"
 import { ResultRHS, ResultLHS } from "../equations/MultiplicationEquation"
 import { XYRangeI } from "../equations/range"
 import { convertEquationToQuizQuestion } from "./convertEquationToQuizQuestion"
@@ -22,13 +22,14 @@ export function createEquationQuizzesFromConfig(
     )
 
     const quizQuestions: QuizQuestion[] = equations.map((equation, i) =>
-      convertEquationToQuizQuestion(equation, `${shape}-${i}`, listeners)
+      convertEquationToQuizQuestion(equation, shape, i, listeners)
     )
     return new Quiz(name || shape, quizQuestions, {
       shuffled: !isMultiplicationTable
     })
   })
 }
+
 export interface QuizConfig {
   shape: EquationShapes
   name?: string

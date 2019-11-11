@@ -1,4 +1,4 @@
-import MultiplicationEquationBuilder from "./MultiplicationEquationBuilder"
+import buildEquations from "./buildEquations"
 
 describe("MultiplicationEquationBuilder", () => {
   test("getFromRange without minimum range", () => {
