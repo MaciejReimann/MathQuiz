@@ -7,7 +7,7 @@ import { ResultRHS, ResultLHS } from "../equations/MultiplicationEquation"
 import { XYRangeI } from "../equations/range"
 import { convertEquationToQuizQuestion } from "./convertEquationToQuizQuestion"
 import QuizQuestion, { QuizQuestionListeners } from "./QuizQuestion"
-import { MULTIPLICATION_TABLE } from "./constants"
+import { MULTIPLICATION_TABLE, APP_PREFIX } from "./constants"
 
 export function createEquationQuizzesFromConfig(
   config: QuizConfig[],
@@ -24,11 +24,17 @@ export function createEquationQuizzesFromConfig(
     const quizQuestions: QuizQuestion[] = equations.map((equation, i) =>
       convertEquationToQuizQuestion(equation, shape, i, listeners)
     )
-    return new Quiz(name || shape, quizQuestions, {
+
+    const quizName = generateQuizName(shape, name)
+
+    return new Quiz(quizName, quizQuestions, {
       shuffled: !isMultiplicationTable
     })
   })
 }
+
+const generateQuizName = (shape?, name?) =>
+  `${APP_PREFIX}.${name ? name : `SingleEquations`}.${shape}`
 
 export interface QuizConfig {
   shape: EquationShapes

@@ -9,7 +9,7 @@
   let isMultiplicationTable;
 
   quizStore.subscribe(value => {
-    isMultiplicationTable = value.quizName === MULTIPLICATION_TABLE;
+    isMultiplicationTable = value.quizName.includes(MULTIPLICATION_TABLE);
   });
 </script>
 

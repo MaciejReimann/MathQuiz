@@ -33,7 +33,5 @@ export const buildEquationsAsArrays = (
 ): (ResultRHS | ResultLHS)[] =>
   buildEquations(range, shape).map(eq => eq.getAsArray())
 
-export const isEquationLeftHandSide = equationShape => {
-  console.log(equationShape)
-  return equationShape.indexOf(Signs.Equal) < equationShape.length - 3
-}
+export const isEquationLeftHandSide = equationShape =>
+  equationShape.indexOf(Signs.Equal) < equationShape.length - 3

@@ -1,19 +1,6 @@
 <script>
-  export let name;
+  export let name, id, handleClick, isSelected;
   import { getContext } from "svelte";
-
-  const quizStore = getContext("quizStore");
-
-  let selectedQuizName;
-  $: isSelected = selectedQuizName === name;
-
-  quizStore.subscribe(value => {
-    selectedQuizName = value.quizName;
-  });
-
-  const handleClick = () => {
-    quizStore.goTo(name);
-  };
 </script>
 
 <style>
@@ -39,6 +26,9 @@
   }
 </style>
 
-<div on:click={handleClick} class:selected={isSelected} class="wrapper">
+<div
+  on:click={() => handleClick(id)}
+  class:selected={isSelected}
+  class="wrapper">
   {name}
 </div>

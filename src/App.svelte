@@ -4,6 +4,8 @@
   import { quizStore } from "./stores/quizStore";
   import { scoreStore } from "./stores/scoreStore";
 
+  import { APP_PREFIX } from "./quizzes/constants";
+
   import Header from "./Layout//Header.svelte";
   import ControlBar from "./Layout/ControlBar.svelte";
   import QuizDisplay from "./Layout/QuizDisplay.svelte";
@@ -58,7 +60,7 @@
   </main>
 
   <footer class="footer">
-    <ControlBar names={quizStore.getAllQuizNames()} />
+    <ControlBar appPrefix={APP_PREFIX} />
   </footer>
 
 </div>

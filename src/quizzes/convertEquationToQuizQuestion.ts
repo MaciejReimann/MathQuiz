@@ -1,6 +1,6 @@
 import QuizQuestion, { QuizQuestionListeners } from "./QuizQuestion"
 import { EquationShapes } from "../equations/buildEquations"
-import { INPUT_SYMBOL, ERROR_MESSAGE_INVALID_EQUATION_SHAPE } from "./constants"
+import { INPUT_SYMBOL } from "./constants"
 
 export function convertEquationToQuizQuestion(
   equation: (number | string)[],
@@ -24,9 +24,7 @@ export function convertEquationToQuizQuestion(
 }
 
 const getInputPositionFromShape = (shape: EquationShapes): number =>
-  shape.indexOf(INPUT_SYMBOL) > -1
-    ? shape.indexOf(INPUT_SYMBOL)
-    : shape.length - 1
+  shape.includes(INPUT_SYMBOL) ? shape.indexOf(INPUT_SYMBOL) : shape.length - 1
 
 const generateQuizQuestionId = (shape: EquationShapes, id: number): string =>
   JSON.stringify({ shape, id })

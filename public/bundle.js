@@ -1618,7 +1618,6 @@ var app = (function () {
         return buildEquations(range, shape).map(function (eq) { return eq.getAsArray(); });
     };
     var isEquationLeftHandSide = function (equationShape) {
-        console.log(equationShape);
         return equationShape.indexOf(Signs.Equal) < equationShape.length - 3;
     };
     //# sourceMappingURL=buildEquations.js.map
@@ -1658,7 +1657,9 @@ var app = (function () {
     //# sourceMappingURL=QuizQuestion.js.map
 
     var INPUT_SYMBOL = "_";
-    var MULTIPLICATION_TABLE = "multiplication-table";
+    var MULTIPLICATION_TABLE = "MultiplicationTable";
+    var APP_PREFIX = "Math.Basic.Arithmetics.Multiplication";
+    //# sourceMappingURL=constants.js.map
 
     function convertEquationToQuizQuestion(equation, shape, id, listeners) {
         var inputPosition = getInputPositionFromShape(shape);
@@ -1670,14 +1671,11 @@ var app = (function () {
         return new QuizQuestion(quizQuestionId, question, correctAnswers, listeners);
     }
     var getInputPositionFromShape = function (shape) {
-        return shape.indexOf(INPUT_SYMBOL) > -1
-            ? shape.indexOf(INPUT_SYMBOL)
-            : shape.length - 1;
+        return shape.includes(INPUT_SYMBOL) ? shape.indexOf(INPUT_SYMBOL) : shape.length - 1;
     };
     var generateQuizQuestionId = function (shape, id) {
         return JSON.stringify({ shape: shape, id: id });
     };
-    //# sourceMappingURL=convertEquationToQuizQuestion.js.map
 
     function createEquationQuizzesFromConfig(config, listeners) {
         return config.map(function (_a) {
@@ -1687,11 +1685,15 @@ var app = (function () {
             var quizQuestions = equations.map(function (equation, i) {
                 return convertEquationToQuizQuestion(equation, shape, i, listeners);
             });
-            return new Quiz(name || shape, quizQuestions, {
+            var quizName = generateQuizName(shape, name);
+            return new Quiz(quizName, quizQuestions, {
                 shuffled: !isMultiplicationTable
             });
         });
     }
+    var generateQuizName = function (shape, name) {
+        return APP_PREFIX + "." + (name ? name : "SingleEquations") + "." + shape;
+    };
     var quizConfig = [
         {
             shape: EquationShapes["x*y=_"],
@@ -2123,8 +2125,8 @@ var app = (function () {
     			t = text(ctx.name);
     			attr_dev(div, "class", "wrapper svelte-1hwm0cr");
     			toggle_class(div, "selected", ctx.isSelected);
-    			add_location(div, file$2, 41, 0, 667);
-    			dispose = listen_dev(div, "click", ctx.handleClick);
+    			add_location(div, file$2, 28, 0, 439);
+    			dispose = listen_dev(div, "click", ctx.click_handler);
     		},
 
     		l: function claim(nodes) {
@@ -2162,58 +2164,61 @@ var app = (function () {
     }
 
     function instance$2($$self, $$props, $$invalidate) {
-    	let { name } = $$props;
+    	let { name, id, handleClick, isSelected } = $$props;
 
-      const quizStore = getContext("quizStore");
-
-      let selectedQuizName;
-
-      quizStore.subscribe(value => {
-        $$invalidate('selectedQuizName', selectedQuizName = value.quizName);
-      });
-
-      const handleClick = () => {
-        quizStore.goTo(name);
-      };
-
-    	const writable_props = ['name'];
+    	const writable_props = ['name', 'id', 'handleClick', 'isSelected'];
     	Object.keys($$props).forEach(key => {
     		if (!writable_props.includes(key) && !key.startsWith('$$')) console.warn(`<QuizIcon> was created with unknown prop '${key}'`);
     	});
 
+    	const click_handler = () => handleClick(id);
+
     	$$self.$set = $$props => {
     		if ('name' in $$props) $$invalidate('name', name = $$props.name);
+    		if ('id' in $$props) $$invalidate('id', id = $$props.id);
+    		if ('handleClick' in $$props) $$invalidate('handleClick', handleClick = $$props.handleClick);
+    		if ('isSelected' in $$props) $$invalidate('isSelected', isSelected = $$props.isSelected);
     	};
 
     	$$self.$capture_state = () => {
-    		return { name, selectedQuizName, isSelected };
+    		return { name, id, handleClick, isSelected };
     	};
 
     	$$self.$inject_state = $$props => {
     		if ('name' in $$props) $$invalidate('name', name = $$props.name);
-    		if ('selectedQuizName' in $$props) $$invalidate('selectedQuizName', selectedQuizName = $$props.selectedQuizName);
+    		if ('id' in $$props) $$invalidate('id', id = $$props.id);
+    		if ('handleClick' in $$props) $$invalidate('handleClick', handleClick = $$props.handleClick);
     		if ('isSelected' in $$props) $$invalidate('isSelected', isSelected = $$props.isSelected);
     	};
 
-    	let isSelected;
-
-    	$$self.$$.update = ($$dirty = { selectedQuizName: 1, name: 1 }) => {
-    		if ($$dirty.selectedQuizName || $$dirty.name) { $$invalidate('isSelected', isSelected = selectedQuizName === name); }
+    	return {
+    		name,
+    		id,
+    		handleClick,
+    		isSelected,
+    		click_handler
     	};
-
-    	return { name, handleClick, isSelected };
     }
 
     class QuizIcon extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$2, create_fragment$2, safe_not_equal, ["name"]);
+    		init(this, options, instance$2, create_fragment$2, safe_not_equal, ["name", "id", "handleClick", "isSelected"]);
     		dispatch_dev("SvelteRegisterComponent", { component: this, tagName: "QuizIcon", options, id: create_fragment$2.name });
 
     		const { ctx } = this.$$;
     		const props = options.props || {};
     		if (ctx.name === undefined && !('name' in props)) {
     			console.warn("<QuizIcon> was created without expected prop 'name'");
+    		}
+    		if (ctx.id === undefined && !('id' in props)) {
+    			console.warn("<QuizIcon> was created without expected prop 'id'");
+    		}
+    		if (ctx.handleClick === undefined && !('handleClick' in props)) {
+    			console.warn("<QuizIcon> was created without expected prop 'handleClick'");
+    		}
+    		if (ctx.isSelected === undefined && !('isSelected' in props)) {
+    			console.warn("<QuizIcon> was created without expected prop 'isSelected'");
     		}
     	}
 
@@ -2222,6 +2227,30 @@ var app = (function () {
     	}
 
     	set name(value) {
+    		throw new Error("<QuizIcon>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get id() {
+    		throw new Error("<QuizIcon>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set id(value) {
+    		throw new Error("<QuizIcon>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get handleClick() {
+    		throw new Error("<QuizIcon>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set handleClick(value) {
+    		throw new Error("<QuizIcon>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get isSelected() {
+    		throw new Error("<QuizIcon>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set isSelected(value) {
     		throw new Error("<QuizIcon>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
     }
@@ -2236,12 +2265,17 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (17:2) {#each names as name (name)}
+    // (35:2) {#each names as name (name)}
     function create_each_block(key_1, ctx) {
     	var first, current;
 
     	var quizicon = new QuizIcon({
-    		props: { name: ctx.name },
+    		props: {
+    		name: ctx.noPrefix(ctx.name),
+    		id: ctx.name,
+    		handleClick: ctx.handleIconClick,
+    		isSelected: ctx.selectedQuizName === ctx.name
+    	},
     		$$inline: true
     	});
 
@@ -2264,7 +2298,7 @@ var app = (function () {
 
     		p: function update(changed, ctx) {
     			var quizicon_changes = {};
-    			if (changed.names) quizicon_changes.name = ctx.name;
+    			if (changed.selectedQuizName) quizicon_changes.isSelected = ctx.selectedQuizName === ctx.name;
     			quizicon.$set(quizicon_changes);
     		},
 
@@ -2288,7 +2322,7 @@ var app = (function () {
     			destroy_component(quizicon, detaching);
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_each_block.name, type: "each", source: "(17:2) {#each names as name (name)}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_each_block.name, type: "each", source: "(35:2) {#each names as name (name)}", ctx });
     	return block;
     }
 
@@ -2313,7 +2347,7 @@ var app = (function () {
     				each_blocks[i].c();
     			}
     			attr_dev(div, "class", "wrapper svelte-1awiuh0");
-    			add_location(div, file$3, 14, 0, 208);
+    			add_location(div, file$3, 32, 0, 633);
     		},
 
     		l: function claim(nodes) {
@@ -2370,46 +2404,69 @@ var app = (function () {
     }
 
     function instance$3($$self, $$props, $$invalidate) {
-    	let { names } = $$props;
+    	let { appPrefix } = $$props;
 
-    	const writable_props = ['names'];
+      let selectedQuizName;
+      const quizStore = getContext("quizStore");
+
+      const names = quizStore.getAllQuizNames();
+
+      const handleIconClick = name => {
+        quizStore.goTo(name);
+      };
+
+      quizStore.subscribe(value => {
+        $$invalidate('selectedQuizName', selectedQuizName = value.quizName);
+      });
+
+      const noPrefix = name =>
+        name.includes(appPrefix) && name.slice(appPrefix.length + 1, name.length);
+
+    	const writable_props = ['appPrefix'];
     	Object.keys($$props).forEach(key => {
     		if (!writable_props.includes(key) && !key.startsWith('$$')) console.warn(`<ControlBar> was created with unknown prop '${key}'`);
     	});
 
     	$$self.$set = $$props => {
-    		if ('names' in $$props) $$invalidate('names', names = $$props.names);
+    		if ('appPrefix' in $$props) $$invalidate('appPrefix', appPrefix = $$props.appPrefix);
     	};
 
     	$$self.$capture_state = () => {
-    		return { names };
+    		return { appPrefix, selectedQuizName };
     	};
 
     	$$self.$inject_state = $$props => {
-    		if ('names' in $$props) $$invalidate('names', names = $$props.names);
+    		if ('appPrefix' in $$props) $$invalidate('appPrefix', appPrefix = $$props.appPrefix);
+    		if ('selectedQuizName' in $$props) $$invalidate('selectedQuizName', selectedQuizName = $$props.selectedQuizName);
     	};
 
-    	return { names };
+    	return {
+    		appPrefix,
+    		selectedQuizName,
+    		names,
+    		handleIconClick,
+    		noPrefix
+    	};
     }
 
     class ControlBar extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$3, create_fragment$3, safe_not_equal, ["names"]);
+    		init(this, options, instance$3, create_fragment$3, safe_not_equal, ["appPrefix"]);
     		dispatch_dev("SvelteRegisterComponent", { component: this, tagName: "ControlBar", options, id: create_fragment$3.name });
 
     		const { ctx } = this.$$;
     		const props = options.props || {};
-    		if (ctx.names === undefined && !('names' in props)) {
-    			console.warn("<ControlBar> was created without expected prop 'names'");
+    		if (ctx.appPrefix === undefined && !('appPrefix' in props)) {
+    			console.warn("<ControlBar> was created without expected prop 'appPrefix'");
     		}
     	}
 
-    	get names() {
+    	get appPrefix() {
     		throw new Error("<ControlBar>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
 
-    	set names(value) {
+    	set appPrefix(value) {
     		throw new Error("<ControlBar>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
     }
@@ -4042,7 +4099,7 @@ var app = (function () {
     			div = element("div");
     			if_block.c();
     			attr_dev(div, "class", "wrapper svelte-1eof4gf");
-    			add_location(div, file$9, 24, 0, 577);
+    			add_location(div, file$9, 24, 0, 583);
     		},
 
     		l: function claim(nodes) {
@@ -4108,7 +4165,7 @@ var app = (function () {
       let isMultiplicationTable;
 
       quizStore.subscribe(value => {
-        $$invalidate('isMultiplicationTable', isMultiplicationTable = value.quizName === MULTIPLICATION_TABLE);
+        $$invalidate('isMultiplicationTable', isMultiplicationTable = value.quizName.includes(MULTIPLICATION_TABLE));
       });
 
     	$$self.$capture_state = () => {
@@ -4142,7 +4199,7 @@ var app = (function () {
     	var quizdisplay = new QuizDisplay({ $$inline: true });
 
     	var controlbar = new ControlBar({
-    		props: { names: quizStore.getAllQuizNames() },
+    		props: { appPrefix: APP_PREFIX },
     		$$inline: true
     	});
 
@@ -4158,13 +4215,13 @@ var app = (function () {
     			footer = element("footer");
     			controlbar.$$.fragment.c();
     			attr_dev(header1, "class", "header svelte-3wugrf");
-    			add_location(header1, file$a, 49, 2, 919);
+    			add_location(header1, file$a, 51, 2, 972);
     			attr_dev(main, "class", "main svelte-3wugrf");
-    			add_location(main, file$a, 53, 2, 973);
+    			add_location(main, file$a, 55, 2, 1026);
     			attr_dev(footer, "class", "footer svelte-3wugrf");
-    			add_location(footer, file$a, 59, 2, 1028);
+    			add_location(footer, file$a, 61, 2, 1081);
     			attr_dev(div, "class", "app svelte-3wugrf");
-    			add_location(div, file$a, 47, 0, 898);
+    			add_location(div, file$a, 49, 0, 951);
     		},
 
     		l: function claim(nodes) {
