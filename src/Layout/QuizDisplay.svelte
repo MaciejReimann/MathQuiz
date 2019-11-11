@@ -1,14 +1,15 @@
 <script>
   import { getContext } from "svelte";
+  import { MULTIPLICATION_TABLE } from "../quizzes/quiz-setup";
   import MultiplicationTable from "../MultiplicationTable/MultiplicationTable.svelte";
   import EquationsDisplay from "./EquationsDisplay.svelte";
 
   const quizStore = getContext("quizStore");
 
-  let currentAppletID;
+  let isMultiplicationTable;
 
   quizStore.subscribe(value => {
-    currentAppletID = value.quizID;
+    isMultiplicationTable = value.quizName === MULTIPLICATION_TABLE;
   });
 </script>
 
@@ -22,5 +23,9 @@
 </style>
 
 <div class="wrapper">
-  <EquationsDisplay />
+  {#if isMultiplicationTable}
+    <MultiplicationTable setup={quizStore.getCurrentQuiz()} />
+  {:else}
+    <EquationsDisplay />
+  {/if}
 </div>

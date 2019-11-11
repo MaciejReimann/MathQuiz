@@ -4,14 +4,20 @@ export interface QuizQuestionListeners {
   onSubmitIncorrectAnswer: (id: string) => void
 }
 
-export default class QuizQuestion {
+export interface QuizQuestionI {
+  getAsArray: () => (string | number)[]
+  getLastSubmittedAnswer: () => string
+  submitAnswer: (submittedAnswer: string) => void
+}
+
+export default class QuizQuestion implements QuizQuestionI {
   private submittedAnswers: string[] = []
   private correctAnswerCount: number = 0
   listeners: QuizQuestionListeners
 
   constructor(
     private ID: string,
-    private question: any[],
+    private question: (string | number)[],
     private correctAnswers: string[] = [],
     listeners: QuizQuestionListeners
   ) {
@@ -21,15 +27,15 @@ export default class QuizQuestion {
     this.listeners = listeners
   }
 
-  getAsArray() {
+  getAsArray(): (string | number)[] {
     return this.question
   }
 
-  getLastSubmittedAnswer() {
+  getLastSubmittedAnswer(): string {
     return this.submittedAnswers[this.submittedAnswers.length - 1]
   }
 
-  submitAnswer(submittedAnswer: string) {
+  submitAnswer(submittedAnswer: string): void {
     if (this.correctAnswers.includes(submittedAnswer)) {
       this.correctAnswerCount = this.correctAnswerCount + 1
       this.listeners.onSubmitCorrectAnswer(this.ID)

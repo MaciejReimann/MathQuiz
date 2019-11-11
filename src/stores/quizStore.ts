@@ -7,27 +7,27 @@ import {
 import { QuizQuestionListeners } from "../quizzes/QuizQuestion"
 
 function createQuizStore(quizzes) {
-  const quizzesID = quizzes.map(quiz => quiz.getID())
+  const quizNames = quizzes.map(quiz => quiz.getName())
 
   const { subscribe, set, update } = writable({
-    quizID: quizzesID[0],
+    quizName: quizNames[0],
     questionNo: 0
   })
 
-  let currentId
+  let currentQuizName
   let currentQuestionNo
 
   subscribe(val => {
-    currentId = val.quizID
+    currentQuizName = val.quizName
     currentQuestionNo = val.questionNo
   })
 
-  const next = () => update(n => ({ ...n, quizID: n.quizID + 1 }))
-  const previous = () => update(n => ({ ...n, quizID: n.quizID - 1 }))
-  const goTo = quizID => update(n => ({ ...n, quizID }))
+  const next = () => update(n => ({ ...n, quizName: n.quizName + 1 }))
+  const previous = () => update(n => ({ ...n, quizName: n.quizName - 1 }))
+  const goTo = quizName => update(n => ({ ...n, quizName }))
 
-  const getAllIDs = () => quizzesID
-  const getCurrentQuiz = () => quizzes[quizzesID.indexOf(currentId)]
+  const getAllQuizNames = () => quizNames
+  const getCurrentQuiz = () => quizzes[quizNames.indexOf(currentQuizName)]
   const getCurrentQuestion = () =>
     getCurrentQuiz().getQuestion(currentQuestionNo)
 
@@ -42,7 +42,7 @@ function createQuizStore(quizzes) {
     next,
     previous,
     goTo,
-    getAllIDs,
+    getAllQuizNames,
     getCurrentQuiz,
     getCurrentQuestion,
     onSubmitAnswer

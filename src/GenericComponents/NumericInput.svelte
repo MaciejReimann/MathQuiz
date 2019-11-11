@@ -5,8 +5,6 @@
   export let isFocused;
   export let maxLength;
 
-  console.log(maxLength);
-
   let inputNode;
   let inputValue = "";
   let isInvalid = false;

@@ -2,6 +2,9 @@
   export let quizQuestion;
   export let onSubmitAnswer;
   import NumericInputv2 from "../GenericComponents/NumericInputv2.svelte";
+  import { INPUT_SYMBOL } from "../quizzes/quiz-setup";
+
+  console.log(quizQuestion);
 
   const onSubmit = answer => {
     quizQuestion.submitAnswer(answer);
@@ -37,7 +40,7 @@
 <div class="wrapper">
   {#each quizQuestion.getAsArray() as element}
     <div class="cell">
-      {#if element === '|_|'}
+      {#if element === INPUT_SYMBOL}
         <div class="input">
           <NumericInputv2
             maxLength={3}

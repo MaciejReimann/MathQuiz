@@ -2,30 +2,25 @@ import shuffle from "lodash/shuffle"
 import QuizQuestion from "./QuizQuestion"
 
 export default class Quiz {
-  private id: string
+  private name: string
   private quizQuestions: QuizQuestion[]
   options?: any
 
-  constructor(id, quizQuestions, options?) {
+  constructor(name, quizQuestions, options?) {
     if (options.shuffled) {
       this.quizQuestions = shuffle(quizQuestions)
     } else {
       this.quizQuestions = quizQuestions
     }
-    this.id = id
+    this.name = name
   }
 
-  getID() {
-    return this.id
-  }
-
-  getAnsweredQuestions() {
-    const answeredQuestions = this.quizQuestions.filter(
-      q => q.getLastSubmittedAnswer() != undefined
-    )
-    console.log("getAnsweredQuestions", answeredQuestions)
-    return answeredQuestions
-  }
+  getName = () => this.name
 
   getQuestion = nr => this.quizQuestions[nr]
+
+  getAnsweredQuestions = () =>
+    this.quizQuestions.filter(q => q.getLastSubmittedAnswer() != undefined)
+
+  getAllQuestions = () => this.quizQuestions
 }

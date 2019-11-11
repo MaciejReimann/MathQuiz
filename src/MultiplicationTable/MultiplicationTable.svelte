@@ -1,7 +1,5 @@
 <script>
-  // import Quiz from "../Quiz.ts";
   import NumericInput from "../GenericComponents/NumericInput.svelte";
-  // import MultiplicationTable from "../MultiplicationTable";
   import { NavigationHandler } from "./NavigationHandler";
   import {
     parseIndex,
@@ -10,6 +8,8 @@
     checkIfRowFieldShouldBeHighlighted,
     checkIfColumnFieldShouldBeHighlighted
   } from "./helpers";
+
+  export let setup;
 
   let firstFieldIndex = 11;
   let lastFieldIndex = 100;
@@ -22,8 +22,6 @@
     ...fieldsAnsweredInorrectly
   ].map(parseIndex);
 
-  const scoreStore = getContext("scoreStore");
-
   const navigationHandler = new NavigationHandler({
     firstFieldIndex,
     lastFieldIndex,
@@ -32,35 +30,12 @@
     }
   });
 
-  // const multiplicationTableQuiz = new Quiz(
-  //   new MultiplicationTable(10).getQAPair(),
-  //   "mt",
-  //   {
-  //     onSubmitAnswer: () => {
-  //       navigationHandler.handleKey(allAnsweredFieldsIndexes)("ArrowRight");
-  //     },
-  //     onSubmitCorrectAnswer: id => {
-  //       fieldsAnsweredCorrectly = [...fieldsAnsweredCorrectly, id];
-  //       scoreStore.increment();
-  //     },
-  //     onSubmitIncorrectAnswer: id => {
-  //       fieldsAnsweredInorrectly = [...fieldsAnsweredInorrectly, id];
-  //       scoreStore.resetStrike();
-  //     }
-  //   }
-  // );
-
-  const multiplicationTableQuiz = null;
-
   function handleFocus(index) {
     navigationHandler.set(index);
   }
 
   function isCellLast(questionIndex) {
-    return (
-      parseIndex(questionIndex) ===
-      multiplicationTableQuiz.getQuestions().length - 1
-    );
+    return parseIndex(questionIndex) === setup.getAllQuestions().length - 1;
   }
 </script>
 
@@ -120,26 +95,26 @@
 </style>
 
 <div class="table-wrapper">
-  {#each multiplicationTableQuiz.getQuestions() as question (question.index)}
+  {#each setup.getAllQuestions() as question (question.ID)}
     <div
       class={'cell'}
-      class:title={parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}
-      class:correct={fieldsAnsweredCorrectly.includes(question.index)}
-      class:incorrect={fieldsAnsweredInorrectly.includes(question.index)}
-      class:highlighted-column={checkIfColumnFieldShouldBeHighlighted(question.index, focusedFieldIndex)}
-      class:highlighted-row={checkIfRowFieldShouldBeHighlighted(question.index, focusedFieldIndex)}
-      class:focused-field={parseIndex(question.index) === focusedFieldIndex}
-      class:cell-last={isCellLast(question.index)}>
+      class:title={parseIndex(question.ID) < 10 || parseIndex(question.ID) % 10 == 0}
+      class:correct={fieldsAnsweredCorrectly.includes(question.ID)}
+      class:incorrect={fieldsAnsweredInorrectly.includes(question.ID)}
+      class:highlighted-column={checkIfColumnFieldShouldBeHighlighted(question.ID, focusedFieldIndex)}
+      class:highlighted-row={checkIfRowFieldShouldBeHighlighted(question.ID, focusedFieldIndex)}
+      class:focused-field={parseIndex(question.ID) === focusedFieldIndex}
+      class:cell-last={isCellLast(question.ID)}>
 
-      {#if parseIndex(question.index) < 10 || parseIndex(question.index) % 10 == 0}
+      {#if parseIndex(question.ID) < 10 || parseIndex(question.ID) % 10 == 0}
         <div>{question.correctAnswers[0]}</div>
       {:else}
         <NumericInput
-          index={parseIndex(question.index)}
-          maxLength={isCellLast(question.index) ? 3 : 2}
-          isFocused={parseIndex(question.index) == focusedFieldIndex}
-          onFocus={el => handleFocus(parseIndex(question.index), el)}
-          onSubmit={answer => multiplicationTableQuiz.submitAnswer(answer, question.index)}
+          index={parseIndex(question.ID)}
+          maxLength={isCellLast(question.ID) ? 3 : 2}
+          isFocused={parseIndex(question.ID) == focusedFieldIndex}
+          onFocus={el => handleFocus(parseIndex(question.ID), el)}
+          onSubmit={answer => question.submitAnswer(answer)}
           onNavigate={key => navigationHandler.handleKey(allAnsweredFieldsIndexes)(key)} />
       {/if}
 

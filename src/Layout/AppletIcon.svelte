@@ -4,11 +4,11 @@
 
   const quizStore = getContext("quizStore");
 
-  let selectedAppletID;
-  $: isSelected = selectedAppletID === name;
+  let selectedQuizName;
+  $: isSelected = selectedQuizName === name;
 
   quizStore.subscribe(value => {
-    selectedAppletID = value.quizID;
+    selectedQuizName = value.quizName;
   });
 
   const handleClick = () => {
