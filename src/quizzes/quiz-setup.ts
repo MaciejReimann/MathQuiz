@@ -21,11 +21,11 @@ export function createEquationQuizzesFromConfig(
       shape
     )
 
-    const quizQuestions: QuizQuestion[] = equations.map((equation, i) =>
-      convertEquationToQuizQuestion(equation, shape, i, listeners)
-    )
-
     const quizName = generateQuizName(shape, name)
+
+    const quizQuestions: QuizQuestion[] = equations.map((equation, i) =>
+      convertEquationToQuizQuestion(equation, shape, quizName, listeners)
+    )
 
     return new Quiz(quizName, quizQuestions, {
       shuffled: !isMultiplicationTable

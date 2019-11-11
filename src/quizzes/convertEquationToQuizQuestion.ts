@@ -5,7 +5,7 @@ import { INPUT_SYMBOL } from "./constants"
 export function convertEquationToQuizQuestion(
   equation: (number | string)[],
   shape: EquationShapes,
-  id: number,
+  quizName: string,
   listeners: QuizQuestionListeners
 ): QuizQuestion {
   const inputPosition = getInputPositionFromShape(shape)
@@ -18,13 +18,13 @@ export function convertEquationToQuizQuestion(
 
   const correctAnswers = [equation[inputPosition].toString()]
 
-  const quizQuestionId = generateQuizQuestionId(shape, id)
+  // const quizQuestionId = generateQuizQuestionId(shape, id)
 
-  return new QuizQuestion(quizQuestionId, question, correctAnswers, listeners)
+  return new QuizQuestion(quizName, question, correctAnswers, listeners)
 }
 
 const getInputPositionFromShape = (shape: EquationShapes): number =>
   shape.includes(INPUT_SYMBOL) ? shape.indexOf(INPUT_SYMBOL) : shape.length - 1
 
-const generateQuizQuestionId = (shape: EquationShapes, id: number): string =>
-  JSON.stringify({ shape, id })
+// const generateQuizQuestionId = (shape: EquationShapes, id: number): string =>
+//   JSON.stringify({ shape, id })

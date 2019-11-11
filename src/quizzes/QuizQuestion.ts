@@ -16,20 +16,26 @@ export default class QuizQuestion implements QuizQuestionI {
   listeners: QuizQuestionListeners
 
   constructor(
-    private ID: string,
+    private parentQuizName: string,
     private question: (string | number)[],
     private correctAnswers: string[] = [],
     listeners: QuizQuestionListeners
   ) {
-    this.ID = ID
+    this.parentQuizName = parentQuizName
     this.question = question
     this.correctAnswers = correctAnswers
     this.listeners = listeners
   }
 
-  getAsArray(): (string | number)[] {
-    return this.question
-  }
+  getParentQuizName = () => this.parentQuizName
+
+  getAsArray = (): (string | number)[] => this.question
+  getAsString = (): string => JSON.stringify(this.question)
+
+  getSubmittedAnswersAsString = (): string =>
+    JSON.stringify(this.submittedAnswers)
+  getCorrectAnswersAsString = (): string => JSON.stringify(this.correctAnswers)
+  getCorrectAnswersCount = (): number => this.correctAnswerCount
 
   getLastSubmittedAnswer(): string {
     return this.submittedAnswers[this.submittedAnswers.length - 1]
@@ -38,9 +44,9 @@ export default class QuizQuestion implements QuizQuestionI {
   submitAnswer(submittedAnswer: string): void {
     if (this.correctAnswers.includes(submittedAnswer)) {
       this.correctAnswerCount = this.correctAnswerCount + 1
-      this.listeners.onSubmitCorrectAnswer(this.ID)
+      this.listeners.onSubmitCorrectAnswer(this.parentQuizName)
     } else {
-      this.listeners.onSubmitIncorrectAnswer(this.ID)
+      this.listeners.onSubmitIncorrectAnswer(this.parentQuizName)
     }
     this.submittedAnswers.push(submittedAnswer)
     this.listeners.onSubmitAnswer()

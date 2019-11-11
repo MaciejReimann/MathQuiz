@@ -28,6 +28,8 @@ function createQuizStore(quizzes) {
 
   const getAllQuizNames = () => quizNames
   const getCurrentQuiz = () => quizzes[quizNames.indexOf(currentQuizName)]
+  const getAnsweredQuestionsForAllQuizzes = () =>
+    quizzes.map(quiz => quiz.getAnsweredQuestions())
   const getCurrentQuestion = () =>
     getCurrentQuiz().getQuestion(currentQuestionNo)
 
@@ -44,6 +46,7 @@ function createQuizStore(quizzes) {
     goTo,
     getAllQuizNames,
     getCurrentQuiz,
+    getAnsweredQuestionsForAllQuizzes,
     getCurrentQuestion,
     onSubmitAnswer
   }
