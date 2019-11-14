@@ -6,7 +6,7 @@ const QUIZ_API_URL = {
   dev: "http://localhost:3000/api/"
 }
 
-const PATH_TO_QUIZZES = "v1/quizzes"
+const PATH_TO_QUIZZES = "v1/quiz_questions"
 
 export const fetchData = () => {
   axios
@@ -32,7 +32,7 @@ export const submitQuizzes = allQuizzes => {
   const formattedData = formatQuizData(allQuizzes)
   console.log("formattedData", formattedData)
   axios
-    .post(`${QUIZ_API_URL.dev}${PATH_TO_QUIZZES}`, postData)
+    .post(`${QUIZ_API_URL.dev}${PATH_TO_QUIZZES}`, formattedData)
     .then(res => console.log(res))
     .catch(err => console.log(err))
 }

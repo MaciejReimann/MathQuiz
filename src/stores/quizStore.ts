@@ -5,6 +5,7 @@ import {
   createEquationQuizzesFromConfig
 } from "../quizzes/quiz-setup"
 import { QuizQuestionListeners } from "../quizzes/QuizQuestion"
+import { saveToDB } from "../db/db.v1"
 
 function createQuizStore(quizzes) {
   const quizNames = quizzes.map(quiz => quiz.getName())
@@ -53,7 +54,9 @@ function createQuizStore(quizzes) {
 }
 
 const listeners: QuizQuestionListeners = {
-  onSubmitAnswer: () => {},
+  onSubmitAnswer: quizQuestion => {
+    saveToDB(quizQuestion, () => console.log("Saved to DB!"))
+  },
   onSubmitCorrectAnswer: () => scoreStore.increment(),
   onSubmitIncorrectAnswer: () => scoreStore.resetStrike()
 }

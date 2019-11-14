@@ -12,8 +12,6 @@
 
   import { fetchData, submitQuizzes } from "./api/api";
 
-  fetchData();
-
   setContext("quizStore", quizStore);
   setContext("scoreStore", scoreStore);
 </script>
@@ -60,10 +58,6 @@
   <main class="main">
 
     <QuizDisplay />
-    <button
-      on:click={() => submitQuizzes(quizStore.getAnsweredQuestionsForAllQuizzes())}>
-      Submit
-    </button>
 
   </main>
 

@@ -1,5 +1,5 @@
 export interface QuizQuestionListeners {
-  onSubmitAnswer: () => void
+  onSubmitAnswer: (quizQuestion: QuizQuestion) => void
   onSubmitCorrectAnswer: (id: string) => void
   onSubmitIncorrectAnswer: (id: string) => void
 }
@@ -12,7 +12,7 @@ export interface QuizQuestionI {
 
 export default class QuizQuestion implements QuizQuestionI {
   private submittedAnswers: string[] = []
-  private correctAnswerCount: number = 0
+  private correctAnswersCount: number = 0
   listeners: QuizQuestionListeners
 
   constructor(
@@ -35,7 +35,7 @@ export default class QuizQuestion implements QuizQuestionI {
   getSubmittedAnswersAsString = (): string =>
     JSON.stringify(this.submittedAnswers)
   getCorrectAnswersAsString = (): string => JSON.stringify(this.correctAnswers)
-  getCorrectAnswersCount = (): number => this.correctAnswerCount
+  getCorrectAnswersCount = (): number => this.correctAnswersCount
 
   getLastSubmittedAnswer(): string {
     return this.submittedAnswers[this.submittedAnswers.length - 1]
@@ -43,12 +43,12 @@ export default class QuizQuestion implements QuizQuestionI {
 
   submitAnswer(submittedAnswer: string): void {
     if (this.correctAnswers.includes(submittedAnswer)) {
-      this.correctAnswerCount = this.correctAnswerCount + 1
+      this.correctAnswersCount = this.correctAnswersCount + 1
       this.listeners.onSubmitCorrectAnswer(this.parentQuizName)
     } else {
       this.listeners.onSubmitIncorrectAnswer(this.parentQuizName)
     }
     this.submittedAnswers.push(submittedAnswer)
-    this.listeners.onSubmitAnswer()
+    this.listeners.onSubmitAnswer(this)
   }
 }
