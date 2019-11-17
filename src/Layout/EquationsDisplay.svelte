@@ -36,7 +36,7 @@
 <div class="wrapper">
   <div class="answered">
     {#each answeredEquations as answeredEquation (answeredEquation.ID)}
-      <SingleEquation quizQuestion={answeredEquation} />
+      <SingleEquation quizQuestion={answeredEquation} answered={true} />
     {/each}
   </div>
   <div class="current">

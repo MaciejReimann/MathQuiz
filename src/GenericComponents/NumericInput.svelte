@@ -1,9 +1,27 @@
 <script>
+  import { onMount, onDestroy, beforeUpdate, afterUpdate } from "svelte";
   export let onSubmit;
   export let onNavigate;
   export let onFocus;
   export let isFocused;
   export let maxLength;
+
+  const value = Math.ceil(Math.random() * 1000);
+
+  onMount(() => {
+    console.log("mounted", value);
+  });
+
+  onDestroy(() => {
+    console.log("onDestroy", value);
+  });
+
+  beforeUpdate(() => {
+    console.log("beforeUpdate", value);
+  });
+  afterUpdate(() => {
+    console.log("afterUpdate", value);
+  });
 
   let inputNode;
   let inputValue = "";

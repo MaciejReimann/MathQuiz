@@ -1,4 +1,5 @@
 <script>
+  export let answered;
   export let quizQuestion;
   export let onSubmitAnswer;
   import NumericInputv2 from "../GenericComponents/NumericInputv2.svelte";
@@ -38,7 +39,7 @@
 <div class="wrapper">
   {#each quizQuestion.getAsArray() as element}
     <div class="cell">
-      {#if element === INPUT_SYMBOL}
+      {#if element === INPUT_SYMBOL && !answered}
         <div class="input">
           <NumericInputv2
             maxLength={3}

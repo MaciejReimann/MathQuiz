@@ -1,15 +1,28 @@
 <script>
-  export let submittedValue;
+  import { onMount } from "svelte";
+  import { VoiceInput } from "../speech/VoiceInput";
   export let onSubmit;
   export let onNavigate;
   export let onFocus;
   export let maxLength;
 
+  const initializeVoiceInput = () => {
+    const voiceInput = new VoiceInput();
+    voiceInput.startAfter(50);
+    voiceInput.onResult(res => {
+      handleInput(res, "voice");
+    });
+  };
+
+  onMount(() => {
+    initializeVoiceInput();
+  });
+
   let inputNode;
-  let inputValue = submittedValue || "";
+  let displayedInputValue;
   let isFocused;
 
-  $: inputNode && !submittedValue && inputNode.focus();
+  $: inputNode && inputNode.focus();
 
   const handleFocus = () => {
     isFocused = true;
@@ -19,18 +32,28 @@
     isFocused = false;
   };
 
-  const handleInput = e => {
-    if (isNaN(parseInt(e.data))) {
-      inputValue = inputValue.slice(0, inputValue.length - 1);
+  const handleInput = (inputData, src) => {
+    if (src === "voice") {
+      const includeAnyNumbers = inputData.match(/\d+/g) !== null;
+      if (includeAnyNumbers) {
+        displayedInputValue = inputData.match(/\d+/g).map(Number)[0];
+      }
+    } else if (isNaN(parseInt(inputData))) {
+      displayedInputValue = displayedInputValue.slice(
+        0,
+        displayedInputValue.length - 1
+      );
     }
   };
 
   const handleSubmit = () => {
-    onSubmit(inputValue);
-    inputValue = "";
+    onSubmit(inputNode.value);
+    displayedInputValue = "";
+    initializeVoiceInput();
   };
 
   const handleKeydown = e => {
+    if (e.code === "Enter") handleSubmit();
     if (typeof onNavigate === "function") onNavigate(e.key);
   };
 </script>
@@ -63,11 +86,9 @@
   class:blurred={!isFocused}
   on:focus={handleFocus}
   on:blur={handleBlur}
-  on:input={handleInput}
-  bind:value={inputValue}
-  on:change={handleSubmit}
+  on:input={e => handleInput(e.data)}
+  bind:value={displayedInputValue}
   on:keydown={handleKeydown}
   bind:this={inputNode}
   maxlength={maxLength}
-  disabled={submittedValue}
   type="text" />
