@@ -1,0 +1,18 @@
+  import { onMount, onDestroy, beforeUpdate, afterUpdate } from "svelte";
+  
+  const value = Math.ceil(Math.random() * 1000);
+
+  onMount(() => {
+    console.log("mounted", value);
+  });
+
+  onDestroy(() => {
+    console.log("onDestroy", value);
+  });
+
+  beforeUpdate(() => {
+    console.log("beforeUpdate", value);
+  });
+  afterUpdate(() => {
+    console.log("afterUpdate", value);
+  });

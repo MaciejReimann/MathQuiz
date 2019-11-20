@@ -42,6 +42,7 @@
       {#if element === INPUT_SYMBOL && !answered}
         <div class="input">
           <NumericInputv2
+            value={4}
             maxLength={3}
             {onSubmit}
             submittedValue={quizQuestion.getLastSubmittedAnswer()} />

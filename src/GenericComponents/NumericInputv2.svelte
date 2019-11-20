@@ -1,10 +1,24 @@
 <script>
+  import { onDestroy, beforeUpdate, afterUpdate } from "svelte";
+  import { getContext } from "svelte";
   import { onMount } from "svelte";
   import { VoiceInput } from "../speech/VoiceInput";
   export let onSubmit;
   export let onNavigate;
   export let onFocus;
   export let maxLength;
+  // export let value;
+
+  let displayedInputValue;
+  // $: () => (displayedInputValue = inputStore.getInputValue())();
+
+  // $: console.log(displayedInputValue);
+
+  const inputStore = getContext("inputStore");
+
+  // inputStore.subscribeTo(val => {
+  //   displayedInputValue = inputStore.getInputValue();
+  // });
 
   const initializeVoiceInput = () => {
     const voiceInput = new VoiceInput();
@@ -19,8 +33,15 @@
   });
 
   let inputNode;
-  let displayedInputValue;
   let isFocused;
+
+  beforeUpdate(() => {
+    if (inputNode) inputNode && inputStore.onKeyboardInput(inputNode.value);
+    displayedInputValue = inputStore.getInputValue();
+    // inputNode.value = inputStore.getInputValue();
+  });
+
+  afterUpdate(() => {});
 
   $: inputNode && inputNode.focus();
 
@@ -32,25 +53,15 @@
     isFocused = false;
   };
 
-  const handleInput = (inputData, src) => {
-    if (src === "voice") {
-      const includeAnyNumbers = inputData.match(/\d+/g) !== null;
-      if (includeAnyNumbers) {
-        displayedInputValue = inputData.match(/\d+/g).map(Number)[0];
-      }
-    } else if (isNaN(parseInt(inputData))) {
-      displayedInputValue = displayedInputValue.slice(
-        0,
-        displayedInputValue.length - 1
-      );
-    }
+  const handleInput = inputData => {
+    console.log("getInputValue", inputStore.getInputValue());
   };
 
-  const handleSubmit = () => {
-    onSubmit(inputNode.value);
-    displayedInputValue = "";
-    initializeVoiceInput();
-  };
+  // const handleSubmit = () => {
+  //   onSubmit(inputNode.value);
+  //   displayedInputValue = "";
+  //   initializeVoiceInput();
+  // };
 
   const handleKeydown = e => {
     if (e.code === "Enter") handleSubmit();
@@ -86,9 +97,8 @@
   class:blurred={!isFocused}
   on:focus={handleFocus}
   on:blur={handleBlur}
-  on:input={e => handleInput(e.data)}
-  bind:value={displayedInputValue}
   on:keydown={handleKeydown}
+  bind:value={displayedInputValue}
   bind:this={inputNode}
   maxlength={maxLength}
   type="text" />
