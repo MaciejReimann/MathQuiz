@@ -28,17 +28,27 @@ function createQuizStore(quizzes) {
   const goTo = quizName => update(n => ({ ...n, quizName }))
 
   const getAllQuizNames = () => quizNames
+
   const getCurrentQuiz = () => quizzes[quizNames.indexOf(currentQuizName)]
+
   const getAnsweredQuestionsForAllQuizzes = () =>
     quizzes.map(quiz => quiz.getAnsweredQuestions())
+
   const getCurrentQuestion = () =>
     getCurrentQuiz().getQuestion(currentQuestionNo)
 
-  const onSubmitAnswer = () =>
-    update(n => ({
+  const onSubmitAnswer = answer => {
+    const currentQuestion = getCurrentQuestion()
+
+    saveToDB(currentQuestion.submitAnswer(answer), () => {
+      console.log("Saved to DB!", answer)
+    })
+
+    return update(n => ({
       ...n,
       questionNo: n.questionNo + 1
     }))
+  }
 
   return {
     subscribe,
@@ -54,9 +64,7 @@ function createQuizStore(quizzes) {
 }
 
 const listeners: QuizQuestionListeners = {
-  onSubmitAnswer: quizQuestion => {
-    saveToDB(quizQuestion, () => console.log("Saved to DB!"))
-  },
+  onSubmitAnswer: () => {},
   onSubmitCorrectAnswer: () => scoreStore.increment(),
   onSubmitIncorrectAnswer: () => scoreStore.resetStrike()
 }

@@ -1647,6 +1647,19 @@ var app = (function () {
             };
             this.getCorrectAnswersAsString = function () { return JSON.stringify(_this.correctAnswers); };
             this.getCorrectAnswersCount = function () { return _this.correctAnswersCount; };
+            this.getCorrectAnswer = function () { return _this.correctAnswers[0]; };
+            this.submitAnswer = function (submittedAnswer) {
+                if (_this.correctAnswers.includes(submittedAnswer)) {
+                    _this.correctAnswersCount = _this.correctAnswersCount + 1;
+                    _this.listeners.onSubmitCorrectAnswer(_this.parentQuizName);
+                }
+                else {
+                    _this.listeners.onSubmitIncorrectAnswer(_this.parentQuizName);
+                }
+                _this.submittedAnswers.push(submittedAnswer);
+                _this.listeners.onSubmitAnswer(_this);
+                return _this;
+            };
             this.parentQuizName = parentQuizName;
             this.question = question;
             this.correctAnswers = correctAnswers;
@@ -1655,20 +1668,8 @@ var app = (function () {
         QuizQuestion.prototype.getLastSubmittedAnswer = function () {
             return this.submittedAnswers[this.submittedAnswers.length - 1];
         };
-        QuizQuestion.prototype.submitAnswer = function (submittedAnswer) {
-            if (this.correctAnswers.includes(submittedAnswer)) {
-                this.correctAnswersCount = this.correctAnswersCount + 1;
-                this.listeners.onSubmitCorrectAnswer(this.parentQuizName);
-            }
-            else {
-                this.listeners.onSubmitIncorrectAnswer(this.parentQuizName);
-            }
-            this.submittedAnswers.push(submittedAnswer);
-            this.listeners.onSubmitAnswer(this);
-        };
         return QuizQuestion;
     }());
-    //# sourceMappingURL=QuizQuestion.js.map
 
     var INPUT_SYMBOL = "_";
     var MULTIPLICATION_TABLE = "MultiplicationTable";
@@ -6270,7 +6271,11 @@ var app = (function () {
         var getCurrentQuestion = function () {
             return getCurrentQuiz().getQuestion(currentQuestionNo);
         };
-        var onSubmitAnswer = function () {
+        var onSubmitAnswer = function (answer) {
+            var currentQuestion = getCurrentQuestion();
+            saveToDB(currentQuestion.submitAnswer(answer), function () {
+                console.log("Saved to DB!", answer);
+            });
             return update(function (n) { return (__assign(__assign({}, n), { questionNo: n.questionNo + 1 })); });
         };
         return {
@@ -6286,9 +6291,7 @@ var app = (function () {
         };
     }
     var listeners = {
-        onSubmitAnswer: function (quizQuestion) {
-            saveToDB(quizQuestion, function () { return console.log("Saved to DB!"); });
-        },
+        onSubmitAnswer: function () { },
         onSubmitCorrectAnswer: function () { return scoreStore.increment(); },
         onSubmitIncorrectAnswer: function () { return scoreStore.resetStrike(); }
     };
@@ -6322,44 +6325,16 @@ var app = (function () {
     var controllerStore = createControllerStore();
     //# sourceMappingURL=controllerStore.js.map
 
-    // interface ControllerStore {
-    //     subscribe
-    //   onKeyboardInput: () => void
-    //   getInputValue: () => string
-    // }
     function createInputStore() {
-        var _a = writable(""), subscribe = _a.subscribe, update = _a.update;
+        var _a = writable(""), subscribe = _a.subscribe, set = _a.set;
         var currentValue = "";
         subscribe(function (val) {
             currentValue = val;
-            console.log("subscribe", val);
+            console.log("InputStore subscribe currentValue", currentValue);
         });
-        var onKeyboardInput = function (inputValue) {
-            return update(function (v) {
-                if (isNaN(parseInt(inputValue))) {
-                    return "";
-                }
-                else {
-                    return inputValue + v;
-                }
-            });
-        };
-        var subscribeTo = function (val) {
-            return subscribe(function (value) {
-                value = val + value;
-                console.log(value);
-            });
-        };
+        var onKeyboardInput = function (inputValue) { return set(inputValue.replace(/[^0-9]/g, "")); };
         var getInputValue = function () { return currentValue; };
-        //   inputValue.subscribe(inputData => {
-        //     if (isNaN(parseInt(inputData))) return ""
-        //     else return inputData
-        //   })
-        //   const bindValue = value => {
-        //     retinputValue.subscribe(val => {
-        //       value = val
-        //     })
-        //   }
+        var resetValue = function () { return set(""); };
         //   {
         //     if (src === "voice") {
         //       const includeAnyNumbers = inputData.match(/\d+/g) !== null
@@ -6374,13 +6349,14 @@ var app = (function () {
         //     }
         //   }
         return {
-            subscribeTo: subscribeTo,
-            subscribe: subscribe,
+            // subscribe,
             onKeyboardInput: onKeyboardInput,
-            getInputValue: getInputValue
+            getInputValue: getInputValue,
+            resetValue: resetValue
         };
     }
     var inputStore = createInputStore();
+    //# sourceMappingURL=inputStore.js.map
 
     /* src/GenericComponents/NumericDisplay.svelte generated by Svelte v3.12.1 */
 
@@ -7830,78 +7806,7 @@ var app = (function () {
     	}
     }
 
-    class VoiceInput {
-      constructor() {
-        this.lang = "pl-PL";
-        this.numericOnly = true; // TODO: make it constructor parameters
-
-        try {
-          this.recognition = new SpeechRecognition();
-        } catch {
-          this.recognition = new webkitSpeechRecognition();
-        }
-        this.recognition.lang = this.lang;
-        this.recognition.interimResults = false;
-      }
-
-      startAfter(ms) {
-        this.id = setTimeout(() => {
-          this.recognition.start(), ms;
-        });
-      }
-
-      onResult(cb) {
-        this.recognition.onresult = e => {
-          const baseResult = e.results[0][0].transcript;
-          if (this.numericOnly) {
-            const result = this.processNumericInput(baseResult).toString();
-            cb(result);
-          }
-        };
-      }
-
-      processNumericInput(input) {
-        const inputAsSeparateWords = input.split(" ");
-
-        const digits = inputAsSeparateWords
-          .map(w => convertStringToDigit(w, this.lang))
-          .filter(d => d != undefined);
-
-        const numbers = inputAsSeparateWords.filter(w => !isNaN(parseInt(w)));
-
-        const givenValidAnswers = [...digits, ...numbers];
-
-        const finalResult = givenValidAnswers[givenValidAnswers.length - 1];
-        return finalResult || ""
-      }
-
-      stop() {
-        console.log("stopping");
-        clearTimeout(this.id);
-        this.recognition.abort();
-      }
-    }
-
-    const convertStringToDigit = (string, locale) => {
-      return localesStrings[locale][string]
-    };
-
-    const localesStrings = {
-      "pl-PL": {
-        jeden: "1",
-        dwa: "2",
-        trzy: "3",
-        cztery: "4",
-        pięć: "5",
-        sześć: "6",
-        siedem: "7",
-        osioem: "8",
-        dziewięć: "9"
-      }
-    };
-
     /* src/GenericComponents/NumericInputv2.svelte generated by Svelte v3.12.1 */
-    const { console: console_1$1 } = globals;
 
     const file$6 = "src/GenericComponents/NumericInputv2.svelte";
 
@@ -7916,7 +7821,7 @@ var app = (function () {
     			attr_dev(input, "class", "svelte-tjp536");
     			toggle_class(input, "focused", ctx.isFocused);
     			toggle_class(input, "blurred", !ctx.isFocused);
-    			add_location(input, file$6, 94, 0, 2013);
+    			add_location(input, file$6, 87, 0, 1803);
 
     			dispose = [
     				listen_dev(input, "input", ctx.input_input_handler),
@@ -7973,38 +7878,32 @@ var app = (function () {
       // export let value;
 
       let displayedInputValue;
-      // $: () => (displayedInputValue = inputStore.getInputValue())();
-
-      // $: console.log(displayedInputValue);
 
       const inputStore = getContext("inputStore");
+      const quizStore = getContext("quizStore");
 
-      // inputStore.subscribeTo(val => {
-      //   displayedInputValue = inputStore.getInputValue();
+      // const initializeVoiceInput = () => {
+      //   const voiceInput = new VoiceInput();
+      //   voiceInput.startAfter(50);
+      //   voiceInput.onResult(res => {
+      //     handleInput(res, "voice");
+      //   });
+      // };
+
+      // onMount(() => {
+      //   initializeVoiceInput();
       // });
-
-      const initializeVoiceInput = () => {
-        const voiceInput = new VoiceInput();
-        voiceInput.startAfter(50);
-        voiceInput.onResult(res => {
-          handleInput();
-        });
-      };
-
-      onMount(() => {
-        initializeVoiceInput();
-      });
 
       let inputNode;
       let isFocused;
 
       beforeUpdate(() => {
-        if (inputNode) inputNode && inputStore.onKeyboardInput(inputNode.value);
-        $$invalidate('displayedInputValue', displayedInputValue = inputStore.getInputValue());
-        // inputNode.value = inputStore.getInputValue();
+        if (displayedInputValue) inputStore.onKeyboardInput(displayedInputValue);
       });
 
-      afterUpdate(() => {});
+      afterUpdate(() => {
+        $$invalidate('displayedInputValue', displayedInputValue = inputStore.getInputValue());
+      });
 
       const handleFocus = () => {
         $$invalidate('isFocused', isFocused = true);
@@ -8014,15 +7913,12 @@ var app = (function () {
         $$invalidate('isFocused', isFocused = false);
       };
 
-      const handleInput = inputData => {
-        console.log("getInputValue", inputStore.getInputValue());
+      const handleSubmit = () => {
+        quizStore.onSubmitAnswer(inputNode.value);
+        inputStore.resetValue();
+        $$invalidate('displayedInputValue', displayedInputValue = inputStore.getInputValue());
+        // initializeVoiceInput();
       };
-
-      // const handleSubmit = () => {
-      //   onSubmit(inputNode.value);
-      //   displayedInputValue = "";
-      //   initializeVoiceInput();
-      // };
 
       const handleKeydown = e => {
         if (e.code === "Enter") handleSubmit();
@@ -8031,7 +7927,7 @@ var app = (function () {
 
     	const writable_props = ['onSubmit', 'onNavigate', 'onFocus', 'maxLength'];
     	Object.keys($$props).forEach(key => {
-    		if (!writable_props.includes(key) && !key.startsWith('$$')) console_1$1.warn(`<NumericInputv2> was created with unknown prop '${key}'`);
+    		if (!writable_props.includes(key) && !key.startsWith('$$')) console.warn(`<NumericInputv2> was created with unknown prop '${key}'`);
     	});
 
     	function input_input_handler() {
@@ -8066,7 +7962,8 @@ var app = (function () {
     		if ('isFocused' in $$props) $$invalidate('isFocused', isFocused = $$props.isFocused);
     	};
 
-    	$$self.$$.update = ($$dirty = { inputNode: 1 }) => {
+    	$$self.$$.update = ($$dirty = { displayedInputValue: 1, inputNode: 1 }) => {
+    		if ($$dirty.displayedInputValue) ;
     		if ($$dirty.inputNode) { inputNode && inputNode.focus(); }
     	};
 
@@ -8095,16 +7992,16 @@ var app = (function () {
     		const { ctx } = this.$$;
     		const props = options.props || {};
     		if (ctx.onSubmit === undefined && !('onSubmit' in props)) {
-    			console_1$1.warn("<NumericInputv2> was created without expected prop 'onSubmit'");
+    			console.warn("<NumericInputv2> was created without expected prop 'onSubmit'");
     		}
     		if (ctx.onNavigate === undefined && !('onNavigate' in props)) {
-    			console_1$1.warn("<NumericInputv2> was created without expected prop 'onNavigate'");
+    			console.warn("<NumericInputv2> was created without expected prop 'onNavigate'");
     		}
     		if (ctx.onFocus === undefined && !('onFocus' in props)) {
-    			console_1$1.warn("<NumericInputv2> was created without expected prop 'onFocus'");
+    			console.warn("<NumericInputv2> was created without expected prop 'onFocus'");
     		}
     		if (ctx.maxLength === undefined && !('maxLength' in props)) {
-    			console_1$1.warn("<NumericInputv2> was created without expected prop 'maxLength'");
+    			console.warn("<NumericInputv2> was created without expected prop 'maxLength'");
     		}
     	}
 
@@ -8151,7 +8048,7 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (50:6) {:else}
+    // (43:6) {:else}
     function create_else_block$1(ctx) {
     	var div, t_value = ctx.element + "", t;
 
@@ -8160,7 +8057,7 @@ var app = (function () {
     			div = element("div");
     			t = text(t_value);
     			attr_dev(div, "class", "symbol svelte-1n1izmm");
-    			add_location(div, file$7, 50, 8, 1044);
+    			add_location(div, file$7, 43, 8, 931);
     		},
 
     		m: function mount(target, anchor) {
@@ -8183,19 +8080,18 @@ var app = (function () {
     			}
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_else_block$1.name, type: "else", source: "(50:6) {:else}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_else_block$1.name, type: "else", source: "(43:6) {:else}", ctx });
     	return block;
     }
 
-    // (42:6) {#if element === INPUT_SYMBOL && !answered}
+    // (36:6) {#if element === INPUT_SYMBOL && !answered}
     function create_if_block$1(ctx) {
     	var div, current;
 
     	var numericinputv2 = new NumericInputv2({
     		props: {
     		value: 4,
-    		maxLength: 3,
-    		onSubmit: ctx.onSubmit,
+    		maxLength: ctx.quizQuestion.getCorrectAnswer().length,
     		submittedValue: ctx.quizQuestion.getLastSubmittedAnswer()
     	},
     		$$inline: true
@@ -8206,7 +8102,7 @@ var app = (function () {
     			div = element("div");
     			numericinputv2.$$.fragment.c();
     			attr_dev(div, "class", "input svelte-1n1izmm");
-    			add_location(div, file$7, 42, 8, 820);
+    			add_location(div, file$7, 36, 8, 693);
     		},
 
     		m: function mount(target, anchor) {
@@ -8217,6 +8113,7 @@ var app = (function () {
 
     		p: function update(changed, ctx) {
     			var numericinputv2_changes = {};
+    			if (changed.quizQuestion) numericinputv2_changes.maxLength = ctx.quizQuestion.getCorrectAnswer().length;
     			if (changed.quizQuestion) numericinputv2_changes.submittedValue = ctx.quizQuestion.getLastSubmittedAnswer();
     			numericinputv2.$set(numericinputv2_changes);
     		},
@@ -8241,11 +8138,11 @@ var app = (function () {
     			destroy_component(numericinputv2);
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_if_block$1.name, type: "if", source: "(42:6) {#if element === INPUT_SYMBOL && !answered}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_if_block$1.name, type: "if", source: "(36:6) {#if element === INPUT_SYMBOL && !answered}", ctx });
     	return block;
     }
 
-    // (40:2) {#each quizQuestion.getAsArray() as element}
+    // (34:2) {#each quizQuestion.getAsArray() as element}
     function create_each_block$2(ctx) {
     	var div, current_block_type_index, if_block, t, current;
 
@@ -8270,7 +8167,7 @@ var app = (function () {
     			if_block.c();
     			t = space();
     			attr_dev(div, "class", "cell svelte-1n1izmm");
-    			add_location(div, file$7, 40, 4, 743);
+    			add_location(div, file$7, 34, 4, 616);
     		},
 
     		m: function mount(target, anchor) {
@@ -8321,7 +8218,7 @@ var app = (function () {
     			if_blocks[current_block_type_index].d();
     		}
     	};
-    	dispatch_dev("SvelteRegisterBlock", { block, id: create_each_block$2.name, type: "each", source: "(40:2) {#each quizQuestion.getAsArray() as element}", ctx });
+    	dispatch_dev("SvelteRegisterBlock", { block, id: create_each_block$2.name, type: "each", source: "(34:2) {#each quizQuestion.getAsArray() as element}", ctx });
     	return block;
     }
 
@@ -8348,7 +8245,7 @@ var app = (function () {
     				each_blocks[i].c();
     			}
     			attr_dev(div, "class", "wrapper svelte-1n1izmm");
-    			add_location(div, file$7, 38, 0, 670);
+    			add_location(div, file$7, 32, 0, 543);
     		},
 
     		l: function claim(nodes) {
@@ -8366,7 +8263,7 @@ var app = (function () {
     		},
 
     		p: function update(changed, ctx) {
-    			if (changed.quizQuestion || changed.INPUT_SYMBOL || changed.answered || changed.onSubmit) {
+    			if (changed.quizQuestion || changed.INPUT_SYMBOL || changed.answered) {
     				each_value = ctx.quizQuestion.getAsArray();
 
     				let i;
@@ -8423,14 +8320,9 @@ var app = (function () {
     }
 
     function instance$7($$self, $$props, $$invalidate) {
-    	let { answered, quizQuestion, onSubmitAnswer } = $$props;
+    	let { answered, quizQuestion } = $$props;
 
-      const onSubmit = answer => {
-        quizQuestion.submitAnswer(answer);
-        onSubmitAnswer();
-      };
-
-    	const writable_props = ['answered', 'quizQuestion', 'onSubmitAnswer'];
+    	const writable_props = ['answered', 'quizQuestion'];
     	Object.keys($$props).forEach(key => {
     		if (!writable_props.includes(key) && !key.startsWith('$$')) console.warn(`<SingleEquation> was created with unknown prop '${key}'`);
     	});
@@ -8438,31 +8330,24 @@ var app = (function () {
     	$$self.$set = $$props => {
     		if ('answered' in $$props) $$invalidate('answered', answered = $$props.answered);
     		if ('quizQuestion' in $$props) $$invalidate('quizQuestion', quizQuestion = $$props.quizQuestion);
-    		if ('onSubmitAnswer' in $$props) $$invalidate('onSubmitAnswer', onSubmitAnswer = $$props.onSubmitAnswer);
     	};
 
     	$$self.$capture_state = () => {
-    		return { answered, quizQuestion, onSubmitAnswer };
+    		return { answered, quizQuestion };
     	};
 
     	$$self.$inject_state = $$props => {
     		if ('answered' in $$props) $$invalidate('answered', answered = $$props.answered);
     		if ('quizQuestion' in $$props) $$invalidate('quizQuestion', quizQuestion = $$props.quizQuestion);
-    		if ('onSubmitAnswer' in $$props) $$invalidate('onSubmitAnswer', onSubmitAnswer = $$props.onSubmitAnswer);
     	};
 
-    	return {
-    		answered,
-    		quizQuestion,
-    		onSubmitAnswer,
-    		onSubmit
-    	};
+    	return { answered, quizQuestion };
     }
 
     class SingleEquation extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$7, create_fragment$7, safe_not_equal, ["answered", "quizQuestion", "onSubmitAnswer"]);
+    		init(this, options, instance$7, create_fragment$7, safe_not_equal, ["answered", "quizQuestion"]);
     		dispatch_dev("SvelteRegisterComponent", { component: this, tagName: "SingleEquation", options, id: create_fragment$7.name });
 
     		const { ctx } = this.$$;
@@ -8472,9 +8357,6 @@ var app = (function () {
     		}
     		if (ctx.quizQuestion === undefined && !('quizQuestion' in props)) {
     			console.warn("<SingleEquation> was created without expected prop 'quizQuestion'");
-    		}
-    		if (ctx.onSubmitAnswer === undefined && !('onSubmitAnswer' in props)) {
-    			console.warn("<SingleEquation> was created without expected prop 'onSubmitAnswer'");
     		}
     	}
 
@@ -8491,14 +8373,6 @@ var app = (function () {
     	}
 
     	set quizQuestion(value) {
-    		throw new Error("<SingleEquation>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    	}
-
-    	get onSubmitAnswer() {
-    		throw new Error("<SingleEquation>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
-    	}
-
-    	set onSubmitAnswer(value) {
     		throw new Error("<SingleEquation>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
     }
@@ -8586,10 +8460,7 @@ var app = (function () {
     	}
 
     	var singleequation = new SingleEquation({
-    		props: {
-    		quizQuestion: ctx.quizQuestion,
-    		onSubmitAnswer: ctx.quizStore.onSubmitAnswer
-    	},
+    		props: { quizQuestion: ctx.quizQuestion },
     		$$inline: true
     	});
 
@@ -8701,11 +8572,7 @@ var app = (function () {
     		if ('answeredEquations' in $$props) $$invalidate('answeredEquations', answeredEquations = $$props.answeredEquations);
     	};
 
-    	return {
-    		quizStore,
-    		quizQuestion,
-    		answeredEquations
-    	};
+    	return { quizQuestion, answeredEquations };
     }
 
     class EquationsDisplay extends SvelteComponentDev {

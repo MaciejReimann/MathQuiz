@@ -1,14 +1,8 @@
 <script>
   export let answered;
   export let quizQuestion;
-  export let onSubmitAnswer;
   import NumericInputv2 from "../GenericComponents/NumericInputv2.svelte";
   import { INPUT_SYMBOL } from "../quizzes/constants";
-
-  const onSubmit = answer => {
-    quizQuestion.submitAnswer(answer);
-    onSubmitAnswer();
-  };
 </script>
 
 <style>
@@ -43,8 +37,7 @@
         <div class="input">
           <NumericInputv2
             value={4}
-            maxLength={3}
-            {onSubmit}
+            maxLength={quizQuestion.getCorrectAnswer().length}
             submittedValue={quizQuestion.getLastSubmittedAnswer()} />
         </div>
       {:else}
@@ -52,5 +45,4 @@
       {/if}
     </div>
   {/each}
-
 </div>

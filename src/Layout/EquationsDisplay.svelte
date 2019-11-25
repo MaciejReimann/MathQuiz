@@ -40,7 +40,7 @@
     {/each}
   </div>
   <div class="current">
-    <SingleEquation {quizQuestion} onSubmitAnswer={quizStore.onSubmitAnswer} />
+    <SingleEquation {quizQuestion} />
   </div>
 
 </div>

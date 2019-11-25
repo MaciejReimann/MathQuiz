@@ -30,18 +30,23 @@ export default class QuizQuestion implements QuizQuestionI {
   getParentQuizName = () => this.parentQuizName
 
   getAsArray = (): (string | number)[] => this.question
+
   getAsString = (): string => JSON.stringify(this.question)
 
   getSubmittedAnswersAsString = (): string =>
     JSON.stringify(this.submittedAnswers)
+
   getCorrectAnswersAsString = (): string => JSON.stringify(this.correctAnswers)
+
   getCorrectAnswersCount = (): number => this.correctAnswersCount
 
   getLastSubmittedAnswer(): string {
     return this.submittedAnswers[this.submittedAnswers.length - 1]
   }
 
-  submitAnswer(submittedAnswer: string): void {
+  getCorrectAnswer = (): string => this.correctAnswers[0]
+
+  submitAnswer = (submittedAnswer: string): QuizQuestion => {
     if (this.correctAnswers.includes(submittedAnswer)) {
       this.correctAnswersCount = this.correctAnswersCount + 1
       this.listeners.onSubmitCorrectAnswer(this.parentQuizName)
@@ -50,5 +55,7 @@ export default class QuizQuestion implements QuizQuestionI {
     }
     this.submittedAnswers.push(submittedAnswer)
     this.listeners.onSubmitAnswer(this)
+
+    return this
   }
 }

@@ -1,11 +1,5 @@
 import { writable } from "svelte/store"
 
-// interface ControllerStore {
-//     subscribe
-//   onKeyboardInput: () => void
-//   getInputValue: () => string
-// }
-
 function createInputStore() {
   const { subscribe, set, update } = writable("")
 
@@ -13,36 +7,12 @@ function createInputStore() {
 
   subscribe(val => {
     currentValue = val
-    console.log("subscribe", val)
+    console.log("InputStore subscribe currentValue", currentValue)
   })
 
-  const onKeyboardInput = inputValue =>
-    update(v => {
-      if (isNaN(parseInt(inputValue))) {
-        return ""
-      } else {
-        return inputValue + v
-      }
-    })
-
-  const subscribeTo = val =>
-    subscribe(value => {
-      value = val + value
-      console.log(value)
-    })
-
+  const onKeyboardInput = inputValue => set(inputValue.replace(/[^0-9]/g, ""))
   const getInputValue = () => currentValue
-
-  //   inputValue.subscribe(inputData => {
-  //     if (isNaN(parseInt(inputData))) return ""
-  //     else return inputData
-  //   })
-
-  //   const bindValue = value => {
-  //     retinputValue.subscribe(val => {
-  //       value = val
-  //     })
-  //   }
+  const resetValue = () => set("")
 
   //   {
   //     if (src === "voice") {
@@ -59,10 +29,10 @@ function createInputStore() {
   //   }
 
   return {
-    subscribeTo,
-    subscribe,
+    // subscribe,
     onKeyboardInput,
-    getInputValue
+    getInputValue,
+    resetValue
   }
 }
 

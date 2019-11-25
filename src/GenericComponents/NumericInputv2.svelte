@@ -1,6 +1,7 @@
 <script>
   import { onDestroy, beforeUpdate, afterUpdate } from "svelte";
   import { getContext } from "svelte";
+
   import { onMount } from "svelte";
   import { VoiceInput } from "../speech/VoiceInput";
   export let onSubmit;
@@ -10,38 +11,33 @@
   // export let value;
 
   let displayedInputValue;
-  // $: () => (displayedInputValue = inputStore.getInputValue())();
-
-  // $: console.log(displayedInputValue);
+  $: displayedInputValue;
 
   const inputStore = getContext("inputStore");
+  const quizStore = getContext("quizStore");
 
-  // inputStore.subscribeTo(val => {
-  //   displayedInputValue = inputStore.getInputValue();
+  // const initializeVoiceInput = () => {
+  //   const voiceInput = new VoiceInput();
+  //   voiceInput.startAfter(50);
+  //   voiceInput.onResult(res => {
+  //     handleInput(res, "voice");
+  //   });
+  // };
+
+  // onMount(() => {
+  //   initializeVoiceInput();
   // });
-
-  const initializeVoiceInput = () => {
-    const voiceInput = new VoiceInput();
-    voiceInput.startAfter(50);
-    voiceInput.onResult(res => {
-      handleInput(res, "voice");
-    });
-  };
-
-  onMount(() => {
-    initializeVoiceInput();
-  });
 
   let inputNode;
   let isFocused;
 
   beforeUpdate(() => {
-    if (inputNode) inputNode && inputStore.onKeyboardInput(inputNode.value);
-    displayedInputValue = inputStore.getInputValue();
-    // inputNode.value = inputStore.getInputValue();
+    if (displayedInputValue) inputStore.onKeyboardInput(displayedInputValue);
   });
 
-  afterUpdate(() => {});
+  afterUpdate(() => {
+    displayedInputValue = inputStore.getInputValue();
+  });
 
   $: inputNode && inputNode.focus();
 
@@ -53,15 +49,12 @@
     isFocused = false;
   };
 
-  const handleInput = inputData => {
-    console.log("getInputValue", inputStore.getInputValue());
+  const handleSubmit = () => {
+    quizStore.onSubmitAnswer(inputNode.value);
+    inputStore.resetValue();
+    displayedInputValue = inputStore.getInputValue();
+    // initializeVoiceInput();
   };
-
-  // const handleSubmit = () => {
-  //   onSubmit(inputNode.value);
-  //   displayedInputValue = "";
-  //   initializeVoiceInput();
-  // };
 
   const handleKeydown = e => {
     if (e.code === "Enter") handleSubmit();
