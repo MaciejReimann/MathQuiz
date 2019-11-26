@@ -1,4 +1,5 @@
-import { quizConfig, createEquationQuizzesFromConfig } from "./quiz-setup"
+import { createEquationQuizzesFromConfig } from "./quiz-setup"
+import { quizConfig } from "./quiz-config"
 import Quiz from "./Quiz"
 
 describe("createEquationQuizzesFromConfig", () => {
@@ -12,7 +13,7 @@ describe("createEquationQuizzesFromConfig", () => {
 
   it("each quiz has method that returns quiz id", () => {
     equationQuizzes.map((quiz, i) =>
-      expect(quiz.getID()).toBe(quizConfig[i].id)
+      expect(quiz.getName()).toBe(quizConfig[i].id)
     )
   })
 })

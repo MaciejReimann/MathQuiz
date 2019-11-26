@@ -17,6 +17,7 @@
   let inputNode;
   let isFocused;
   let displayedInputValue;
+  $: inputNode && inputNode.focus();
 
   inputStore.subscribe(val => {
     displayedInputValue = inputStore.getValue();
@@ -31,16 +32,6 @@
     displayedInputValue = inputStore.getValue();
   });
 
-  $: inputNode && inputNode.focus();
-
-  const handleFocus = () => {
-    isFocused = true;
-  };
-
-  const handleBlur = () => {
-    isFocused = false;
-  };
-
   const handleSubmit = () => {
     quizStore.onSubmitAnswer(displayedInputValue);
     inputStore.resetValue();
@@ -50,6 +41,14 @@
   const handleKeydown = e => {
     if (e.code === "Enter") handleSubmit();
     if (typeof onNavigate === "function") onNavigate(e.key);
+  };
+
+  const handleFocus = () => {
+    isFocused = true;
+  };
+
+  const handleBlur = () => {
+    isFocused = false;
   };
 </script>
 

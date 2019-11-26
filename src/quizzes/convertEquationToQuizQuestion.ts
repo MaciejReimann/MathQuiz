@@ -18,13 +18,8 @@ export function convertEquationToQuizQuestion(
 
   const correctAnswers = [equation[inputPosition].toString()]
 
-  // const quizQuestionId = generateQuizQuestionId(shape, id)
-
   return new QuizQuestion(quizName, question, correctAnswers, listeners)
 }
 
 const getInputPositionFromShape = (shape: EquationShapes): number =>
   shape.includes(INPUT_SYMBOL) ? shape.indexOf(INPUT_SYMBOL) : shape.length - 1
-
-// const generateQuizQuestionId = (shape: EquationShapes, id: number): string =>
-//   JSON.stringify({ shape, id })

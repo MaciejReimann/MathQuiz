@@ -1,9 +1,7 @@
 import { writable } from "svelte/store"
 import { scoreStore } from "./scoreStore"
-import {
-  quizConfig,
-  createEquationQuizzesFromConfig
-} from "../quizzes/quiz-setup"
+import { createEquationQuizzesFromConfig } from "../quizzes/quiz-setup"
+import { quizConfig } from "../quizzes/quiz-config"
 import { QuizQuestionListeners } from "../quizzes/QuizQuestion"
 import { saveToDB } from "../db/db.v1"
 

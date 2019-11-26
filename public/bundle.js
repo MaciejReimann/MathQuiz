@@ -1674,7 +1674,7 @@ var app = (function () {
 
     var INPUT_SYMBOL = "_";
     var MULTIPLICATION_TABLE = "MultiplicationTable";
-    var APP_PREFIX = "Math.Basic.Arithmetics.Multiplication";
+    var APP_PREFIX = "Math.Arithmetics.Multiplication";
     //# sourceMappingURL=constants.js.map
 
     function convertEquationToQuizQuestion(equation, shape, quizName, listeners) {
@@ -1683,14 +1683,11 @@ var app = (function () {
             INPUT_SYMBOL
         ], equation.slice(inputPosition + 1, equation.length));
         var correctAnswers = [equation[inputPosition].toString()];
-        // const quizQuestionId = generateQuizQuestionId(shape, id)
         return new QuizQuestion(quizName, question, correctAnswers, listeners);
     }
     var getInputPositionFromShape = function (shape) {
         return shape.includes(INPUT_SYMBOL) ? shape.indexOf(INPUT_SYMBOL) : shape.length - 1;
     };
-    // const generateQuizQuestionId = (shape: EquationShapes, id: number): string =>
-    //   JSON.stringify({ shape, id })
     //# sourceMappingURL=convertEquationToQuizQuestion.js.map
 
     function createEquationQuizzesFromConfig(config, listeners) {
@@ -1698,11 +1695,10 @@ var app = (function () {
             var shape = _a.shape, range = _a.range, name = _a.name;
             var isMultiplicationTable = name === MULTIPLICATION_TABLE;
             var equations = buildEquationsAsArrays(range, shape);
-            var quizName = generateQuizName(shape, name);
             var quizQuestions = equations.map(function (equation, i) {
-                return convertEquationToQuizQuestion(equation, shape, quizName, listeners);
+                return convertEquationToQuizQuestion(equation, shape, generateQuestionName(i, shape, name), listeners);
             });
-            return new Quiz(quizName, quizQuestions, {
+            return new Quiz(generateQuizName(shape, name), quizQuestions, {
                 shuffled: !isMultiplicationTable
             });
         });
@@ -1710,6 +1706,11 @@ var app = (function () {
     var generateQuizName = function (shape, name) {
         return APP_PREFIX + "." + (name ? name : "SingleEquations") + "." + shape;
     };
+    var generateQuestionName = function (i, shape, name) {
+        return generateQuizName(shape, name) + "." + i;
+    };
+    //# sourceMappingURL=quiz-setup.js.map
+
     var quizConfig = [
         {
             shape: EquationShapes["x*y=_"],
@@ -1749,7 +1750,7 @@ var app = (function () {
             }
         }
     ];
-    //# sourceMappingURL=quiz-setup.js.map
+    //# sourceMappingURL=quiz-config.js.map
 
     /*
      * Dexie.js - a minimalistic wrapper for IndexedDB
@@ -7898,7 +7899,7 @@ var app = (function () {
     			attr_dev(input, "class", "svelte-tjp536");
     			toggle_class(input, "focused", ctx.isFocused);
     			toggle_class(input, "blurred", !ctx.isFocused);
-    			add_location(input, file$6, 78, 0, 1574);
+    			add_location(input, file$6, 77, 0, 1573);
 
     			dispose = [
     				listen_dev(input, "input", ctx.input_input_handler),
@@ -7976,14 +7977,6 @@ var app = (function () {
         $$invalidate('displayedInputValue', displayedInputValue = inputStore.getValue());
       });
 
-      const handleFocus = () => {
-        $$invalidate('isFocused', isFocused = true);
-      };
-
-      const handleBlur = () => {
-        $$invalidate('isFocused', isFocused = false);
-      };
-
       const handleSubmit = () => {
         quizStore.onSubmitAnswer(displayedInputValue);
         inputStore.resetValue();
@@ -7993,6 +7986,14 @@ var app = (function () {
       const handleKeydown = e => {
         if (e.code === "Enter") handleSubmit();
         if (typeof onNavigate === "function") onNavigate(e.key);
+      };
+
+      const handleFocus = () => {
+        $$invalidate('isFocused', isFocused = true);
+      };
+
+      const handleBlur = () => {
+        $$invalidate('isFocused', isFocused = false);
       };
 
     	const writable_props = ['onSubmit', 'onNavigate', 'onFocus', 'maxLength'];
@@ -8044,9 +8045,9 @@ var app = (function () {
     		inputNode,
     		isFocused,
     		displayedInputValue,
+    		handleKeydown,
     		handleFocus,
     		handleBlur,
-    		handleKeydown,
     		input_input_handler,
     		input_binding
     	};
