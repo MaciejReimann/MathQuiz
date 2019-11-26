@@ -3,40 +3,31 @@
   import { getContext } from "svelte";
 
   import { onMount } from "svelte";
-  import { VoiceInput } from "../speech/VoiceInput";
+
   export let onSubmit;
   export let onNavigate;
   export let onFocus;
   export let maxLength;
   // export let value;
 
-  let displayedInputValue;
-  $: displayedInputValue;
-
   const inputStore = getContext("inputStore");
   const quizStore = getContext("quizStore");
 
-  // const initializeVoiceInput = () => {
-  //   const voiceInput = new VoiceInput();
-  //   voiceInput.startAfter(50);
-  //   voiceInput.onResult(res => {
-  //     handleInput(res, "voice");
-  //   });
-  // };
-
-  // onMount(() => {
-  //   initializeVoiceInput();
-  // });
-
   let inputNode;
   let isFocused;
+  let displayedInputValue;
+
+  inputStore.subscribe(val => {
+    displayedInputValue = inputStore.getValue();
+    inputNode && inputNode.focus();
+  });
 
   beforeUpdate(() => {
-    if (displayedInputValue) inputStore.onKeyboardInput(displayedInputValue);
+    displayedInputValue && inputStore.onInput(displayedInputValue);
   });
 
   afterUpdate(() => {
-    displayedInputValue = inputStore.getInputValue();
+    displayedInputValue = inputStore.getValue();
   });
 
   $: inputNode && inputNode.focus();
@@ -50,10 +41,8 @@
   };
 
   const handleSubmit = () => {
-    quizStore.onSubmitAnswer(inputNode.value);
+    quizStore.onSubmitAnswer(displayedInputValue);
     inputStore.resetValue();
-    displayedInputValue = inputStore.getInputValue();
-    // initializeVoiceInput();
   };
 
   const handleKeydown = e => {

@@ -1,37 +1,26 @@
 import { writable } from "svelte/store"
+import { controllerStore } from "./controllerStore"
 
 function createInputStore() {
   const { subscribe, set, update } = writable("")
 
-  let currentValue = ""
+  let value = ""
 
   subscribe(val => {
-    currentValue = val
-    console.log("InputStore subscribe currentValue", currentValue)
+    value = val
   })
 
-  const onKeyboardInput = inputValue => set(inputValue.replace(/[^0-9]/g, ""))
-  const getInputValue = () => currentValue
-  const resetValue = () => set("")
-
-  //   {
-  //     if (src === "voice") {
-  //       const includeAnyNumbers = inputData.match(/\d+/g) !== null
-  //       if (includeAnyNumbers) {
-  //         displayedInputValue = inputData.match(/\d+/g).map(Number)[0]
-  //       }
-  //     } else if (isNaN(parseInt(inputData))) {
-  //       displayedInputValue = displayedInputValue.slice(
-  //         0,
-  //         displayedInputValue.length - 1
-  //       )
-  //     }
-  //   }
+  const onInput = inputValue => set(inputValue.replace(/[^0-9]/g, ""))
+  const getValue = () => value
+  const resetValue = () => {
+    controllerStore.turnMicrophoneOn()
+    return set("")
+  }
 
   return {
-    // subscribe,
-    onKeyboardInput,
-    getInputValue,
+    subscribe,
+    onInput,
+    getValue,
     resetValue
   }
 }

@@ -1670,6 +1670,7 @@ var app = (function () {
         };
         return QuizQuestion;
     }());
+    //# sourceMappingURL=QuizQuestion.js.map
 
     var INPUT_SYMBOL = "_";
     var MULTIPLICATION_TABLE = "MultiplicationTable";
@@ -6299,64 +6300,138 @@ var app = (function () {
     var quizStore = createQuizStore(quizzes);
     //# sourceMappingURL=quizStore.js.map
 
+    class VoiceInput {
+      constructor() {
+        this.lang = "pl-PL";
+        this.numericOnly = true; // TODO: make it constructor parameters
+
+        try {
+          this.recognition = new SpeechRecognition();
+        } catch {
+          this.recognition = new webkitSpeechRecognition();
+        }
+        this.recognition.lang = this.lang;
+        this.recognition.interimResults = false;
+      }
+
+      startAfter(ms) {
+        this.id = setTimeout(() => {
+          this.recognition.start(), ms;
+        });
+      }
+
+      onResult(onSuccess, onFailure) {
+        this.recognition.onresult = e => {
+          const baseResult = e.results[0][0].transcript;
+          if (this.numericOnly) {
+            const result = this.processNumericInput(baseResult).toString();
+
+            result ? onSuccess(result) : onFailure();
+          }
+        };
+      }
+
+      processNumericInput(input) {
+        const inputAsSeparateWords = input.split(" ");
+
+        const digits = inputAsSeparateWords
+          .map(w => convertStringToDigit(w, this.lang))
+          .filter(d => d != undefined);
+
+        const numbers = inputAsSeparateWords.filter(w => !isNaN(parseInt(w)));
+
+        const givenValidAnswers = [...digits, ...numbers];
+
+        const finalResult = givenValidAnswers[givenValidAnswers.length - 1];
+
+        return finalResult || ""
+      }
+
+      stop() {
+        console.log("stopping");
+        clearTimeout(this.id);
+        this.recognition.abort();
+      }
+    }
+
+    const convertStringToDigit = (string, locale) => {
+      return localesStrings[locale][string]
+    };
+
+    const localesStrings = {
+      "pl-PL": {
+        jeden: "1",
+        dwa: "2",
+        trzy: "3",
+        cztery: "4",
+        pięć: "5",
+        sześć: "6",
+        cześć: "6",
+        siedem: "7",
+        osioem: "8",
+        dziewięć: "9"
+      }
+    };
+
+    function createInputStore() {
+        var _a = writable(""), subscribe = _a.subscribe, set = _a.set;
+        var value = "";
+        subscribe(function (val) {
+            value = val;
+        });
+        var onInput = function (inputValue) { return set(inputValue.replace(/[^0-9]/g, "")); };
+        var getValue = function () { return value; };
+        var resetValue = function () {
+            controllerStore.turnMicrophoneOn();
+            return set("");
+        };
+        return {
+            subscribe: subscribe,
+            onInput: onInput,
+            getValue: getValue,
+            resetValue: resetValue
+        };
+    }
+    var inputStore = createInputStore();
+    //# sourceMappingURL=inputStore.js.map
+
     function createControllerStore() {
-        var _a = writable("keyboard"), set = _a.set;
-        var inputValue = "";
+        var _a = writable("keyboard"), subscribe = _a.subscribe, set = _a.set;
+        var voiceInput = new VoiceInput();
+        var currentController = "";
+        subscribe(function (val) {
+            currentController = val;
+        });
         var turnMicrophoneOn = function () {
             set("microphone");
+            startVoiceInput();
             console.log("microphone check 1, 2");
         };
         var turnMicrophoneOff = function () {
             set("keyboard");
             console.log("microphone... offfff");
         };
-        var onKeyboardInput = function (input) {
-            inputValue += input;
-            console.log("onKeyboardInput", inputValue);
+        var getCurrentController = function () { return currentController; };
+        var startVoiceInput = function () {
+            console.log("voice input initialized");
+            voiceInput.stop();
+            voiceInput.startAfter(50);
+            voiceInput.onResult(function (res) {
+                inputStore.onInput(res);
+            }, urgeToRepeat);
         };
-        var getInputValue = function () { return inputValue; };
+        var urgeToRepeat = function () {
+            console.log("REPEAT PLEASE");
+            startVoiceInput();
+        };
         return {
             turnMicrophoneOn: turnMicrophoneOn,
             turnMicrophoneOff: turnMicrophoneOff,
-            onKeyboardInput: onKeyboardInput,
-            getInputValue: getInputValue
+            getCurrentController: getCurrentController
         };
     }
     var controllerStore = createControllerStore();
     //# sourceMappingURL=controllerStore.js.map
-
-    function createInputStore() {
-        var _a = writable(""), subscribe = _a.subscribe, set = _a.set;
-        var currentValue = "";
-        subscribe(function (val) {
-            currentValue = val;
-            console.log("InputStore subscribe currentValue", currentValue);
-        });
-        var onKeyboardInput = function (inputValue) { return set(inputValue.replace(/[^0-9]/g, "")); };
-        var getInputValue = function () { return currentValue; };
-        var resetValue = function () { return set(""); };
-        //   {
-        //     if (src === "voice") {
-        //       const includeAnyNumbers = inputData.match(/\d+/g) !== null
-        //       if (includeAnyNumbers) {
-        //         displayedInputValue = inputData.match(/\d+/g).map(Number)[0]
-        //       }
-        //     } else if (isNaN(parseInt(inputData))) {
-        //       displayedInputValue = displayedInputValue.slice(
-        //         0,
-        //         displayedInputValue.length - 1
-        //       )
-        //     }
-        //   }
-        return {
-            // subscribe,
-            onKeyboardInput: onKeyboardInput,
-            getInputValue: getInputValue,
-            resetValue: resetValue
-        };
-    }
-    var inputStore = createInputStore();
-    //# sourceMappingURL=inputStore.js.map
 
     /* src/GenericComponents/NumericDisplay.svelte generated by Svelte v3.12.1 */
 
@@ -7821,7 +7896,7 @@ var app = (function () {
     			attr_dev(input, "class", "svelte-tjp536");
     			toggle_class(input, "focused", ctx.isFocused);
     			toggle_class(input, "blurred", !ctx.isFocused);
-    			add_location(input, file$6, 87, 0, 1803);
+    			add_location(input, file$6, 76, 0, 1478);
 
     			dispose = [
     				listen_dev(input, "input", ctx.input_input_handler),
@@ -7874,35 +7949,28 @@ var app = (function () {
 
     function instance$6($$self, $$props, $$invalidate) {
     	
+
       let { onSubmit, onNavigate, onFocus, maxLength } = $$props;
       // export let value;
-
-      let displayedInputValue;
 
       const inputStore = getContext("inputStore");
       const quizStore = getContext("quizStore");
 
-      // const initializeVoiceInput = () => {
-      //   const voiceInput = new VoiceInput();
-      //   voiceInput.startAfter(50);
-      //   voiceInput.onResult(res => {
-      //     handleInput(res, "voice");
-      //   });
-      // };
-
-      // onMount(() => {
-      //   initializeVoiceInput();
-      // });
-
       let inputNode;
       let isFocused;
+      let displayedInputValue;
+
+      inputStore.subscribe(val => {
+        $$invalidate('displayedInputValue', displayedInputValue = inputStore.getValue());
+        inputNode && inputNode.focus();
+      });
 
       beforeUpdate(() => {
-        if (displayedInputValue) inputStore.onKeyboardInput(displayedInputValue);
+        displayedInputValue && inputStore.onInput(displayedInputValue);
       });
 
       afterUpdate(() => {
-        $$invalidate('displayedInputValue', displayedInputValue = inputStore.getInputValue());
+        $$invalidate('displayedInputValue', displayedInputValue = inputStore.getValue());
       });
 
       const handleFocus = () => {
@@ -7914,10 +7982,8 @@ var app = (function () {
       };
 
       const handleSubmit = () => {
-        quizStore.onSubmitAnswer(inputNode.value);
+        quizStore.onSubmitAnswer(displayedInputValue);
         inputStore.resetValue();
-        $$invalidate('displayedInputValue', displayedInputValue = inputStore.getInputValue());
-        // initializeVoiceInput();
       };
 
       const handleKeydown = e => {
@@ -7949,7 +8015,7 @@ var app = (function () {
     	};
 
     	$$self.$capture_state = () => {
-    		return { onSubmit, onNavigate, onFocus, maxLength, displayedInputValue, inputNode, isFocused };
+    		return { onSubmit, onNavigate, onFocus, maxLength, inputNode, isFocused, displayedInputValue };
     	};
 
     	$$self.$inject_state = $$props => {
@@ -7957,13 +8023,12 @@ var app = (function () {
     		if ('onNavigate' in $$props) $$invalidate('onNavigate', onNavigate = $$props.onNavigate);
     		if ('onFocus' in $$props) $$invalidate('onFocus', onFocus = $$props.onFocus);
     		if ('maxLength' in $$props) $$invalidate('maxLength', maxLength = $$props.maxLength);
-    		if ('displayedInputValue' in $$props) $$invalidate('displayedInputValue', displayedInputValue = $$props.displayedInputValue);
     		if ('inputNode' in $$props) $$invalidate('inputNode', inputNode = $$props.inputNode);
     		if ('isFocused' in $$props) $$invalidate('isFocused', isFocused = $$props.isFocused);
+    		if ('displayedInputValue' in $$props) $$invalidate('displayedInputValue', displayedInputValue = $$props.displayedInputValue);
     	};
 
-    	$$self.$$.update = ($$dirty = { displayedInputValue: 1, inputNode: 1 }) => {
-    		if ($$dirty.displayedInputValue) ;
+    	$$self.$$.update = ($$dirty = { inputNode: 1 }) => {
     		if ($$dirty.inputNode) { inputNode && inputNode.focus(); }
     	};
 
@@ -7972,9 +8037,9 @@ var app = (function () {
     		onNavigate,
     		onFocus,
     		maxLength,
-    		displayedInputValue,
     		inputNode,
     		isFocused,
+    		displayedInputValue,
     		handleFocus,
     		handleBlur,
     		handleKeydown,

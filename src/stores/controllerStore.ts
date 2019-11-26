@@ -1,18 +1,26 @@
 import { writable } from "svelte/store"
+import { VoiceInput } from "../speech/VoiceInput"
+import { inputStore } from "../stores/inputStore"
 
 interface ControllerStore {
   turnMicrophoneOn: () => void
   turnMicrophoneOff: () => void
-  onKeyboardInput: (input: string) => void
-  getInputValue: () => string
+  getCurrentController: () => string
 }
 
 function createControllerStore(): ControllerStore {
   const { subscribe, set, update } = writable("keyboard")
-  let inputValue = ""
+  const voiceInput = new VoiceInput()
+
+  let currentController = ""
+
+  subscribe(val => {
+    currentController = val
+  })
 
   const turnMicrophoneOn = () => {
     set("microphone")
+    startVoiceInput()
     console.log("microphone check 1, 2")
   }
 
@@ -21,18 +29,26 @@ function createControllerStore(): ControllerStore {
     console.log("microphone... offfff")
   }
 
-  const onKeyboardInput = input => {
-    inputValue += input
-    console.log("onKeyboardInput", inputValue)
+  const getCurrentController = () => currentController
+
+  const startVoiceInput = () => {
+    console.log("voice input initialized")
+    voiceInput.stop()
+    voiceInput.startAfter(50)
+    voiceInput.onResult(res => {
+      inputStore.onInput(res)
+    }, urgeToRepeat)
   }
 
-  const getInputValue = () => inputValue
+  const urgeToRepeat = () => {
+    console.log("REPEAT PLEASE")
+    startVoiceInput()
+  }
 
   return {
     turnMicrophoneOn,
     turnMicrophoneOff,
-    onKeyboardInput,
-    getInputValue
+    getCurrentController
   }
 }
 

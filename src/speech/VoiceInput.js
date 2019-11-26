@@ -18,12 +18,13 @@ export class VoiceInput {
     })
   }
 
-  onResult(cb) {
+  onResult(onSuccess, onFailure) {
     this.recognition.onresult = e => {
       const baseResult = e.results[0][0].transcript
       if (this.numericOnly) {
         const result = this.processNumericInput(baseResult).toString()
-        cb(result)
+
+        result ? onSuccess(result) : onFailure()
       }
     }
   }
@@ -40,6 +41,7 @@ export class VoiceInput {
     const givenValidAnswers = [...digits, ...numbers]
 
     const finalResult = givenValidAnswers[givenValidAnswers.length - 1]
+
     return finalResult || ""
   }
 
@@ -62,6 +64,7 @@ const localesStrings = {
     cztery: "4",
     pięć: "5",
     sześć: "6",
+    cześć: "6",
     siedem: "7",
     osioem: "8",
     dziewięć: "9"
