@@ -27,7 +27,8 @@ export const saveToDB = (
       question,
       submittedAnswers,
       correctAnswers,
-      correctAnswersCount
+      correctAnswersCount,
+      timestamp: new Date().toISOString()
     })
     .then(() => {
       onSuccess()

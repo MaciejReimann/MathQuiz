@@ -6242,7 +6242,8 @@ var app = (function () {
           question,
           submittedAnswers,
           correctAnswers,
-          correctAnswersCount
+          correctAnswersCount,
+          timestamp: new Date().toISOString()
         })
         .then(() => {
           onSuccess();
