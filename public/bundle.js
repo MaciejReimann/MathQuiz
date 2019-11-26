@@ -6381,10 +6381,7 @@ var app = (function () {
         });
         var onInput = function (inputValue) { return set(inputValue.replace(/[^0-9]/g, "")); };
         var getValue = function () { return value; };
-        var resetValue = function () {
-            controllerStore.turnMicrophoneOn();
-            return set("");
-        };
+        var resetValue = function () { return set(""); };
         return {
             subscribe: subscribe,
             onInput: onInput,
@@ -6412,6 +6409,9 @@ var app = (function () {
             console.log("microphone... offfff");
         };
         var getCurrentController = function () { return currentController; };
+        var resetMicrophone = function () {
+            currentController === "microphone" && startVoiceInput();
+        };
         var startVoiceInput = function () {
             console.log("voice input initialized");
             voiceInput.stop();
@@ -6427,6 +6427,7 @@ var app = (function () {
         return {
             turnMicrophoneOn: turnMicrophoneOn,
             turnMicrophoneOff: turnMicrophoneOff,
+            resetMicrophone: resetMicrophone,
             getCurrentController: getCurrentController
         };
     }
@@ -7896,7 +7897,7 @@ var app = (function () {
     			attr_dev(input, "class", "svelte-tjp536");
     			toggle_class(input, "focused", ctx.isFocused);
     			toggle_class(input, "blurred", !ctx.isFocused);
-    			add_location(input, file$6, 76, 0, 1478);
+    			add_location(input, file$6, 78, 0, 1574);
 
     			dispose = [
     				listen_dev(input, "input", ctx.input_input_handler),
@@ -7955,6 +7956,7 @@ var app = (function () {
 
       const inputStore = getContext("inputStore");
       const quizStore = getContext("quizStore");
+      const controllerStore = getContext("controllerStore");
 
       let inputNode;
       let isFocused;
@@ -7984,6 +7986,7 @@ var app = (function () {
       const handleSubmit = () => {
         quizStore.onSubmitAnswer(displayedInputValue);
         inputStore.resetValue();
+        controllerStore.resetMicrophone();
       };
 
       const handleKeydown = e => {

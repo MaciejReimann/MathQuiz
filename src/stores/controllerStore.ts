@@ -5,6 +5,7 @@ import { inputStore } from "../stores/inputStore"
 interface ControllerStore {
   turnMicrophoneOn: () => void
   turnMicrophoneOff: () => void
+  resetMicrophone: () => void
   getCurrentController: () => string
 }
 
@@ -31,6 +32,10 @@ function createControllerStore(): ControllerStore {
 
   const getCurrentController = () => currentController
 
+  const resetMicrophone = () => {
+    currentController === "microphone" && startVoiceInput()
+  }
+
   const startVoiceInput = () => {
     console.log("voice input initialized")
     voiceInput.stop()
@@ -48,6 +53,7 @@ function createControllerStore(): ControllerStore {
   return {
     turnMicrophoneOn,
     turnMicrophoneOff,
+    resetMicrophone,
     getCurrentController
   }
 }

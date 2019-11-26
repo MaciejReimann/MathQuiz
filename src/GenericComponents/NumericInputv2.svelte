@@ -12,6 +12,7 @@
 
   const inputStore = getContext("inputStore");
   const quizStore = getContext("quizStore");
+  const controllerStore = getContext("controllerStore");
 
   let inputNode;
   let isFocused;
@@ -43,6 +44,7 @@
   const handleSubmit = () => {
     quizStore.onSubmitAnswer(displayedInputValue);
     inputStore.resetValue();
+    controllerStore.resetMicrophone();
   };
 
   const handleKeydown = e => {
