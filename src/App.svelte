@@ -19,6 +19,8 @@
   setContext("scoreStore", scoreStore);
   setContext("controllerStore", controllerStore);
   setContext("inputStore", inputStore);
+
+  // Let's do the layout!
 </script>
 
 <style>

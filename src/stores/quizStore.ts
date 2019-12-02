@@ -37,8 +37,12 @@ function createQuizStore(quizzes) {
 
   const onSubmitAnswer = answer => {
     const currentQuestion = getCurrentQuestion()
+    currentQuestion.submitAnswer(answer)
+    const submittedQuestion = currentQuestion.get()
+    const currentScore = scoreStore.getScore()
+    const record = { ...submittedQuestion, currentScore }
 
-    saveToDB(currentQuestion.submitAnswer(answer), () => {
+    saveToDB(record, () => {
       console.log("Saved to DB!", answer)
     })
 

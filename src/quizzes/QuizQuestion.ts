@@ -46,7 +46,7 @@ export default class QuizQuestion implements QuizQuestionI {
 
   getCorrectAnswer = (): string => this.correctAnswers[0]
 
-  submitAnswer = (submittedAnswer: string): QuizQuestion => {
+  submitAnswer = (submittedAnswer: string): void => {
     if (this.correctAnswers.includes(submittedAnswer)) {
       this.correctAnswersCount = this.correctAnswersCount + 1
       this.listeners.onSubmitCorrectAnswer(this.parentQuizName)
@@ -55,7 +55,8 @@ export default class QuizQuestion implements QuizQuestionI {
     }
     this.submittedAnswers.push(submittedAnswer)
     this.listeners.onSubmitAnswer(this)
-
+  }
+  get() {
     return this
   }
 }

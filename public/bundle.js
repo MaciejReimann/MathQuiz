@@ -581,6 +581,10 @@ var app = (function () {
         var strikeStore = createStrikeStore();
         var strikeThreshhold = 5; // config
         var incrementBy = 0; // config
+        var currentScore;
+        subscribe(function (val) {
+            currentScore = val;
+        });
         return {
             subscribe: subscribe,
             subscribeToStrike: strikeStore.subscribe,
@@ -592,7 +596,8 @@ var app = (function () {
                     return n + incrementBy;
                 });
             },
-            resetStrike: function () { return strikeStore.reset(); }
+            resetStrike: function () { return strikeStore.reset(); },
+            getScore: function () { return currentScore; }
         };
     }
     var scoreStore = createScoreStore();
@@ -1658,7 +1663,6 @@ var app = (function () {
                 }
                 _this.submittedAnswers.push(submittedAnswer);
                 _this.listeners.onSubmitAnswer(_this);
-                return _this;
             };
             this.parentQuizName = parentQuizName;
             this.question = question;
@@ -1667,6 +1671,9 @@ var app = (function () {
         }
         QuizQuestion.prototype.getLastSubmittedAnswer = function () {
             return this.submittedAnswers[this.submittedAnswers.length - 1];
+        };
+        QuizQuestion.prototype.get = function () {
+            return this;
         };
         return QuizQuestion;
     }());
@@ -6220,7 +6227,7 @@ var app = (function () {
 
     const dbSchemaV1 = {
       quizQuestion:
-        "++id, name, question, *submittedAnswers, *correctAnswers, correctAnswersCount"
+        "++id, name, question, *submittedAnswers, *correctAnswers, correctAnswersCount, currentScore"
     };
 
     db.version(1).stores(dbSchemaV1);
@@ -6231,7 +6238,8 @@ var app = (function () {
         question,
         submittedAnswers,
         correctAnswers,
-        correctAnswersCount
+        correctAnswersCount,
+        currentScore
       },
       onSuccess
     ) => {
@@ -6244,9 +6252,11 @@ var app = (function () {
           submittedAnswers,
           correctAnswers,
           correctAnswersCount,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          score: currentScore
         })
         .then(() => {
+          db.quizQuestion.orderBy("id").last(record => console.log(record));
           onSuccess();
         });
     };
@@ -6276,7 +6286,11 @@ var app = (function () {
         };
         var onSubmitAnswer = function (answer) {
             var currentQuestion = getCurrentQuestion();
-            saveToDB(currentQuestion.submitAnswer(answer), function () {
+            currentQuestion.submitAnswer(answer);
+            var submittedQuestion = currentQuestion.get();
+            var currentScore = scoreStore.getScore();
+            var record = __assign(__assign({}, submittedQuestion), { currentScore: currentScore });
+            saveToDB(record, function () {
                 console.log("Saved to DB!", answer);
             });
             return update(function (n) { return (__assign(__assign({}, n), { questionNo: n.questionNo + 1 })); });
@@ -6300,7 +6314,6 @@ var app = (function () {
     };
     var quizzes = createEquationQuizzesFromConfig(quizConfig, listeners);
     var quizStore = createQuizStore(quizzes);
-    //# sourceMappingURL=quizStore.js.map
 
     class VoiceInput {
       constructor() {
@@ -10444,13 +10457,13 @@ var app = (function () {
     			t2 = space();
     			toggleiconbutton.$$.fragment.c();
     			attr_dev(header1, "class", "header svelte-1qu7f0a");
-    			add_location(header1, file$b, 63, 2, 1441);
+    			add_location(header1, file$b, 65, 2, 1468);
     			attr_dev(main, "class", "main svelte-1qu7f0a");
-    			add_location(main, file$b, 67, 2, 1495);
+    			add_location(main, file$b, 69, 2, 1522);
     			attr_dev(footer, "class", "footer svelte-1qu7f0a");
-    			add_location(footer, file$b, 71, 2, 1548);
+    			add_location(footer, file$b, 73, 2, 1575);
     			attr_dev(div, "class", "app svelte-1qu7f0a");
-    			add_location(div, file$b, 61, 0, 1420);
+    			add_location(div, file$b, 63, 0, 1447);
     		},
 
     		l: function claim(nodes) {
@@ -10520,6 +10533,8 @@ var app = (function () {
       setContext("scoreStore", scoreStore);
       setContext("controllerStore", controllerStore);
       setContext("inputStore", inputStore);
+
+      // Let's do the layout!
 
     	$$self.$capture_state = () => {
     		return {};

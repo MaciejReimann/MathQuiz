@@ -15,6 +15,11 @@ function createScoreStore(config?) {
   const strikeStore = createStrikeStore()
   const strikeThreshhold = 5 // config
   let incrementBy = 0 // config
+  let currentScore
+
+  subscribe(val => {
+    currentScore = val
+  })
 
   return {
     subscribe,
@@ -25,7 +30,8 @@ function createScoreStore(config?) {
         strikeStore.update(n => n + 1)
         return n + incrementBy
       }),
-    resetStrike: () => strikeStore.reset()
+    resetStrike: () => strikeStore.reset(),
+    getScore: () => currentScore
   }
 }
 

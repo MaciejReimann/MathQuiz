@@ -4,7 +4,7 @@ const db = new Dexie("QuizQuestions")
 
 const dbSchemaV1 = {
   quizQuestion:
-    "++id, name, question, *submittedAnswers, *correctAnswers, correctAnswersCount"
+    "++id, name, question, *submittedAnswers, *correctAnswers, correctAnswersCount, currentScore"
 }
 
 db.version(1).stores(dbSchemaV1)
@@ -15,7 +15,8 @@ export const saveToDB = (
     question,
     submittedAnswers,
     correctAnswers,
-    correctAnswersCount
+    correctAnswersCount,
+    currentScore
   },
   onSuccess
 ) => {
@@ -28,9 +29,11 @@ export const saveToDB = (
       submittedAnswers,
       correctAnswers,
       correctAnswersCount,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      score: currentScore
     })
     .then(() => {
+      db.quizQuestion.orderBy("id").last(record => console.log(record))
       onSuccess()
     })
 }
