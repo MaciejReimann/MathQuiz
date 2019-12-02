@@ -3,10 +3,13 @@
   export let quizQuestion;
   import NumericInputv2 from "../GenericComponents/NumericInputv2.svelte";
   import { INPUT_SYMBOL } from "../quizzes/constants";
+  import { fade, fly } from "svelte/transition";
+  import { slide } from "svelte/transition";
 </script>
 
 <style>
   .wrapper {
+    border: 1px solid black;
     /* background-color: white; */
     display: flex;
   }
@@ -30,7 +33,7 @@
   }
 </style>
 
-<div class="wrapper">
+<div class="wrapper" transition:slide>
   {#each quizQuestion.getAsArray() as element}
     <div class="cell">
       {#if element === INPUT_SYMBOL && !answered}

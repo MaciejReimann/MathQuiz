@@ -16,9 +16,9 @@
 <style>
   .wrapper {
     width: 50%;
-    height: 50%;
+    height: 90%;
     /*  display: flex; */
-    border: 1px solid black;
+    /* border: 1px solid black; */
   }
 </style>
 
