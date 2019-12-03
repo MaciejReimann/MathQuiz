@@ -5,13 +5,18 @@
   import { fade, fly } from "svelte/transition";
   const quizStore = getContext("quizStore");
 
-  let quizQuestion;
-  let answeredEquations;
+  // let quizQuestion;
+  // let answeredEquations;
+  let allQuizQuestions;
+  let position;
 
   quizStore.subscribe(val => {
-    quizQuestion = quizStore.getCurrentQuestion();
-    answeredEquations = quizStore.getCurrentQuiz().getAnsweredQuestions();
-    console.log(answeredEquations);
+    // quizQuestion = quizStore.getCurrentQuestion();
+    // answeredEquations = quizStore.getCurrentQuiz().getAnsweredQuestions();
+    allQuizQuestions = quizStore.getAllQuestions();
+
+    position = 4800 - quizStore.getCurrentQuestionNo() * 100;
+    console.log("position", position);
   });
 </script>
 
@@ -23,7 +28,7 @@
     flex-direction: column;
     justify-content: flex-end;
     align-items: center;
-    overflow: hidden;
+    /* overflow: hidden; */
   }
   .answered {
     /* display: flex;
@@ -37,22 +42,44 @@
 
   .current {
     margin-bottom: 25%;
+    border: 2px solid red;
     /* position: absolute; */
 
     /* top: 100px; */
     /* position: relative; */
     /* top: 200px; */
   }
+  .equations {
+  }
+  .dupa {
+    border: 2px solid blue;
+  }
+
+  .moving {
+    position: relative;
+    /* top: 4800px; */
+  }
 </style>
 
 <div class="wrapper">
-  <div class="answered">
-    {#each answeredEquations as answeredEquation (answeredEquation.getAsString())}
-      <SingleEquation quizQuestion={answeredEquation} answered={true} />
+  <div class="moving" style="top: {position}px">
+    {#each allQuizQuestions as quizQuestion (quizQuestion.getAsString())}
+      <div class="equations">
+        {#if quizQuestion.getID() === quizStore.getCurrentQuestion().getID()}
+          <div class="current">
+            <SingleEquation {quizQuestion} />
+          </div>
+        {:else}
+          <div class="dupa">
+            <SingleEquation {quizQuestion} disabled />
+          </div>
+        {/if}
+      </div>
     {/each}
   </div>
-  <div class="current">
+
+  <!-- <div class="current">
     <SingleEquation {quizQuestion} />
-  </div>
+  </div> -->
 
 </div>

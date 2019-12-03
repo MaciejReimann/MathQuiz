@@ -29,6 +29,8 @@ export default class QuizQuestion implements QuizQuestionI {
 
   getParentQuizName = () => this.parentQuizName
 
+  getID = () => this.parentQuizName + this.question.join("")
+
   getAsArray = (): (string | number)[] => this.question
 
   getAsString = (): string => JSON.stringify(this.question)

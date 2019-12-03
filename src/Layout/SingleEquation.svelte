@@ -1,5 +1,6 @@
 <script>
   export let answered;
+  export let disabled;
   export let quizQuestion;
   import NumericInputv2 from "../GenericComponents/NumericInputv2.svelte";
   import { INPUT_SYMBOL } from "../quizzes/constants";
@@ -33,15 +34,16 @@
   }
 </style>
 
-<div class="wrapper" transition:slide>
+<div class="wrapper">
   {#each quizQuestion.getAsArray() as element}
     <div class="cell">
       {#if element === INPUT_SYMBOL && !answered}
         <div class="input">
           <NumericInputv2
+            {disabled}
             value={4}
-            maxLength={quizQuestion.getCorrectAnswer().length}
-            submittedValue={quizQuestion.getLastSubmittedAnswer()} />
+            maxLength={quizQuestion.getCorrectAnswer().length} />
+
         </div>
       {:else}
         <div class="symbol">{element}</div>

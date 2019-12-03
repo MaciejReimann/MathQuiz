@@ -35,6 +35,10 @@ function createQuizStore(quizzes) {
   const getCurrentQuestion = () =>
     getCurrentQuiz().getQuestion(currentQuestionNo)
 
+  const getCurrentQuestionNo = () => currentQuestionNo
+
+  const getAllQuestions = () => getCurrentQuiz().getAllQuestions()
+
   const onSubmitAnswer = answer => {
     const currentQuestion = getCurrentQuestion()
     currentQuestion.submitAnswer(answer)
@@ -61,6 +65,8 @@ function createQuizStore(quizzes) {
     getCurrentQuiz,
     getAnsweredQuestionsForAllQuizzes,
     getCurrentQuestion,
+    getCurrentQuestionNo,
+    getAllQuestions,
     onSubmitAnswer
   }
 }

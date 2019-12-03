@@ -1,14 +1,11 @@
 <script>
-  import { onDestroy, beforeUpdate, afterUpdate } from "svelte";
+  import { beforeUpdate, afterUpdate } from "svelte";
   import { getContext } from "svelte";
 
-  import { onMount } from "svelte";
-
-  export let onSubmit;
   export let onNavigate;
   export let onFocus;
   export let maxLength;
-  // export let value;
+  export let disabled;
 
   const inputStore = getContext("inputStore");
   const quizStore = getContext("quizStore");
@@ -84,4 +81,5 @@
   bind:value={displayedInputValue}
   bind:this={inputNode}
   maxlength={maxLength}
-  type="text" />
+  type="text"
+  {disabled} />
